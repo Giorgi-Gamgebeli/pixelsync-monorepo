@@ -1,0 +1,205 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String           @id @unique @default(uuid())
+  email                  String           @unique
+  name                   String?
+  userName               String?          @unique
+  image                  String?
+  password               String?
+  emailVerified          DateTime?
+  status                 UserStatus       @default(OFFLINE)
+  statusMessage          String?
+  lastSeen               DateTime         @default(now())
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  channelMessages        ChannelMessage[]
+  receivedMessages       DirectMessage[]  @relation("ReceivedDirectMessages")
+  sentMessages           DirectMessage[]  @relation("SentDirectMessages")
+  receivedFriendRequests FriendRequest[]  @relation("ReceivedFriendRequests")
+  sentFriendRequests     FriendRequest[]  @relation("SentFriendRequests")
+  settings               UserSettings?
+  ownedProjects          Projects[]       @relation("ProjectsOwner")
+  channels               Channel[]        @relation("ChannelMembers")
+  friends                User[]           @relation("UserFriends")
+  friendOf               User[]           @relation("UserFriends")
+  Projects               Projects[]       @relation("UserToProjects")
+  Account                Account[]
+  Session                Session[]
+}
+
+model Account {
+  id                String  @id @unique @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @unique @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  id      String   @id @unique @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model ResetPasswordToken {
+  id      String   @id @unique @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model UserSettings {
+  id            Int     @id @unique @default(autoincrement())
+  theme         Theme   @default(LIGHT)
+  notifications Boolean @default(true)
+  soundEnabled  Boolean @default(true)
+  userId        String  @unique
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model DirectMessage {
+  id         Int      @id @unique @default(autoincrement())
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  isRead     Boolean  @default(false)
+  senderId   String
+  receiverId String
+  receiver   User     @relation("ReceivedDirectMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User     @relation("SentDirectMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model Channel {
+  id          Int              @id @unique @default(autoincrement())
+  name        String
+  description String?
+  type        ChannelType      @default(TEXT)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  workspaceId Int
+  workspace   Projects         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  messages    ChannelMessage[]
+  members     User[]           @relation("ChannelMembers")
+
+  @@index([workspaceId])
+}
+
+model ChannelMessage {
+  id        Int      @id @unique @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isEdited  Boolean  @default(false)
+  channelId Int
+  senderId  String
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  sender    User     @relation(fields: [senderId], references: [id])
+
+  @@index([channelId])
+  @@index([senderId])
+}
+
+model FriendRequest {
+  id         Int           @id @unique @default(autoincrement())
+  createdAt  DateTime      @default(now())
+  status     RequestStatus @default(PENDING)
+  senderId   String
+  receiverId String
+  receiver   User          @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User          @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model Projects {
+  id          Int          @id @unique @default(autoincrement())
+  name        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ownerId     String
+  Channels    Channel[]
+  whiteboards Whiteboard[]
+  owner       User         @relation("ProjectsOwner", fields: [ownerId], references: [id])
+  users       User[]       @relation("UserToProjects")
+  // User        User?        @relation(fields: [userId], references: [id])
+  userId      String?
+
+  @@index([ownerId])
+}
+
+model Whiteboard {
+  id          Int      @id @unique @default(autoincrement())
+  title       String
+  content     Bytes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  workspaceId Int
+  workspace   Projects @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+}
+
+enum UserStatus {
+  ONLINE
+  IDLE
+  DO_NOT_DISTURB
+  OFFLINE
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+enum ChannelType {
+  TEXT
+  VOICE
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
