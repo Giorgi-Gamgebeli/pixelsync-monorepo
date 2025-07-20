@@ -1,8 +1,7 @@
 "use client";
 
 import { useTransform, useScroll, useSpring } from "framer-motion";
-// import MotionComponent from "./MotionComponent";
-import {motion} from 'framer-motion'
+import MotionComponent from "./MotionComponent";
 
 function ScrollFloatingAnimation({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useScroll();
@@ -19,13 +18,13 @@ function ScrollFloatingAnimation({ children }: { children: React.ReactNode }) {
   });
 
   return (
-    <motion.div
+    <MotionComponent
       style={{ y }}
-      // as="header"
+      as="header"
       className="border-brand-500 bg-brand-500/40 fixed top-0 left-1/2 z-[999] mx-auto mt-10 flex w-[30rem] -translate-x-1/2 flex-col overflow-hidden rounded-3xl border px-2 py-0.5 font-medium backdrop-blur-sm"
     >
       {children}
-    </motion.div>
+    </MotionComponent>
   );
 }
 
