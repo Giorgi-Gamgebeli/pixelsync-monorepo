@@ -42,6 +42,7 @@
     "y-websocket": "*",
     "yjs": "*"
   },
+  "packageManager": "npm@11.4.2",
   "devDependencies": {
     "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3",
