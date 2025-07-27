@@ -1,6 +1,6 @@
 "use client";
 
-import { SigninSchema } from "@/app/_schemas/authSchemas";
+import { SigninSchema } from "@repo/zod";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";

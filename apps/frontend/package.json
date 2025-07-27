@@ -8,8 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint --max-warnings 0",
-    "check-types": "tsc --noEmit",
-    "postinstall": "prisma generate && prisma migrate deploy"
+    "check-types": "tsc --noEmit"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -42,8 +41,11 @@
     "y-websocket": "*",
     "yjs": "*"
   },
-  "packageManager": "npm@11.4.2",
   "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "@repo/zod": "*",
+    "@repo/prisma": "*",
     "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3",
     "@types/nodemailer": "^6.4.17",

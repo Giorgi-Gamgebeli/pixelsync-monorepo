@@ -9,7 +9,7 @@ import {
   DeclineFriendRequestSchema,
   GetDirectMessagesSchema,
   GetFriendSchema,
-} from "../_schemas/schemas";
+} from "@repo/zod";
 import { z } from "zod";
 import { handleErrorsOnServer } from "../_utils/helpers";
 import { revalidatePath } from "next/cache";

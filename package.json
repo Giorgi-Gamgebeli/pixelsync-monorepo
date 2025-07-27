@@ -9,19 +9,18 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
-    "turbo": "^2.5.5",
+    "@types/node": "^22",
+    "@types/uuid": "^10.0.0",
+    "eslint": "^9.20.0",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "typescript": "5.8.3",
-    "eslint": "^9.20.0",
     "prisma": "^5.0.0",
-    "@types/node": "^22",
-    "@types/uuid": "^10.0.0"
+    "turbo": "^2.5.5",
+    "typescript": "5.8.3"
   },
   "dependencies": {
     "@prisma/client": "^5.0.0",
-    "zustand": "^5.0.3",
-    "zod": "^3.24.2"
+    "zustand": "^5.0.3"
   },
   "engines": {
     "node": ">=18"

@@ -6,8 +6,8 @@ import {
   ResetPasswordSchema,
   SigninSchema,
   SignupSchema,
-} from "../_schemas/authSchemas";
-import { db } from "./db";
+} from "@repo/zod";
+import { db } from "@repo/prisma";
 import { hash } from "bcryptjs";
 import { z } from "zod";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";

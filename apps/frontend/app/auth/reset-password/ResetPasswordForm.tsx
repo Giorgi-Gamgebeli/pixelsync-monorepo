@@ -2,10 +2,9 @@
 
 import { z } from "zod";
 import FormRow from "../../_components/FormRow";
-import Input from "../../_components/Input";
 import { resetPassword } from "@/app/_dataAcessLayer/authActions";
 import toast from "react-hot-toast";
-import { ResetPasswordSchema } from "@/app/_schemas/authSchemas";
+import { ResetPasswordSchema } from "@repo/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import AuthButton from "../AuthButton";

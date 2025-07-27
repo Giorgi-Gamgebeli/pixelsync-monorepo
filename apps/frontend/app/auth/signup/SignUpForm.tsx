@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SignupSchema } from "../../_schemas/authSchemas";
+import { SignupSchema } from "@repo/zod";
 import { signup } from "../../_dataAcessLayer/authActions";
 import { useTransition } from "react";
 import AuthButton from "../AuthButton";

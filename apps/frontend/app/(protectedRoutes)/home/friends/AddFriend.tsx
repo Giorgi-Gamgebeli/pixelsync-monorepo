@@ -1,7 +1,7 @@
 "use client";
 
 import { addFriend } from "@/app/_dataAcessLayer/userActions";
-import { AddFriendSchema } from "@/app/_schemas/schemas";
+import { AddFriendSchema } from "@repo/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
