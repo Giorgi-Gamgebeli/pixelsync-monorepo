@@ -10,6 +10,14 @@ function Page() {
   const oddTestimonials = testimonials.filter((_, i) => i % 2 === 1);
   const evenTestimonials = testimonials.filter((_, i) => i % 2 === 0);
 
+  // "build": "tsc",
+  //     "dev": "tsc -w",
+  //     "lint": "eslint . --max-warnings 0",
+  //     "postinstall": "prisma generate && prisma migrate deploy",
+  //     "generate": "prisma generate --schema=prisma/schema.prisma",
+  //     "migrate": "prisma migrate dev --schema=prisma/schema.prisma",
+  //     "studio": "prisma studio --schema=prisma/schema.prisma"
+  //
   return (
     <>
       <Header />

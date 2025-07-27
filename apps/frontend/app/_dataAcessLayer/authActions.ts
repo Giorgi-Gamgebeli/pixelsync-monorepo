@@ -7,7 +7,7 @@ import {
   SigninSchema,
   SignupSchema,
 } from "@repo/zod";
-import { db } from "@repo/prisma";
+import { db } from "@repo/db";
 import { hash } from "bcryptjs";
 import { z } from "zod";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";

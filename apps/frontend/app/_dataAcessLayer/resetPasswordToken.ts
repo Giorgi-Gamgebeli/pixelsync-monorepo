@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db } from "@repo/db";
 
 export async function getResetPasswordTokenByToken(token: string) {
   try {

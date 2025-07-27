@@ -1,6 +1,6 @@
 import NextAuth, { NextAuthResult } from "next-auth";
 import authConfig from "./auth.config";
-import { db } from "@/app/_dataAcessLayer/db";
+import { db } from "@repo/db";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { generateUsername } from "./app/_utils/helpers";
 

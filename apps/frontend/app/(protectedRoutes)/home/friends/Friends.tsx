@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import AddFriend from "./AddFriend";
 import AllFriends from "./AllFriends";
-import { UserStatus } from "@/types";
+import { UserStatus } from "@repo/types";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { changeHeading, changeIcon } from "@/app/_redux/layoutSlice";

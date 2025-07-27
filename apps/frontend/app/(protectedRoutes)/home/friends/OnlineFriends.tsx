@@ -1,6 +1,6 @@
 "use client";
 
-import { UserStatus } from "@/types";
+import { UserStatus } from "@repo/types";
 import Image from "next/image";
 import defaultUser from "@/public/default-user.jpg";
 import { Icon } from "@iconify/react/dist/iconify.js";

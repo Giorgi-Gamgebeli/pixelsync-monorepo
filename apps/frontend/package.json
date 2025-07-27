@@ -10,10 +10,10 @@
     "lint": "next lint --max-warnings 0",
     "check-types": "tsc --noEmit"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "dependencies": {
+    "@repo/zod": "*",
+    "@repo/db": "*",
+    "@repo/types": "*",
     "@auth/prisma-adapter": "^2.8.0",
     "@hookform/resolvers": "^4.1.3",
     "@iconify/react": "^5.2.0",
@@ -34,21 +34,18 @@
     "react-player": "^2.16.0",
     "react-redux": "^9.2.0",
     "react-spinners": "^0.15.0",
-    "socket.io-client": "^4.8.1",
     "tailwindcss": "^4.0.10",
     "tldraw": "^3.8.1",
     "uuid": "^11.1.0",
     "y-websocket": "*",
+    "socket.io-client": "^4.8.1",
     "yjs": "*"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
-    "@repo/zod": "*",
-    "@repo/prisma": "*",
     "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3",
-    "@types/nodemailer": "^6.4.17",
-    "tsx": "^4.19.3"
+    "@types/nodemailer": "^6.4.17"
   }
 }

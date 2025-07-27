@@ -1,7 +1,7 @@
 "use client";
 
 import { changeHeading, changeIcon } from "@/app/_redux/layoutSlice";
-import { UserStatus } from "@/types";
+import { UserStatus } from "@repo/types";
 import { DirectMessage } from "@prisma/client";
 import { Session } from "next-auth";
 import { useEffect } from "react";

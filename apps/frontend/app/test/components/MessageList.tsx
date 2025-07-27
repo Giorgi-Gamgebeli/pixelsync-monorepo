@@ -1,4 +1,4 @@
-import { DirectMessage } from "@/types";
+import { DirectMessage } from "@repo/types";
 
 interface MessageListProps {
   messages: DirectMessage[];

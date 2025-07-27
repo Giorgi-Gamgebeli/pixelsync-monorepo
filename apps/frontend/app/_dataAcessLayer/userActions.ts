@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { db } from "./db";
+import { db } from "@repo/db";
 import {
   AcceptFriendRequestSchema,
   AddFriendSchema,

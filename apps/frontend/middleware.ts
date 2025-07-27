@@ -8,9 +8,9 @@ import {
 } from "./routes";
 import { NextRequest } from "next/server";
 
-const { auth: middleware } = NextAuth(authConfig);
+const { auth } = NextAuth(authConfig);
 
-export default middleware((req: NextRequest & { auth: Session | null }) => {
+const middleware = auth((req: NextRequest & { auth: Session | null }) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
@@ -31,11 +31,13 @@ export default middleware((req: NextRequest & { auth: Session | null }) => {
     return Response.redirect(new URL("/", nextUrl));
   }
 
-  return;
+  return null;
 });
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|googlec5121ff754960516.html|.*\.mp4).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|google.*\\.html|.*\\.mp4).*)",
   ],
 };
+
+export default middleware;

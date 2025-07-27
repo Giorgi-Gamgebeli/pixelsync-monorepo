@@ -1,5 +1,5 @@
 import { handleErrorsOnServer } from "../_utils/helpers";
-import { db } from "./db";
+import { db } from "@repo/db";
 
 export async function getProjects() {
   try {

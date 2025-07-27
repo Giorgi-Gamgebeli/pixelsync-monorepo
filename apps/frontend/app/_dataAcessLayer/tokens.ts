@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { getVerificationTokenByEmail } from "./verificationToken";
-import { db } from "./db";
+import { db } from "@repo/db";
 import { getResetPasswordTokenByEmail } from "./resetPasswordToken";
 
 export async function generateResetPasswordToken(email: string) {

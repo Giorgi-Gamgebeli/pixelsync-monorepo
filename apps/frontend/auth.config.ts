@@ -2,7 +2,7 @@ import type { NextAuthConfig } from "next-auth";
 import { compare } from "bcryptjs";
 import Credentials from "next-auth/providers/credentials";
 import { SigninSchema } from "@repo/zod";
-import { db } from "@/app/_dataAcessLayer/db";
+import { db } from "@repo/db";
 import Github from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 
