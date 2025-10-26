@@ -25,8 +25,9 @@ async function Page({ params }: Params) {
     getDirectMessages({ id: friendID }),
     auth(),
   ]);
+  // console.log(directMessages);
 
-  console.log(friend);
+  if (!session) return <div>loading</div>;
   if (!friend) return <Empty text="Friend was not found!" />;
 
   const { image, status, userName } = friend;

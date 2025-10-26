@@ -3,6 +3,7 @@ import authConfig from "./auth.config";
 import { db } from "@repo/db";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { generateUsername } from "./app/_utils/helpers";
+import jwt from "jsonwebtoken";
 
 const nexAuth = NextAuth({
   events: {
@@ -39,8 +40,9 @@ const nexAuth = NextAuth({
       return true;
     },
 
-    async jwt({ token }) {
+    async jwt({ token, user, account }) {
       if (!token.email) return token;
+      console.log(token, user, account, "reroooooooooool");
 
       const existingUser = await db.user.findUnique({
         where: {
@@ -54,6 +56,12 @@ const nexAuth = NextAuth({
         },
       });
 
+      const accessToken = jwt.sign(
+        { sub: token.sub }, // payload (only includes user id here)
+        process.env.ACCESS_TOKEN_SECRET!, // secret key used to sign
+        { expiresIn: "15m" }, // expires in 15 minutes
+      );
+
       if (!existingUser) return token;
 
       return {
@@ -65,6 +73,7 @@ const nexAuth = NextAuth({
         iat: token.iat,
         exp: token.exp,
         jti: token.jti,
+        accessToken,
       };
     },
 
@@ -76,6 +85,7 @@ const nexAuth = NextAuth({
         session.user.image = token.image as string;
         session.user.userName = token.userName as string;
         session.user.name = token.name as string;
+        session.user.accessToken = token.accessToken as string;
       }
 
       return session;

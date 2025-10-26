@@ -87,13 +87,19 @@ export async function getFriend(values: z.infer<typeof GetFriendSchema>) {
       },
     });
 
+    if (id === session.user.id) {
+      throw new Error("You cannot perform this action on yourself.");
+    }
+
     if (!friend) throw new Error("Friend was not found!");
 
     const { friends, friendOf, ...friendValues } = friend;
-    console.log(friend);
-    console.log(friends, friendOf);
-    if (!(friends.length && friendOf.length))
-      throw new Error("You are not friends with this user!");
+    // console.log(friend);
+    // console.log(friends, friendOf);
+
+    const isFriend = friend.friends.length > 0 && friend.friendOf.length > 0;
+
+    if (!isFriend) throw new Error("You are not friends with this user!");
 
     return friendValues;
   } catch (error) {
@@ -124,16 +130,21 @@ export async function getDirectMessages(
         },
         friendOf: {
           where: {
-            id,
+            id: session.user.id,
           },
         },
       },
     });
 
+    if (id === session.user.id) {
+      throw new Error("You cannot perform this action on yourself.");
+    }
+
     if (!friend) throw new Error("Friend was not found!");
 
-    if (!(friend.friends.length && friend.friendOf.length))
-      throw new Error("You are not friends with this user!");
+    const isFriend = friend.friends.length > 0 && friend.friendOf.length > 0;
+
+    if (!isFriend) throw new Error("You are not friends with this user!");
 
     const messages = await db.directMessage.findMany({
       where: {

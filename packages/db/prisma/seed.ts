@@ -86,6 +86,7 @@ async function main() {
         content: "Hey Jane, how are you?",
         senderId: users[0].id,
         receiverId: users[1].id,
+        createdAt: new Date(new Date().getTime() - 100000),
       },
     }),
     prisma.directMessage.create({
@@ -100,6 +101,8 @@ async function main() {
         content: "Hey Bob, are you there?",
         senderId: users[0].id,
         receiverId: users[2].id,
+
+        createdAt: new Date(new Date().getTime() - 100000),
       },
     }),
     // Additional messages
@@ -108,6 +111,8 @@ async function main() {
         content: "Hey, want to grab lunch?",
         senderId: users[1].id,
         receiverId: users[2].id,
+
+        createdAt: new Date(new Date().getTime() - 100000),
       },
     }),
     prisma.directMessage.create({
@@ -115,6 +120,8 @@ async function main() {
         content: "Sure, where should we meet?",
         senderId: users[2].id,
         receiverId: users[1].id,
+
+        createdAt: new Date(new Date().getTime() - 200000),
       },
     }),
     prisma.directMessage.create({

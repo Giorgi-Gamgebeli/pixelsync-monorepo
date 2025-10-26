@@ -24,8 +24,8 @@ model User {
   channelMessages        ChannelMessage[]
   receivedMessages       DirectMessage[]  @relation("ReceivedDirectMessages")
   sentMessages           DirectMessage[]  @relation("SentDirectMessages")
-  receivedFriendRequests FriendRequest[]  @relation("ReceivedFriendRequests")
-  sentFriendRequests     FriendRequest[]  @relation("SentFriendRequests")
+  // receivedFriendRequests FriendRequest[]  @relation("ReceivedFriendRequests")
+  // sentFriendRequests     FriendRequest[]  @relation("SentFriendRequests")
   settings               UserSettings?
   ownedProjects          Projects[]       @relation("ProjectsOwner")
   channels               Channel[]        @relation("ChannelMembers")
@@ -138,19 +138,19 @@ model ChannelMessage {
   @@index([senderId])
 }
 
-model FriendRequest {
-  id         Int           @id @unique @default(autoincrement())
-  createdAt  DateTime      @default(now())
-  status     RequestStatus @default(PENDING)
-  senderId   String
-  receiverId String
-  receiver   User          @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
-  sender     User          @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
-
-  @@unique([senderId, receiverId])
-  @@index([senderId])
-  @@index([receiverId])
-}
+// model FriendRequest {
+//   id         Int           @id @unique @default(autoincrement())
+//   createdAt  DateTime      @default(now())
+//   status     RequestStatus @default(PENDING)
+//   senderId   String
+//   receiverId String
+//   receiver   User          @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+//   sender     User          @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
+//
+//   @@unique([senderId, receiverId])
+//   @@index([senderId])
+//   @@index([receiverId])
+// }
 
 model Projects {
   id          Int          @id @unique @default(autoincrement())
