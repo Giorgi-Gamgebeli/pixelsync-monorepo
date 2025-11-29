@@ -1,4 +1,4 @@
-import WhiteBoard from "../../../_components/WhiteBoard";
+import WhiteBoard from "@/app/_components/WhiteBoard";
 
 function Page() {
   return (
