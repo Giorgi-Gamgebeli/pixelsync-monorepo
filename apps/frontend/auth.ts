@@ -352,15 +352,6 @@ const nexAuth = NextAuth({
         .setExpirationTime("7d")
         .sign(refreshTokenSecret);
 
-      // Save refresh token to database
-      await db.refreshToken.create({
-        data: {
-          token: refreshToken,
-          userId: user.id,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        },
-      });
-
       const cookieStore = await cookies();
 
       cookieStore.set("accessToken", accessToken, {
@@ -400,7 +391,7 @@ const nexAuth = NextAuth({
       return true;
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({ token }) {
       if (!token.email) return token;
       // console.log(token, user, account, "reroooooooooool");
 
@@ -457,9 +448,7 @@ const nexAuth = NextAuth({
   adapter: PrismaAdapter(db),
 });
 
-export const {
-  handlers: { GET, POST },
-  signIn,
-  signOut,
-} = nexAuth;
+export const { GET, POST } = nexAuth.handlers;
+export const signIn: NextAuthResult["signIn"] = nexAuth.signIn;
+export const signOut: NextAuthResult["signOut"] = nexAuth.signOut;
 export const auth: NextAuthResult["auth"] = nexAuth.auth;

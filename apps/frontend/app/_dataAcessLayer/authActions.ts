@@ -21,11 +21,11 @@ import { getVerificationTokenByToken } from "./verificationToken";
 
 export async function signin(values: z.infer<typeof SigninSchema>): Promise<
   | {
-      error: string;
-    }
+    error: string;
+  }
   | {
-      success: string;
-    }
+    success: string;
+  }
 > {
   const result = SigninSchema.safeParse(values);
 
@@ -79,11 +79,11 @@ export async function signin(values: z.infer<typeof SigninSchema>): Promise<
 
 export async function signup(values: z.infer<typeof SignupSchema>): Promise<
   | {
-      error: string;
-    }
+    error: string;
+  }
   | {
-      success: string;
-    }
+    success: string;
+  }
 > {
   const result = SignupSchema.safeParse(values);
 
@@ -103,7 +103,7 @@ export async function signup(values: z.infer<typeof SignupSchema>): Promise<
 
     if (isEmailUsed) return { error: "Email already in use" };
 
-    const isUserNameUsed = await db.user.findUnique({
+    const isUserNameUsed = await db.user.findFirst({
       where: {
         userName: userName,
       },
@@ -179,11 +179,11 @@ export async function resetPassword(
   values: z.infer<typeof ResetPasswordSchema>,
 ): Promise<
   | {
-      error: string;
-    }
+    error: string;
+  }
   | {
-      success: string;
-    }
+    success: string;
+  }
 > {
   const result = ResetPasswordSchema.safeParse(values);
 
@@ -222,11 +222,11 @@ export async function newPassword(
   values: z.infer<typeof NewPasswordSchema>,
 ): Promise<
   | {
-      error: string;
-    }
+    error: string;
+  }
   | {
-      success: string;
-    }
+    success: string;
+  }
 > {
   const result = NewPasswordSchema.safeParse(values);
 

@@ -9,7 +9,7 @@ type AuthButtonProps = {
 function AuthButton({ children, marginTop, ...rest }: AuthButtonProps) {
   return (
     <button
-      className={`bg-brand-400 hover:bg-brand-500 border-brand-600 disabled:bg-brand-600 mb-5 w-full cursor-pointer rounded-lg border py-3 text-2xl text-gray-700 transition-all duration-300 disabled:cursor-not-allowed ${marginTop && "mt-14"}`}
+      className={`bg-brand-500 hover:bg-brand-600 disabled:bg-brand-400 w-full cursor-pointer rounded-lg py-2.5 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed ${marginTop ? "mt-8" : ""}`}
       {...rest}
     >
       {children}
