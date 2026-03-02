@@ -6,16 +6,16 @@ import { usePathname } from "next/navigation";
 type HomeNavLinkProps = {
   href: string;
   children: React.ReactNode;
-  className: string;
+  className?: string;
 };
 
 function HomeNavLink({ children, href, className }: HomeNavLinkProps) {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  const isActive = pathname === href || pathname.startsWith(href + "/");
 
   return (
     <Link
-      className={`flex items-center gap-4 rounded-2xl px-4 text-xl transition-all duration-300 ${className} ${isActive ? "bg-gray-200" : "hover:bg-gray-200"}`}
+      className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${className ?? ""} ${isActive ? "bg-surface text-white" : "text-gray-400 hover:bg-surface/50 hover:text-gray-200"}`}
       href={href}
     >
       {children}

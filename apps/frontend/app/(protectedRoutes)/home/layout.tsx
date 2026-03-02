@@ -1,28 +1,49 @@
 import FriendsList from "./FriendsList";
 import HomeNavLink from "./HomeNavLink";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import ClientIcon from "@/app/_components/ClientIcon";
 
-function layout({ children }: { children: React.ReactNode }) {
+function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid h-full grid-cols-[20rem_1fr_1fr] grid-rows-[auto_1fr_1fr] text-[1.4rem]">
-      <div className="flex w-full items-center border-b border-gray-300 px-4">
-        <button className="my-3 w-full cursor-pointer gap-4 rounded-xl bg-gray-200 px-4 py-2 text-center text-xl">
-          Start conversation
-        </button>
-      </div>
-      <div className="row-start-2 -row-end-1 flex flex-col p-3">
-        <HomeNavLink href="/home/friends" className="py-3">
-          <Icon icon="fa-solid:user-friends" />
-          Friends
-        </HomeNavLink>
+    <div className="flex flex-1 overflow-hidden">
+      {/* Sidebar */}
+      <aside className="scrollbar-thin flex w-64 flex-col border-r border-border bg-secondary/50">
+        {/* Search */}
+        <div className="p-3">
+          <button className="flex w-full items-center gap-2 rounded-lg bg-surface/60 px-3 py-2 text-sm text-gray-500 transition-colors hover:bg-surface">
+            <ClientIcon icon="mdi:magnify" className="text-lg" />
+            Search conversations...
+          </button>
+        </div>
 
-        <div className="mx-auto my-6 w-full max-w-[95%] border-b border-gray-300" />
+        {/* Nav */}
+        <div className="flex flex-col gap-0.5 px-3">
+          <HomeNavLink href="/home/friends">
+            <ClientIcon icon="mdi:account-group" className="text-lg" />
+            <span>Friends</span>
+          </HomeNavLink>
+        </div>
 
-        <FriendsList />
-      </div>
-      {children}
+        <div className="mx-3 my-2 border-t border-border/60" />
+
+        {/* DM header */}
+        <div className="flex items-center justify-between px-4 pb-1">
+          <p className="text-xs font-medium text-gray-500">
+            Direct Messages
+          </p>
+        </div>
+
+        {/* DM list */}
+        <div className="scrollbar-thin flex-1 overflow-y-auto px-3 py-1">
+          <FriendsList />
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="flex flex-1 flex-col overflow-hidden bg-primary">
+        {children}
+      </main>
     </div>
   );
 }
 
-export default layout;
+export default Layout;

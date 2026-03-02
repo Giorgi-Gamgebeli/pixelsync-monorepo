@@ -4,9 +4,6 @@ import { useSearchParams } from "next/navigation";
 import AddFriend from "./AddFriend";
 import AllFriends from "./AllFriends";
 import { UserStatus } from "@repo/types";
-import { useDispatch } from "react-redux";
-import { useEffect } from "react";
-import { changeHeading, changeIcon } from "@/app/_redux/layoutSlice";
 import PendingFriends from "./PendingFriends";
 import OnlineFriends from "./OnlineFriends";
 
@@ -38,13 +35,6 @@ type FriendsProps = {
 };
 
 function Friends({ friends, pendingFriendsRequests }: FriendsProps) {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(changeHeading("Friends"));
-    dispatch(changeIcon("fa-solid:user-friends"));
-  }, []);
-
   const searchParams = useSearchParams();
   const filterBy = searchParams.get("filterBy") || "online";
 
@@ -53,7 +43,7 @@ function Friends({ friends, pendingFriendsRequests }: FriendsProps) {
   if (filterBy === "pending")
     return <PendingFriends pendingFriendsRequests={pendingFriendsRequests} />;
 
-  if (filterBy == "all") return <AllFriends friends={friends} />;
+  if (filterBy === "all") return <AllFriends friends={friends} />;
 
   return <OnlineFriends friends={friends} />;
 }

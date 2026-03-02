@@ -1,42 +1,41 @@
-import ScrollFloatingAnimation from "./ScrollFloatingEffect";
 import Image from "next/image";
 import Link from "next/link";
 import logo from "../../public/noBGLogo.png";
 
 function Header() {
   return (
-    <ScrollFloatingAnimation>
-      <div className="flex items-center justify-between text-sm">
-        <div className="flex items-center gap-1">
-          <div className="relative h-11 w-11 overflow-hidden rounded-full">
+    <header className="fixed top-0 right-0 left-0 z-50 border-b border-border bg-primary/80 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="relative h-9 w-9 overflow-hidden rounded-full">
             <Image
               src={logo}
-              alt="logo of the company"
+              alt="PixelSync logo"
               priority
-              className="absolute top-1/2 left-1/2 min-h-12 min-w-12 -translate-x-1/2 -translate-y-1/2"
-              height={70}
-              width={70}
+              className="absolute top-1/2 left-1/2 min-h-10 min-w-10 -translate-x-1/2 -translate-y-1/2"
+              height={50}
+              width={50}
             />
           </div>
-          <p className="text-lg">Pixel Sync</p>
-        </div>
-        {/* <Nav /> */}
-        <div className="border-brand-200 flex items-center gap-2 border-l pl-2">
+          <span className="text-lg font-semibold text-white">PixelSync</span>
+        </Link>
+
+        <div className="flex items-center gap-3">
           <Link
             href="/auth/signin"
-            className="border-brand-200 hover:bg-brand-200 rounded-full border px-3 py-2 transition-all duration-300"
+            className="rounded-lg px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-surface hover:text-white"
           >
-            Signin
+            Sign In
           </Link>
           <Link
             href="/auth/signup"
-            className="bg-primary hover:bg-secondary rounded-full px-4 py-2 text-sm text-white transition-all duration-300"
+            className="bg-brand-500 hover:bg-brand-600 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
           >
             Get Started
           </Link>
         </div>
       </div>
-    </ScrollFloatingAnimation>
+    </header>
   );
 }
 

@@ -1,13 +1,10 @@
 "use client";
 
-import { changeHeading, changeIcon } from "@/app/_redux/layoutSlice";
 import { UserStatus } from "@repo/types";
-import { DirectMessage } from "@prisma/client";
+import type { DirectMessage } from "@repo/db";
 import { Session } from "next-auth";
-import { useEffect } from "react";
-import { useDispatch } from "react-redux";
 import Message from "./Message";
-import z from "zod";
+import { Icon } from "@iconify/react/dist/iconify.js";
 
 type MessagesProps = {
   messages: DirectMessage[] | undefined;
@@ -23,49 +20,58 @@ type MessagesProps = {
 };
 
 function Messages({ messages, friend, session }: MessagesProps) {
-  const dispatch = useDispatch();
-  console.log(session);
-
-  useEffect(() => {
-    dispatch(changeHeading("Direct Messages"));
-    dispatch(changeIcon("mdi:message-bubble"));
-
-    async function doFetch() {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/direct-message`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${session.user.accessToken}`,
-          },
-        },
-      );
-      const data = await res.json();
-      console.log(data, "dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-    }
-
-    doFetch();
-  }, []);
-
-  // async function onSubmit(values: z.infer<typeof AddFriendSchema>) {
-  //   const actionError = await addFriend(values);
-  //   // if (actionError?.error)
-  //   //   setError("userName", { message: actionError.error });
-  // }
-
   return (
-    <div className="flex h-full w-full flex-col justify-end gap-5 px-10 py-5">
-      {messages ? (
-        messages.map((m, i) => <Message key={i} text={m.content} />)
-      ) : (
-        <p>Start Texting Your Friend</p>
-      )}
-      <input
-        name="messsage"
-        type="text"
-        placeholder="Send message"
-        className="w-full rounded-xl border-2 border-gray-300 bg-white p-4"
-      />
+    <div className="flex h-full flex-col">
+      {/* Messages area */}
+      <div className="scrollbar-thin flex flex-1 flex-col justify-end gap-1 overflow-y-auto px-6 py-4">
+        {messages && messages.length > 0 ? (
+          messages.map((m, i) => (
+            <Message
+              key={i}
+              text={m.content}
+              isOwn={m.senderId === session.user.id}
+              senderName={
+                m.senderId === session.user.id
+                  ? "You"
+                  : friend?.userName || "Friend"
+              }
+            />
+          ))
+        ) : (
+          <div className="flex flex-1 flex-col items-center justify-center">
+            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-surface">
+              <Icon
+                icon="mdi:message-text"
+                className="text-2xl text-gray-500"
+              />
+            </div>
+            <p className="text-sm font-medium text-white">
+              Start a conversation
+            </p>
+            <p className="mt-1 text-sm text-gray-500">
+              Send a message to {friend?.userName || "your friend"}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Input bar */}
+      <div className="border-t border-border px-6 py-3">
+        <div className="flex items-center gap-3">
+          <button className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-surface hover:text-gray-300">
+            <Icon icon="mdi:plus-circle" className="text-xl" />
+          </button>
+          <input
+            name="message"
+            type="text"
+            placeholder={`Message @${friend?.userName || "friend"}`}
+            className="flex-1 rounded-lg border border-border bg-surface px-4 py-2 text-sm text-white outline-none transition-colors placeholder:text-gray-500 focus:border-brand-500"
+          />
+          <button className="bg-brand-500 hover:bg-brand-600 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-white transition-colors">
+            <Icon icon="mdi:send" className="text-lg" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

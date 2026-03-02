@@ -30,26 +30,28 @@ function FormRow<T extends FieldValues>({
   ...rest
 }: FormRowProps<T>) {
   return (
-    <div className="relative flex flex-col gap-0.5 pt-[1.5rem] lg:pt-[1.2rem]">
-      {label && (
-        <label className="text-xl text-gray-700" htmlFor={id}>
-          {label}
-        </label>
-      )}
+    <div className="flex flex-col gap-1.5 pt-4">
+      <div className="flex items-center justify-between">
+        {label && (
+          <label className="text-sm font-medium text-gray-700" htmlFor={id}>
+            {label}
+          </label>
+        )}
 
-      {forgotPassword && (
-        <Link
-          href="/auth/reset-password"
-          className="absolute top-[0.6rem] right-0 mt-2 inline-block text-xl hover:underline"
-        >
-          Forgot Password?
-        </Link>
-      )}
+        {forgotPassword && (
+          <Link
+            href="/auth/reset-password"
+            className="text-brand-500 hover:text-brand-600 text-sm font-medium"
+          >
+            Forgot password?
+          </Link>
+        )}
+      </div>
 
       <Input id={id} register={register} {...rest} />
 
       {errors[id] && (
-        <span className="text-xl text-red-700">
+        <span className="text-sm text-red-500">
           {String(errors[id].message)}
         </span>
       )}

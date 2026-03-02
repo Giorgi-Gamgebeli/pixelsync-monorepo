@@ -4,6 +4,7 @@
   --breakpoint-xss: 350px;
   --breakpoint-xs: 450px;
 
+  /* Brand palette - teal/cyan */
   --color-brand-50: oklch(0.984 0.019 200.873);
   --color-brand-100: oklch(0.956 0.045 203.388);
   --color-brand-200: oklch(0.917 0.08 205.041);
@@ -16,22 +17,40 @@
   --color-brand-900: oklch(0.398 0.07 227.392);
   --color-brand-950: oklch(0.302 0.056 229.695);
 
-  --color-primary: #191b21;
-  --color-secondary: #2c2c2f;
-  --color-error: #ff5449;
-  --color-ifYouDontKnow: #313031;
+  /* Dark-first semantic colors */
+  --color-primary: #0f1117;
+  --color-secondary: #1a1b23;
+  --color-surface: #22232b;
+  --color-sidebar: #16171e;
+  --color-border: #2a2b35;
+  --color-error: #EF4444;
+  --color-success: #22C55E;
+
+  /* Layout sizing */
+  --spacing-sidebar: 15rem;
+  --spacing-chat-panel: 20rem;
 }
 
-.scroller {
-  mask: linear-gradient(90deg, transparent, white 15%, white 85%, transparent);
-}
-
-.clip-path-diagonal {
-  clip-path: polygon(0% 0%, 100% 0%, 0% 100%);
-}
-
+/* Focus styles */
 input:focus,
 textarea:focus {
-  outline: 2px solid var(--color-brand-200);
+  outline: 2px solid var(--color-brand-500);
   outline-offset: -1px;
+}
+
+/* Scrollbar styling */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #3a3b45;
+  border-radius: 3px;
+}
+
+/* Scroller mask for carousels */
+.scroller {
+  mask: linear-gradient(90deg, transparent, white 15%, white 85%, transparent);
 }
