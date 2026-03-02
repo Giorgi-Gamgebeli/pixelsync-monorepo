@@ -22,9 +22,9 @@
     "autoprefixer": "^10.4.20",
     "bcryptjs": "^3.0.2",
     "framer-motion": "^12.4.7",
-    "next": "^15.1.6",
-    "next-auth": "^5.0.0-beta.25",
-    "nodemailer": "^6.10.0",
+    "next": "15.1.6",
+    "next-auth": "5.0.0-beta.25",
+    "nodemailer": "7.0.13",
     "postcss": "^8.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -44,7 +44,7 @@
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
-    "@types/nodemailer": "^6.4.17",
+    "@types/nodemailer": "^7.0.11",
     "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3"
   }
