@@ -24,7 +24,7 @@ npm install
 npm run dev
 ```
 
-The frontend runs at `http://localhost:3000`.
+The frontend runs at `http://localhost:3005`.
 
 ## Environment Variables
 
