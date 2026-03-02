@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg"],
+  webpack: (config) => {
+    config.resolve = {
+      ...config.resolve,
+      extensionAlias: {
+        ".js": [".ts", ".js"],
+      },
+    };
+    return config;
+  },
   images: {
     remotePatterns: [
       {

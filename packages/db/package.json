@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "dev": "tsc -w",
+    "dev": "tsc -w -p ./tsconfig.json",
     "lint": "eslint . --max-warnings 0",
-    "postinstall": "prisma generate && prisma migrate deploy",
-    "generate": "prisma generate --schema=prisma/schema.prisma",
-    "migrate": "prisma migrate dev --schema=prisma/schema.prisma",
-    "studio": "prisma studio --schema=prisma/schema.prisma"
+    "postinstall": "prisma generate",
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "studio": "prisma studio"
   },
   "exports": {
     ".": {
@@ -22,14 +23,12 @@
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.2",
-    "@prisma/client": "^7.4.2",
-    "pg": "^8.19.0"
+    "@prisma/client": "^7.4.2"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
     "@types/node": "22.15.3",
-    "@types/pg": "^8.18.0",
     "eslint": "9.31.0",
     "typescript": "5.8.2",
     "prisma": "^7.4.2",

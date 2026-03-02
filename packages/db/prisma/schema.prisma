@@ -1,6 +1,6 @@
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-1.1.x"]
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -8,32 +8,29 @@ datasource db {
 }
 
 model User {
-  id                     String           @id @unique @default(uuid())
-  email                  String           @unique
-  name                   String?
-  userName               String?          @unique
-  image                  String?
-  password               String?
-  emailVerified          DateTime?
-  status                 UserStatus       @default(OFFLINE)
-  statusMessage          String?
-  lastSeen               DateTime         @default(now())
-  createdAt              DateTime         @default(now())
-  updatedAt              DateTime         @updatedAt
-  channelMessages        ChannelMessage[]
-  receivedMessages       DirectMessage[]  @relation("ReceivedDirectMessages")
-  sentMessages           DirectMessage[]  @relation("SentDirectMessages")
-  // receivedFriendRequests FriendRequest[]  @relation("ReceivedFriendRequests")
-  // sentFriendRequests     FriendRequest[]  @relation("SentFriendRequests")
-  settings               UserSettings?
-  ownedProjects          Projects[]       @relation("ProjectsOwner")
-  channels               Channel[]        @relation("ChannelMembers")
-  friends                User[]           @relation("UserFriends")
-  friendOf               User[]           @relation("UserFriends")
-  Projects               Projects[]       @relation("UserToProjects")
-  Account                Account[]
-  Session                Session[]
-  RefreshToken           RefreshToken[]
+  id               String           @id @unique @default(uuid())
+  email            String           @unique
+  name             String?
+  userName         String?          @unique
+  image            String?
+  password         String?
+  emailVerified    DateTime?
+  status           UserStatus       @default(OFFLINE)
+  statusMessage    String?
+  lastSeen         DateTime         @default(now())
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  Account          Account[]
+  channelMessages  ChannelMessage[]
+  receivedMessages DirectMessage[]  @relation("ReceivedDirectMessages")
+  sentMessages     DirectMessage[]  @relation("SentDirectMessages")
+  ownedProjects    Projects[]       @relation("ProjectsOwner")
+  Session          Session[]
+  settings         UserSettings?
+  channels         Channel[]        @relation("ChannelMembers")
+  friends          User[]           @relation("UserFriends")
+  friendOf         User[]           @relation("UserFriends")
+  Projects         Projects[]       @relation("UserToProjects")
 }
 
 model Account {
@@ -49,8 +46,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -60,18 +56,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model RefreshToken {
-  id        String   @id @unique @default(cuid())
-  token     String   @unique
-  userId    String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -148,32 +133,17 @@ model ChannelMessage {
   @@index([senderId])
 }
 
-// model FriendRequest {
-//   id         Int           @id @unique @default(autoincrement())
-//   createdAt  DateTime      @default(now())
-//   status     RequestStatus @default(PENDING)
-//   senderId   String
-//   receiverId String
-//   receiver   User          @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
-//   sender     User          @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
-//
-//   @@unique([senderId, receiverId])
-//   @@index([senderId])
-//   @@index([receiverId])
-// }
-
 model Projects {
   id          Int          @id @unique @default(autoincrement())
   name        String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   ownerId     String
-  Channels    Channel[]
-  whiteboards Whiteboard[]
-  owner       User         @relation("ProjectsOwner", fields: [ownerId], references: [id])
-  users       User[]       @relation("UserToProjects")
-  // User        User?        @relation(fields: [userId], references: [id])
   userId      String?
+  Channels    Channel[]
+  owner       User         @relation("ProjectsOwner", fields: [ownerId], references: [id])
+  whiteboards Whiteboard[]
+  users       User[]       @relation("UserToProjects")
 
   @@index([ownerId])
 }
