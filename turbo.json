@@ -1,6 +1,27 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "DATABASE_URL",
+    "NEXTAUTH_SECRET",
+
+    "GITHUB_CLIENT_ID",
+    "GITHUB_CLIENT_SECRET",
+
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+
+    "MAIL_USER",
+    "MAIL_PASSWORD",
+
+    "NEXT_PUBLIC_BASE_URL",
+    "NEXTAUTH_URL",
+
+    "SERVER_BASE_URL",
+
+    "ACCESS_TOKEN_SECRET",
+    "REFRESH_TOKEN_SECRET"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -8,7 +29,8 @@
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "env": ["NODE_ENV"]
     },
     "check-types": {
       "dependsOn": ["^check-types"]

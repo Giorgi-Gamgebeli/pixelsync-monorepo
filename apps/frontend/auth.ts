@@ -1,9 +1,12 @@
-import NextAuth, { NextAuthResult } from "next-auth";
-import authConfig from "./auth.config";
-import { db } from "@repo/db";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { generateUsername } from "./app/_utils/helpers";
+import { db } from "@repo/db";
+import { SigninSchema } from "@repo/zod";
+import { compare } from "bcryptjs";
 import jwt from "jsonwebtoken";
+import NextAuth, { NextAuthResult } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import { generateUsername } from "./app/_utils/helpers";
+import authConfig from "./auth.config";
 
 const nexAuth = NextAuth({
   events: {
@@ -93,6 +96,44 @@ const nexAuth = NextAuth({
   },
   adapter: PrismaAdapter(db),
   ...authConfig,
+  providers: [
+    Credentials({
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials.password) return null;
+
+        const result = SigninSchema.safeParse(credentials);
+
+        if (!result.success) return null;
+
+        const { email, password } = result.data;
+
+        const user = await db.user.findUnique({
+          where: {
+            email,
+          },
+          select: {
+            password: true,
+            email: true,
+            id: true,
+            userName: true,
+          },
+        });
+
+        if (!user || !user.password) return null;
+
+        const isPasswordValid = await compare(
+          password as string,
+          user.password as string,
+        );
+
+        if (!isPasswordValid) return null;
+
+        return {
+          email: user.email,
+        };
+      },
+    }),
+  ],
 });
 
 export const {

@@ -19,6 +19,7 @@ function VideoPlayer({ videoURL, id }: VideoPlayerProps) {
   return (
     <div className="pointer-events-none relative aspect-video min-w-full">
       {isClient && (
+        /* @ts-expect-error its some kind of wierd error */
         <ReactPlayer
           ref={playerRef}
           url={videoURL}

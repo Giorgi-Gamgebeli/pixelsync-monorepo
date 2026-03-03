@@ -1,4 +1,9 @@
 import type { NextConfig } from "next";
+import path from "path";
+import dotenv from "dotenv";
+
+// Load environment variables from the monorepo root
+dotenv.config({ path: path.join(__dirname, "../../.env") });
 
 const nextConfig: NextConfig = {
   images: {

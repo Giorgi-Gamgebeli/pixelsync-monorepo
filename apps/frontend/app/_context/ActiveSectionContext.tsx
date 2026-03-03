@@ -1,11 +1,11 @@
 "use client";
-import { createContext, useContext, useState } from "react";
+import { createContext, ReactElement, useContext, useState } from "react";
 import { navLinks } from "../_utils/constants";
 
 type SectionNameTypes = (typeof navLinks)[number];
 
 type ActiveSectionContextProviderTypes = {
-  children: React.ReactNode;
+  children: ReactElement;
 };
 
 type ActiveSectionContextTypes = {

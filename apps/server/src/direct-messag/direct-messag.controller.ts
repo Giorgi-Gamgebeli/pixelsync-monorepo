@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { DirectMessagService } from './direct-messag.service';
 import { CreateDirectMessagDto } from './dto/create-direct-messag.dto';
 import { UpdateDirectMessagDto } from './dto/update-direct-messag.dto';
@@ -23,7 +31,10 @@ export class DirectMessagController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDirectMessagDto: UpdateDirectMessagDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateDirectMessagDto: UpdateDirectMessagDto,
+  ) {
     return this.directMessagService.update(+id, updateDirectMessagDto);
   }
 

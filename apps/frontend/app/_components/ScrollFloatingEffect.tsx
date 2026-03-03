@@ -2,8 +2,9 @@
 
 import { useTransform, useScroll, useSpring } from "framer-motion";
 import MotionComponent from "./MotionComponent";
+import { ReactNode } from "react";
 
-function ScrollFloatingAnimation({ children }: { children: React.ReactNode }) {
+function ScrollFloatingAnimation({ children }: { children: ReactNode }) {
   const { scrollYProgress } = useScroll();
 
   const smoothProgress = useSpring(scrollYProgress, {

@@ -2,7 +2,7 @@
 
 import { changeHeading, changeIcon } from "@/app/_redux/layoutSlice";
 import { UserStatus } from "@repo/types";
-import { DirectMessage } from "@prisma/client";
+import { DirectMessage } from "@repo/db";
 import { Session } from "next-auth";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
