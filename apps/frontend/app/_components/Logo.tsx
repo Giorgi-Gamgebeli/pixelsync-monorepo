@@ -8,15 +8,16 @@ type LogoProps = {
 
 function Logo({ className }: LogoProps) {
   return (
-    <Link href="/" className={`flex items-center gap-1 ${className}`}>
+    <Link href="/" className={`flex items-center gap-2 ${className ?? ""}`}>
       <Image
         src={logo}
-        alt="logo of the company"
+        alt="PixelSync logo"
         priority
-        height={50}
-        width={50}
+        height={36}
+        width={36}
+        className="rounded-full"
       />
-      <h2 className="text-2xl font-semibold">Pixel Sync</h2>
+      <span className="text-lg font-semibold text-gray-900">PixelSync</span>
     </Link>
   );
 }

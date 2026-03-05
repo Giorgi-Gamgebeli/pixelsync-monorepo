@@ -2,6 +2,7 @@ import type { NextAuthConfig } from "next-auth";
 import Github from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 
+// This configuration is shared between the Middleware (Edge) and the main Auth (Node.js).
 const authConfig: NextAuthConfig = {
   session: {
     maxAge: 2 * 24 * 60 * 60,

@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "dev": "tsc -w",
+    "dev": "tsc -w -p ./tsconfig.json",
     "lint": "eslint . --max-warnings 0",
-    "postinstall": "prisma generate && prisma migrate deploy",
-    "generate": "prisma generate --schema=prisma/schema.prisma",
-    "migrate": "prisma migrate dev --schema=prisma/schema.prisma",
-    "studio": "prisma studio --schema=prisma/schema.prisma"
+    "postinstall": "prisma generate",
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "studio": "prisma studio"
   },
   "exports": {
     ".": {

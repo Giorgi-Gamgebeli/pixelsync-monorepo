@@ -1,184 +1,22 @@
 export const navLinks = ["home"] as const;
 
-export const testimonials = [
+export const features = [
   {
-    name: "Leo Mitchell",
-    text: "Amazing! 😍",
-    rating: 10,
-    image: "https://randomuser.me/api/portraits/men/1.jpg",
+    title: "Draw Together",
+    description:
+      "A real-time collaborative canvas with live cursors. Sketch, diagram, and design with your team - everyone sees changes instantly.",
+    icon: "mdi:draw",
   },
   {
-    name: "Tina Adams",
-    text: "Highly recommend this product! It works wonders for my workflow.",
-    rating: 7,
-    image: "https://randomuser.me/api/portraits/women/1.jpg",
+    title: "Talk While You Work",
+    description:
+      "Integrated chat in every room. Discuss designs, share feedback, and make decisions without switching tools.",
+    icon: "mdi:chat",
   },
   {
-    name: "Parker Clark",
-    text: "🔥🔥🔥",
-    rating: 10,
-    image: "https://randomuser.me/api/portraits/men/2.jpg",
+    title: "Bring Your Team",
+    description:
+      "Invite friends, see who's online, and jump into rooms together. Collaboration starts with connection.",
+    icon: "mdi:account-group",
   },
-  {
-    name: "Maya Collins",
-    text: "It’s good but could be better.",
-    rating: 7,
-    image: "https://randomuser.me/api/portraits/women/2.jpg",
-  },
-  {
-    name: "Toby Wilson",
-    text: "One of the best tools I’ve ever used. Efficient and effective.",
-    rating: 9,
-    image: "https://randomuser.me/api/portraits/men/3.jpg",
-  },
-  {
-    name: "Sam Allen",
-    text: "😎",
-    rating: 8,
-    image: "https://randomuser.me/api/portraits/men/4.jpg",
-  },
-  {
-    name: "Olivia King",
-    text: "This tool saved me so much time!",
-    rating: 9,
-    image: "https://randomuser.me/api/portraits/women/3.jpg",
-  },
-  {
-    name: "John Robinson",
-    text: "Fantastic product.",
-    rating: 8,
-    image: "https://randomuser.me/api/portraits/men/5.jpg",
-  },
-  {
-    name: "Emma Davis",
-    text: "Still getting used to it, but it’s been good so far!",
-    rating: 7,
-    image: "https://randomuser.me/api/portraits/women/4.jpg",
-  },
-  {
-    name: "Jack Miller",
-    text: "Great investment, no regrets.",
-    rating: 9,
-    image: "https://randomuser.me/api/portraits/men/6.jpg",
-  },
-  {
-    name: "Helen Harris",
-    text: "It’s worth the price. Excellent support too.",
-    rating: 8,
-    image: "https://randomuser.me/api/portraits/women/5.jpg",
-  },
-  {
-    name: "Oscar Young",
-    text: "So glad I found this. It made everything easier.",
-    rating: 9,
-    image: "https://randomuser.me/api/portraits/men/7.jpg",
-  },
-  {
-    name: "Grace Lopez",
-    text: "It’s amazing. Wouldn’t go back to my old way of working.",
-    rating: 8,
-    image: "https://randomuser.me/api/portraits/women/6.jpg",
-  },
-  {
-    name: "Noah Carter",
-    text: "This is my new go-to tool!",
-    rating: 9,
-    image: "https://randomuser.me/api/portraits/men/8.jpg",
-  },
-  {
-    name: "Rachel Lee",
-    text: "Incredible! Has everything I need.",
-    rating: 8,
-    image: "https://randomuser.me/api/portraits/women/7.jpg",
-  },
-  {
-    name: "Zachary Foster",
-    text: "💥",
-    rating: 9,
-    image: "https://randomuser.me/api/portraits/men/9.jpg",
-  },
-  {
-    name: "Sophia Martinez",
-    text: "This is a must-have for anyone who works in teams.",
-    rating: 10,
-    image: "https://randomuser.me/api/portraits/women/8.jpg",
-  },
-  {
-    name: "Ethan Brown",
-    text: "Could use a few improvements, but overall really solid.",
-    rating: 9,
-    image: "https://randomuser.me/api/portraits/men/10.jpg",
-  },
-  {
-    name: "Mason Harris",
-    text: "Works like a charm! Love it.",
-    rating: 8,
-    image: "https://randomuser.me/api/portraits/men/11.jpg",
-  },
-  {
-    name: "Abigail Moore",
-    text: "This tool is exactly what I needed to stay organized.",
-    rating: 9,
-    image: "https://randomuser.me/api/portraits/women/9.jpg",
-  },
-  {
-    name: "Jack Robinson",
-    text: "So helpful! Can’t imagine my workflow without it now.",
-    rating: 10,
-    image: "https://randomuser.me/api/portraits/men/12.jpg",
-  },
-  {
-    name: "Zoe Baker",
-    text: "👌",
-    rating: 8,
-    image: "https://randomuser.me/api/portraits/women/10.jpg",
-  },
-  {
-    name: "Sophia King",
-    text: "I was skeptical at first, but now it’s indispensable.",
-    rating: 10,
-    image: "https://randomuser.me/api/portraits/women/11.jpg",
-  },
-  {
-    name: "Riley Scott",
-    text: "Super easy to use and extremely helpful.",
-    rating: 9,
-    image: "https://randomuser.me/api/portraits/men/13.jpg",
-  },
-  {
-    name: "Emma Taylor",
-    text: "It’s a great tool, very efficient.",
-    rating: 8,
-    image: "https://randomuser.me/api/portraits/women/12.jpg",
-  },
-  {
-    name: "Lucas Davis",
-    text: "Game changer for productivity.",
-    rating: 9,
-    image: "https://randomuser.me/api/portraits/men/14.jpg",
-  },
-  {
-    name: "Daniel Lewis",
-    text: "Can’t recommend it enough. Worth every penny.",
-    rating: 9,
-    image: "https://randomuser.me/api/portraits/men/15.jpg",
-  },
-  {
-    name: "Mila Scott",
-    text: "Love it! Keeps everything in one place.",
-    rating: 8,
-    image: "https://randomuser.me/api/portraits/women/13.jpg",
-  },
-  {
-    name: "Logan Martinez",
-    text: "Has made managing projects so much easier.",
-    rating: 9,
-    image: "https://randomuser.me/api/portraits/men/16.jpg",
-  },
-  {
-    name: "Ella Miller",
-    text: "Super intuitive. I love how easy it is to integrate.",
-    rating: 8,
-    image: "https://randomuser.me/api/portraits/women/14.jpg",
-  },
-];
+] as const;

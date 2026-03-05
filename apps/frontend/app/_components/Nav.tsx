@@ -31,7 +31,7 @@ function Nav({ setIsPhoneNavOpen, phoneNav }: NavTypes) {
                 setIsPhoneNavOpen(false);
               }}
             >
-              {link.at(0).toUpperCase() + link.slice(1)}
+              {link.charAt(0).toUpperCase() + link.slice(1)}
             </Link>
           </li>
         ))}

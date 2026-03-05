@@ -3,25 +3,20 @@ import {
   getPendingFriendRequests,
 } from "@/app/_dataAcessLayer/userActions";
 import Friends from "./Friends";
-import AppHeader from "../../AppHeader";
 import Filter from "./Filter";
-import { Icon } from "@iconify/react/dist/iconify.js";
-import AppMain from "../../AppMain";
 import { Suspense } from "react";
 
 export const revalidate = 0;
 
-async function page() {
+async function Page() {
   const friends = await getFriends();
   const pendingFriendRequests = await getPendingFriendRequests();
 
   return (
-    <>
-      <AppHeader>
-        <h2 className="flex items-center gap-4">
-          <Icon icon="fa-solid:user-friends" />
-          Friends
-        </h2>
+    <div className="flex flex-1 flex-col overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-border px-8 py-4">
+        <h1 className="text-lg font-semibold text-white">Friends</h1>
         <Filter
           pendingFriendRequests={
             !!(
@@ -30,22 +25,19 @@ async function page() {
             )
           }
         />
-      </AppHeader>
-      <AppMain>
-        <div className="h-full w-full px-10 py-5">
-          <Suspense fallback={null}>
-            <Friends
-              pendingFriendsRequests={pendingFriendRequests!}
-              friends={friends}
-            />
-          </Suspense>
-        </div>
-      </AppMain>
-      {/* <div className="col-start-3 col-end-4 row-start-2 -row-end-1"> */}
-      {/*   friends activity */}
-      {/* </div> */}
-    </>
+      </div>
+
+      {/* Content */}
+      <div className="scrollbar-thin flex-1 overflow-y-auto px-8 py-6">
+        <Suspense fallback={null}>
+          <Friends
+            pendingFriendsRequests={pendingFriendRequests!}
+            friends={friends}
+          />
+        </Suspense>
+      </div>
+    </div>
   );
 }
 
-export default page;
+export default Page;

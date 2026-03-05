@@ -1,8 +1,6 @@
 function AppMain({ children }: { children: React.ReactNode }) {
   return (
-    <main className="col-start-2 col-end-4 row-start-2 -row-end-1 bg-gray-100">
-      {children}
-    </main>
+    <main className="flex-1 overflow-y-auto bg-primary">{children}</main>
   );
 }
 

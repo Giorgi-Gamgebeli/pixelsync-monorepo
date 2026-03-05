@@ -12,38 +12,42 @@ function Filter({ pendingFriendRequests }: { pendingFriendRequests: boolean }) {
 
   function handleClick(value: string) {
     params.set(field, value);
-
-    // history.pushState(null, "", `${pathname}?${params.toString()}`);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
+  const tabs = [
+    { value: "online", label: "Online" },
+    { value: "all", label: "All" },
+    ...(pendingFriendRequests
+      ? [{ value: "pending", label: "Pending" }]
+      : []),
+  ];
+
   return (
-    <>
+    <div className="flex items-center gap-1.5">
+      {tabs.map((tab) => (
+        <button
+          key={tab.value}
+          className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors ${
+            tab.value === currentFilter
+              ? "bg-surface text-white"
+              : "text-gray-400 hover:bg-surface/50 hover:text-gray-200"
+          }`}
+          onClick={() => handleClick(tab.value)}
+        >
+          {tab.label}
+        </button>
+      ))}
+      <div className="mx-1 h-5 w-px bg-border" />
       <button
-        className={`flex cursor-pointer items-center gap-4 rounded-xl px-4 py-2 transition-all duration-300 hover:bg-gray-200 ${"online" === currentFilter ? "pointer-events-none bg-gray-200" : ""}`}
-        onClick={() => handleClick("online")}
-      >
-        Online
-      </button>
-      <button
-        className={`flex cursor-pointer items-center gap-4 rounded-xl px-4 py-2 transition-all duration-300 hover:bg-gray-200 ${"all" === currentFilter ? "pointer-events-none bg-gray-200" : ""}`}
-        onClick={() => handleClick("all")}
-      >
-        All
-      </button>
-      <button
-        className={`flex cursor-pointer items-center gap-4 rounded-xl px-4 py-2 transition-all duration-300 hover:bg-gray-200 ${pendingFriendRequests ? "visible" : "hidden"} ${"pending" === currentFilter ? "pointer-events-none bg-gray-200" : ""}`}
-        onClick={() => handleClick("pending")}
-      >
-        Pending
-      </button>
-      <button
-        className={`hover:bg-brand-600 flex cursor-pointer items-center gap-4 rounded-xl px-4 py-2 transition-all duration-300 ${"addfriend" === currentFilter ? "bg-brand-500/50 text-brand-700 pointer-events-none" : "bg-brand-500 text-white"}`}
+        className={`bg-brand-500 hover:bg-brand-600 cursor-pointer rounded-lg px-3.5 py-1.5 text-sm font-medium text-white transition-colors ${
+          "addfriend" === currentFilter ? "bg-brand-600" : ""
+        }`}
         onClick={() => handleClick("addfriend")}
       >
         Add Friend
       </button>
-    </>
+    </div>
   );
 }
 

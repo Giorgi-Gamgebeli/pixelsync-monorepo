@@ -16,13 +16,11 @@ function ProviderButton({
   return (
     <button
       type="button"
-      className="mt-7 flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-5 py-3 text-2xl tracking-wider transition-all duration-300 hover:border-gray-300 hover:bg-gray-100 disabled:cursor-not-allowed disabled:bg-gray-200"
+      className="mt-3 flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors first:mt-0 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100"
       onClick={onClick}
       disabled={disabled}
     >
-      <div className="size-[30px]">
-        <Icon icon={icon} className="text-3xl text-gray-500" />
-      </div>
+      <Icon icon={icon} className="text-xl" />
       {children}
     </button>
   );

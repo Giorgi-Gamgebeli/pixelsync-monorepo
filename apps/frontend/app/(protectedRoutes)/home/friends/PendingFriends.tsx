@@ -2,9 +2,7 @@
 
 import defaultUser from "@/public/default-user.jpg";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import HomeNavLink from "../HomeNavLink";
 import Image from "next/image";
-import Empty from "@/app/_components/Empty";
 import {
   acceptFriendRequest,
   cancelFriendRequest,
@@ -34,114 +32,118 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
   if (
     !pendingFriendsRequests?.friendRequestsToThem.length &&
     !pendingFriendsRequests?.friendRequestsToMe.length
-  )
+  ) {
     return (
-      <Empty
-        text={`There are no pending friend requests. Click "Add Friend" to send friend
-        requests.`}
-      />
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface">
+          <Icon icon="mdi:inbox" className="text-3xl text-gray-500" />
+        </div>
+        <p className="text-sm font-medium text-white">
+          No pending friend requests
+        </p>
+        <p className="mt-1 text-sm text-gray-500">
+          Click &quot;Add Friend&quot; to send friend requests.
+        </p>
+      </div>
     );
+  }
 
   const { friendRequestsToThem, friendRequestsToMe } = pendingFriendsRequests;
 
   return (
-    <>
-      <div className="relative">
-        <input
-          placeholder="Search"
-          className="w-full rounded-xl border border-gray-300 px-5 py-3"
-        />
-        <Icon
-          icon="mdi-light:magnify"
-          className="absolute top-1/2 right-5 -translate-y-1/2 text-4xl text-gray-700"
-        />
-      </div>
-
-      {friendRequestsToMe.length ? (
-        <>
-          <h3 className="my-5">Received - {friendRequestsToMe?.length}</h3>
-
-          {friendRequestsToMe.map(({ userName, name, image, id }, i) => (
-            <HomeNavLink
-              href="#"
-              key={i}
-              className={`justify-between rounded-none border-t border-gray-300 py-3 hover:rounded-xl hover:border-gray-200 ${
-                friendRequestsToMe.length === i + 1 ? "" : ""
-              }`}
-            >
-              <div className="flex gap-5">
-                <div className="relative h-12 w-12">
-                  <Image
-                    fill
-                    src={image || defaultUser}
-                    alt={`Image of ${userName || "user"}`}
-                    className="rounded-full"
-                  />
+    <div>
+      {friendRequestsToMe.length > 0 && (
+        <div className="mb-6">
+          <p className="mb-2 text-sm font-medium text-gray-500">
+            Received &mdash; {friendRequestsToMe.length}
+          </p>
+          <div className="flex flex-col">
+            {friendRequestsToMe.map(({ userName, image, id }) => (
+              <div
+                key={id}
+                className="group flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-surface"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative h-10 w-10 shrink-0">
+                    <Image
+                      fill
+                      src={image || defaultUser}
+                      alt={userName || "user"}
+                      className="rounded-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-200">
+                      {userName}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Incoming Friend Request
+                    </p>
+                  </div>
                 </div>
-                <p className="flex flex-col gap-0 text-gray-700">
-                  {userName}
-                  <span className="text-base">{name}</span>
-                </p>
-              </div>
 
-              <div className="flex gap-5 text-gray-700">
-                <Icon
-                  icon="mdi:check"
-                  className="rounded-full bg-gray-100 p-2 text-5xl transition-all duration-300 hover:text-green-600"
-                  onClick={async () => acceptFriendRequest({ id })}
-                />
-                <Icon
-                  icon="ic:sharp-close"
-                  className="rounded-full bg-gray-100 p-2 text-5xl transition-all duration-300 hover:text-red-600"
-                  onClick={async () => declineFriendRequest({ id })}
-                />
+                <div className="flex items-center gap-2">
+                  <button
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface text-gray-400 transition-colors hover:bg-green-500/20 hover:text-green-400"
+                    onClick={async () => acceptFriendRequest({ id })}
+                  >
+                    <Icon icon="mdi:check" className="text-lg" />
+                  </button>
+                  <button
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface text-gray-400 transition-colors hover:bg-red-500/20 hover:text-red-400"
+                    onClick={async () => declineFriendRequest({ id })}
+                  >
+                    <Icon icon="mdi:close" className="text-lg" />
+                  </button>
+                </div>
               </div>
-            </HomeNavLink>
-          ))}
-        </>
-      ) : (
-        <></>
+            ))}
+          </div>
+        </div>
       )}
 
-      {friendRequestsToThem.length ? (
-        <>
-          <h3 className="my-5">Sent - {friendRequestsToThem?.length}</h3>
-
-          {friendRequestsToThem.map(({ userName, name, image, id }, i) => (
-            <HomeNavLink
-              href="#"
-              key={i}
-              className={`justify-between rounded-none border-t border-gray-300 py-3 hover:rounded-xl hover:border-gray-200 ${
-                friendRequestsToThem.length === i + 1 ? "" : ""
-              }`}
-            >
-              <div className="flex gap-5">
-                <div className="relative h-12 w-12">
-                  <Image
-                    fill
-                    src={image || defaultUser}
-                    alt={`Image of ${userName || "user"}`}
-                    className="rounded-full"
-                  />
+      {friendRequestsToThem.length > 0 && (
+        <div>
+          <p className="mb-2 text-sm font-medium text-gray-500">
+            Sent &mdash; {friendRequestsToThem.length}
+          </p>
+          <div className="flex flex-col">
+            {friendRequestsToThem.map(({ userName, image, id }) => (
+              <div
+                key={id}
+                className="group flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-surface"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative h-10 w-10 shrink-0">
+                    <Image
+                      fill
+                      src={image || defaultUser}
+                      alt={userName || "user"}
+                      className="rounded-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-200">
+                      {userName}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Outgoing Friend Request
+                    </p>
+                  </div>
                 </div>
-                <p className="flex flex-col gap-0 text-gray-700">
-                  {userName}
-                  <span className="text-base">{name}</span>
-                </p>
-              </div>
 
-              <Icon
-                icon="ic:sharp-close"
-                className="rounded-full bg-gray-100 p-2 text-5xl text-gray-700 transition-all duration-300 hover:text-red-600"
-                onClick={async () => await cancelFriendRequest({ id })}
-              />
-            </HomeNavLink>
-          ))}
-        </>
-      ) : (
-        <></>
+                <button
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface text-gray-400 transition-colors hover:bg-red-500/20 hover:text-red-400"
+                  onClick={async () => await cancelFriendRequest({ id })}
+                >
+                  <Icon icon="mdi:close" className="text-lg" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
-    </>
+    </div>
   );
 }
 
