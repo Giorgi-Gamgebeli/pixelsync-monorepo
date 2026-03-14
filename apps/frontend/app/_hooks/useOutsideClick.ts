@@ -12,10 +12,9 @@ function useOutsideClick<T extends HTMLElement>(
     function () {
       function handleClick(e: MouseEvent) {
         const modal = ref.current;
-        const whereClickHappend = e.target as Node;
+        const whereClickHappened = e.target as Node;
 
-        if (modal && !modal.contains(whereClickHappend)) {
-          // (if modal exsists and click didnt happen inside modal)
+        if (modal && !modal.contains(whereClickHappened)) {
           handler();
         }
       }

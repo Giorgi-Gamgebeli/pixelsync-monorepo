@@ -19,7 +19,7 @@ function VideoPlayer({ videoURL, id }: VideoPlayerProps) {
   return (
     <div className="pointer-events-none relative aspect-video min-w-full">
       {isClient && (
-        /* @ts-expect-error its some kind of wierd error */
+        /* @ts-expect-error ReactPlayer types incompatible with React 19 */
         <ReactPlayer
           ref={playerRef}
           url={videoURL}

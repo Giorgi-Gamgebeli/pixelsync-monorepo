@@ -13,7 +13,6 @@ export function useSocket(userId: number) {
     if (!userId) return;
 
     try {
-      console.log("Connecting to socket server...");
       socketRef.current = io(
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
         {
@@ -23,7 +22,6 @@ export function useSocket(userId: number) {
       );
 
       socketRef.current.on("connect", () => {
-        console.log("Socket connected");
         socketRef.current?.emit("user:connect", userId);
       });
 
@@ -36,7 +34,6 @@ export function useSocket(userId: number) {
     }
 
     return () => {
-      console.log("Disconnecting socket...");
       socketRef.current?.disconnect();
       socketRef.current = null;
     };
@@ -44,7 +41,6 @@ export function useSocket(userId: number) {
 
   const sendMessage = (receiverId: number, content: string) => {
     if (!socketRef.current?.connected) {
-      console.warn("Socket not connected");
       toast.error("Not connected to chat server");
       return;
     }
