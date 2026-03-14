@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 import { ServerToClientEvents, ClientToServerEvents } from "@repo/types";
 import toast from "react-hot-toast";
 
-export function useSocket(userId: number) {
+export function useSocket(userId: string) {
   const socketRef = useRef<Socket<
     ServerToClientEvents,
     ClientToServerEvents
@@ -21,14 +21,6 @@ export function useSocket(userId: number) {
         },
       );
 
-      socketRef.current.on("connect", () => {
-        socketRef.current?.emit("user:connect", userId);
-      });
-
-      socketRef.current.on("connect_error", (error) => {
-        console.error("Socket connection error:", error);
-        toast.error("Failed to connect to chat server");
-      });
     } catch (error) {
       console.error("Socket initialization error:", error);
     }
@@ -39,26 +31,21 @@ export function useSocket(userId: number) {
     };
   }, [userId]);
 
-  const sendMessage = (receiverId: number, content: string) => {
-    if (!socketRef.current?.connected) {
-      toast.error("Not connected to chat server");
-      return;
-    }
-    socketRef.current.emit("message:send", { receiverId, content });
+  const sendMessage = (receiverId: string, content: string) => {
+    socketRef.current?.emit("dm:send", {
+      receiverId,
+      content,
+      senderId: userId,
+    });
   };
 
-  const startTyping = (receiverId: number) => {
-    socketRef.current?.emit("typing:start", receiverId);
-  };
-
-  const stopTyping = (receiverId: number) => {
-    socketRef.current?.emit("typing:stop", receiverId);
+  const setTyping = (receiverId: string, isTyping: boolean) => {
+    socketRef.current?.emit("dm:typing", { receiverId, isTyping });
   };
 
   return {
     socket: socketRef.current,
     sendMessage,
-    startTyping,
-    stopTyping,
+    setTyping,
   };
 }

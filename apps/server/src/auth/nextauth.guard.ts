@@ -7,6 +7,7 @@ import {
 import { Request } from 'express';
 import { SessionPayloadSchema, z } from '@repo/zod';
 import { SessionService } from './session.service';
+import { cookieNames } from 'src/constants/auth';
 
 export type RequestWithAuth = Omit<Request, 'user' | 'cookies'> & {
   cookies: Record<string, string | undefined>;
@@ -41,13 +42,6 @@ export class NextAuthGuard implements CanActivate {
   private extractSessionToken(
     request: RequestWithAuth,
   ): { token: string; salt: string } | undefined {
-    const cookieNames = [
-      'authjs.session-token',
-      '__Secure-authjs.session-token',
-      'next-auth.session-token',
-      '__Secure-next-auth.session-token',
-    ];
-
     for (const name of cookieNames) {
       const token = request.cookies[name];
       if (typeof token === 'string' && token.length > 0) {

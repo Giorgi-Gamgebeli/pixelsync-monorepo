@@ -2,10 +2,13 @@ import { Module } from '@nestjs/common';
 import { DirectMessageController } from './direct-message.controller';
 import { DirectMessageService } from './direct-message.service';
 import { AuthModule } from 'src/auth/auth.module';
+import { UsersModule } from 'src/users/users.module';
+
+import { DirectMessageGateway } from './direct-message.gateway';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, UsersModule],
   controllers: [DirectMessageController],
-  providers: [DirectMessageService],
+  providers: [DirectMessageService, DirectMessageGateway],
 })
 export class DirectMessageModule {}

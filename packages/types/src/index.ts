@@ -1,23 +1,20 @@
 export interface ServerToClientEvents {
-  "message:receive": (message: DirectMessage) => void;
-  "friend:status": (update: { userId: number; status: UserStatus }) => void;
-  "typing:start": (userId: number) => void;
-  "typing:stop": (userId: number) => void;
+  "dm:receive": (message: DirectMessage) => void;
+  "user:status": (update: { userId: string; status: UserStatus }) => void;
+  "dm:typing": (data: { userId: string; isTyping: boolean }) => void;
 }
 
 export interface ClientToServerEvents {
-  "user:connect": (userId: number) => void;
-  "message:send": (data: { receiverId: number; content: string }) => void;
-  "typing:start": (receiverId: number) => void;
-  "typing:stop": (receiverId: number) => void;
+  "dm:send": (data: { receiverId: string; content: string; senderId: string }) => void;
+  "dm:typing": (data: { receiverId: string; isTyping: boolean }) => void;
 }
 
 export interface DirectMessage {
   id: number;
   content: string;
   createdAt: Date;
-  senderId: number;
-  receiverId: number;
+  senderId: string;
+  receiverId: string;
   sender?: {
     userName: string;
     avatar?: string;

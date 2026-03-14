@@ -6,8 +6,25 @@ type SessionPayload = z.infer<typeof SessionPayloadSchema>;
 
 @Injectable()
 export class DirectMessageService {
-  create(body: z.infer<typeof createDirectMessageSchema>) {
-    return 'this adds new meessage';
+  async create(body: z.infer<typeof createDirectMessageSchema>) {
+    try {
+      const message = await db.directMessage.create({
+        data: {
+          content: body.content,
+          senderId: body.senderId,
+          receiverId: body.receiverId,
+        },
+        include: {
+          sender: { select: { id: true, name: true, image: true } },
+          receiver: { select: { id: true, name: true, image: true } },
+        },
+      });
+
+      return message;
+    } catch (error: unknown) {
+      console.error('[DirectMessageService] create error:', error);
+      throw error;
+    }
   }
 
   async findAll(user: SessionPayload) {

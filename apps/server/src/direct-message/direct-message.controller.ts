@@ -8,17 +8,19 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { createDirectMessageSchema, SessionPayloadSchema, z } from '@repo/zod';
+import { SessionPayloadSchema, z } from '@repo/zod';
 import { NextAuthGuard } from 'src/auth/nextauth.guard';
 import { SessionUser } from 'src/auth/session-user.decorator';
 import { DirectMessageService } from './direct-message.service';
+import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 
 @Controller('direct-message')
 export class DirectMessageController {
   constructor(private readonly directMessageService: DirectMessageService) {}
 
+  @UseGuards(NextAuthGuard)
   @Post()
-  create(@Body() body: z.infer<typeof createDirectMessageSchema>) {
+  create(@Body() body: CreateDirectMessageDto) {
     return this.directMessageService.create(body);
   }
 

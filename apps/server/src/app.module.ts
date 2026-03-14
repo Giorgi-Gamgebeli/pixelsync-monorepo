@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ZodValidationPipe } from 'nestjs-zod';
       isGlobal: true,
       envFilePath: '../../.env',
     }),
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [
