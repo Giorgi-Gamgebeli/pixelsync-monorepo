@@ -12,7 +12,9 @@ export interface ClientToServerEvents {
 export interface DirectMessage {
   id: number;
   content: string;
-  createdAt: Date;
+  createdAt: string;
+  updatedAt: string;
+  isRead: boolean;
   senderId: string;
   receiverId: string;
   sender?: {

@@ -25,11 +25,23 @@ async function Page({ params }: Params) {
 
   if (!session) return <div className="p-6 text-gray-400">Loading...</div>;
 
-  const friend =
-    friendResult && "id" in friendResult ? friendResult : undefined;
-  const directMessages = Array.isArray(messagesResult)
-    ? messagesResult
-    : undefined;
+  if ("error" in friendResult)
+    return (
+      <div className="flex h-full items-center justify-center text-gray-400">
+        Error: {friendResult.error}
+      </div>
+    );
+
+  if ("error" in messagesResult)
+    return (
+      <div className="flex h-full items-center justify-center text-gray-400">
+        Error: {messagesResult.error}
+      </div>
+    );
+
+  const friend = friendResult;
+
+  const directMessages = messagesResult;
 
   if (!friend) {
     return (
@@ -68,10 +80,16 @@ async function Page({ params }: Params) {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button aria-label="Call" className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white">
+          <button
+            aria-label="Call"
+            className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white"
+          >
             <ClientIcon icon="mdi:phone" className="text-lg" />
           </button>
-          <button aria-label="More options" className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white">
+          <button
+            aria-label="More options"
+            className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white"
+          >
             <ClientIcon icon="mdi:dots-vertical" className="text-lg" />
           </button>
         </div>

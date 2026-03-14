@@ -1,19 +1,15 @@
-import { DefaultSession } from "next-auth";
-import { SessionPayloadSchema } from "@repo/zod";
+import { TokenPayloadSchema, UserPayloadSchema } from "@repo/zod";
+import "next-auth";
+import "next-auth/jwt";
 import { z } from "zod";
-
-export type ExtendedUser = DefaultSession["user"] & z.infer<typeof SessionPayloadSchema>;
 
 declare module "next-auth" {
   interface Session {
-    user: ExtendedUser;
+    user: z.infer<typeof UserPayloadSchema>;
   }
 }
 
 declare module "next-auth/jwt" {
-  interface JWT {
-    image?: string | null;
-    userName?: string;
-    accessToken?: string;
-  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface JWT extends z.infer<typeof TokenPayloadSchema> {}
 }

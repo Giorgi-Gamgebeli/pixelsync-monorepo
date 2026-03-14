@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { NextAuthGuard } from './nextauth.guard';
-import { SessionService } from './session.service';
+import { TokenService } from './token.service';
 
 @Module({
   imports: [ConfigModule],
-  providers: [SessionService, NextAuthGuard],
-  exports: [SessionService, NextAuthGuard],
+  providers: [TokenService, NextAuthGuard],
+  exports: [TokenService, NextAuthGuard],
 })
 export class AuthModule {}

@@ -1,30 +1,83 @@
 "use client";
 
-import { UserStatus } from "@repo/types";
-import type { DirectMessage } from "@repo/db";
+import { UserStatus, DirectMessage } from "@repo/types";
 import { Session } from "next-auth";
 import Message from "./Message";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { useSocket } from "@/app/_hooks/useSocket";
+import { useEffect, useRef, useState } from "react";
 
 type MessagesProps = {
-  messages: DirectMessage[] | undefined;
+  messages: DirectMessage[];
   session: Session;
-  friend:
-    | {
-        id: string;
-        status: UserStatus;
-        userName: string | null;
-      }
-    | undefined;
+  friend: {
+    id: string;
+    status: UserStatus;
+    userName: string | null;
+  };
 };
 
 function Messages({ messages, friend, session }: MessagesProps) {
+  const { socket, sendMessage, setTyping } = useSocket(session.user.id);
+
+  const [localMessages, setLocalMessages] = useState<DirectMessage[]>(messages);
+  const [inputValue, setInputValue] = useState("");
+  const [isFriendTyping, setIsFriendTyping] = useState(false);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setLocalMessages(messages || []);
+  }, [messages]);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [localMessages, isFriendTyping]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const onReceive = (message: DirectMessage) => {
+      // Only append if the message is part of THIS conversation
+      if (message.senderId === friend.id || message.receiverId === friend.id) {
+        setLocalMessages((prev) => [...prev, message]);
+      }
+    };
+
+    const onTyping = (data: { userId: string; isTyping: boolean }) => {
+      if (data.userId === friend.id) {
+        setIsFriendTyping(data.isTyping);
+      }
+    };
+    socket.on("dm:receive", onReceive);
+    socket.on("dm:typing", onTyping);
+    return () => {
+      socket.off("dm:receive", onReceive);
+      socket.off("dm:typing", onTyping);
+    };
+  }, [socket, friend.id]);
+
+  const handleSend = () => {
+    if (!inputValue.trim()) return;
+
+    sendMessage(friend.id, inputValue.trim());
+    setInputValue("");
+    setTyping(friend.id, false); // Stop typing indicator after sending
+  };
+
   return (
     <div className="flex h-full flex-col">
       {/* Messages area */}
-      <div className="scrollbar-thin flex flex-1 flex-col justify-end gap-1 overflow-y-auto px-6 py-4">
-        {messages && messages.length > 0 ? (
-          messages.map((m, i) => (
+      <div
+        ref={scrollRef}
+        className="scrollbar-custom flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-6 py-4"
+      >
+        <div className="flex-1" /> {/* Spacer to push messages to bottom */}
+        {localMessages && localMessages.length > 0 ? (
+          localMessages.map((m, i) => (
             <Message
               key={i}
               text={m.content}
@@ -34,6 +87,7 @@ function Messages({ messages, friend, session }: MessagesProps) {
                   ? "You"
                   : friend?.userName || "Friend"
               }
+              createdAt={m.createdAt}
             />
           ))
         ) : (
@@ -54,19 +108,36 @@ function Messages({ messages, friend, session }: MessagesProps) {
         )}
       </div>
 
+      <p className="mb-2 h-5 animate-pulse px-6 text-xs text-gray-500 italic">
+        {isFriendTyping && `${friend?.userName} is typing...`}
+      </p>
+
       {/* Input bar */}
       <div className="border-border border-t px-6 py-3">
         <div className="flex items-center gap-3">
-          <button aria-label="Attach file" className="hover:bg-surface flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:text-gray-300">
+          <button
+            aria-label="Attach file"
+            className="hover:bg-surface flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:text-gray-300"
+          >
             <Icon icon="mdi:plus-circle" className="text-xl" />
           </button>
           <input
             name="message"
             type="text"
+            value={inputValue}
             placeholder={`Message @${friend?.userName || "friend"}`}
             className="border-border bg-surface focus:border-brand-500 flex-1 rounded-lg border px-4 py-2 text-sm text-white transition-colors outline-none placeholder:text-gray-500"
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              if (friend?.id) setTyping(friend.id, e.target.value.length > 0);
+            }}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
           />
-          <button aria-label="Send message" className="bg-brand-500 hover:bg-brand-600 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-white transition-colors">
+          <button
+            aria-label="Send message"
+            onClick={handleSend}
+            className="bg-brand-500 hover:bg-brand-600 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-white transition-colors"
+          >
             <Icon icon="mdi:send" className="text-lg" />
           </button>
         </div>

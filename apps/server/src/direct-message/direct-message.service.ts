@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { db } from '@repo/db';
-import { SessionPayloadSchema, createDirectMessageSchema, z } from '@repo/zod';
-
-type SessionPayload = z.infer<typeof SessionPayloadSchema>;
+import { createDirectMessageSchema, TokenPayloadSchema, z } from '@repo/zod';
 
 @Injectable()
 export class DirectMessageService {
@@ -27,7 +25,7 @@ export class DirectMessageService {
     }
   }
 
-  async findAll(user: SessionPayload) {
+  async findAll(user: z.infer<typeof TokenPayloadSchema>) {
     try {
       const messages = await db.directMessage.findMany({
         where: {

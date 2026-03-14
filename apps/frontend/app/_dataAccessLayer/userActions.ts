@@ -155,7 +155,11 @@ export async function getDirectMessages(
       },
     });
 
-    return messages;
+    return messages.map((m) => ({
+      ...m,
+      createdAt: m.createdAt.toISOString(),
+      updatedAt: m.updatedAt.toISOString(),
+    }));
   } catch (error) {
     return handleErrorsOnServer(error);
   }

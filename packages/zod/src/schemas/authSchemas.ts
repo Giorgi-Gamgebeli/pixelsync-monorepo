@@ -75,14 +75,22 @@ export const NewPasswordSchema = z
   })
   .superRefine(superValidate);
 
-export const SessionPayloadSchema = z.object({
+export const UserPayloadSchema = z.object({
+  id: z.string(),
+  email: z.string().email(),
+  name: z.string().optional().nullable(),
+  userName: z.string().optional().nullable(),
+  image: z.string().optional().nullable(),
+  exp: z.number().optional(),
+});
+
+export const TokenPayloadSchema = z.object({
   sub: z.string(),
   email: z.string().email(),
   name: z.string().optional().nullable(),
   userName: z.string().optional().nullable(),
   image: z.string().optional().nullable(),
-  iat: z.number().optional(),
   exp: z.number().optional(),
+  iat: z.number().optional(),
   jti: z.string().optional(),
-  accessToken: z.string().optional(),
 });

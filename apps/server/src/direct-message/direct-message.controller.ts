@@ -8,9 +8,9 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { SessionPayloadSchema, z } from '@repo/zod';
+import type { TokenPayloadSchema, z } from '@repo/zod';
+import { AuthenticatedUser } from 'src/auth/authenticated-user.decorator';
 import { NextAuthGuard } from 'src/auth/nextauth.guard';
-import { SessionUser } from 'src/auth/session-user.decorator';
 import { DirectMessageService } from './direct-message.service';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 
@@ -26,7 +26,7 @@ export class DirectMessageController {
 
   @UseGuards(NextAuthGuard)
   @Get()
-  findAll(@SessionUser() user: z.infer<typeof SessionPayloadSchema>) {
+  findAll(@AuthenticatedUser() user: z.infer<typeof TokenPayloadSchema>) {
     return this.directMessageService.findAll(user);
   }
 

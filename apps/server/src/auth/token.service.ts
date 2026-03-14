@@ -1,19 +1,20 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { decode } from '@auth/core/jwt';
-import { SessionPayloadSchema, z } from '@repo/zod';
-
-type SessionPayload = z.infer<typeof SessionPayloadSchema>;
+import { TokenPayloadSchema, z } from '@repo/zod';
 
 @Injectable()
-export class SessionService {
+export class TokenService {
   private readonly secret: string;
 
   constructor(private readonly configService: ConfigService) {
     this.secret = this.configService.getOrThrow<string>('NEXTAUTH_SECRET');
   }
 
-  async verifySession(token: string, salt: string): Promise<SessionPayload> {
+  async verifyToken(
+    token: string,
+    salt: string,
+  ): Promise<z.infer<typeof TokenPayloadSchema>> {
     const payload = await decode({
       token,
       secret: this.secret,
@@ -25,7 +26,7 @@ export class SessionService {
     }
 
     try {
-      return SessionPayloadSchema.parse(payload);
+      return TokenPayloadSchema.parse(payload);
     } catch {
       throw new UnauthorizedException('Invalid or expired session token');
     }

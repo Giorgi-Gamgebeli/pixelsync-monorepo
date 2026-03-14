@@ -13,7 +13,7 @@ export function useSocket(userId: string) {
 
     try {
       socketRef.current = io(
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
+        process.env.NEXT_PUBLIC_SERVER_BASE_URL || "http://localhost:3000",
         {
           withCredentials: true,
           transports: ["websocket"],

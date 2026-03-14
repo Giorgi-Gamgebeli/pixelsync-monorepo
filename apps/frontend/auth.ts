@@ -1,8 +1,7 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@repo/db";
-import { SigninSchema } from "@repo/zod";
+import { SigninSchema, TokenPayloadSchema, z } from "@repo/zod";
 import { compare } from "bcryptjs";
-import jwt from "jsonwebtoken";
 import NextAuth, { NextAuthResult } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { generateUsername } from "./app/_utils/helpers";
@@ -97,12 +96,6 @@ const nextAuth = NextAuth({
         },
       });
 
-      const accessToken = jwt.sign(
-        { sub: token.sub }, // payload (only includes user id here)
-        process.env.ACCESS_TOKEN_SECRET!, // secret key used to sign
-        { expiresIn: "15m" }, // expires in 15 minutes
-      );
-
       if (!existingUser) return token;
 
       return {
@@ -111,20 +104,20 @@ const nextAuth = NextAuth({
         name: existingUser.name,
         userName: existingUser.userName,
         email: token.email,
-        iat: token.iat,
         exp: token.exp,
+
+        iat: token.iat,
         jti: token.jti,
-        accessToken,
-      };
+      } satisfies z.infer<typeof TokenPayloadSchema>;
     },
     async session({ token, session }) {
       if (token.sub && session.user) session.user.id = token.sub;
 
       if (session.user) {
-        session.user.image = token.image as string;
-        session.user.userName = token.userName as string;
-        session.user.name = token.name as string;
-        session.user.accessToken = token.accessToken as string;
+        session.user.name = token.name;
+        session.user.exp = token.exp;
+        session.user.image = token.image;
+        session.user.userName = token.userName;
       }
 
       return session;

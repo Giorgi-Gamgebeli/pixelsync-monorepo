@@ -7,16 +7,16 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { createDirectMessageSchema, TokenPayloadSchema, z } from '@repo/zod';
 import { Server, Socket } from 'socket.io';
-import { DirectMessageService } from './direct-message.service';
-import { SessionService } from 'src/auth/session.service';
-import { createDirectMessageSchema, SessionPayloadSchema, z } from '@repo/zod';
+import { TokenService } from 'src/auth/token.service';
 import { cookieNames } from 'src/constants/auth';
 import { UsersService } from 'src/users/users.service';
+import { DirectMessageService } from './direct-message.service';
 
 interface AuthenticatedSocket extends Socket {
   data: {
-    user: z.infer<typeof SessionPayloadSchema>;
+    user: z.infer<typeof TokenPayloadSchema>;
   };
 }
 
@@ -32,7 +32,7 @@ export class DirectMessageGateway
 
   constructor(
     private readonly directMessageService: DirectMessageService,
-    private readonly sessionService: SessionService,
+    private readonly tokenService: TokenService,
     private readonly userService: UsersService,
   ) {}
 
@@ -50,7 +50,7 @@ export class DirectMessageGateway
       const token = cookies[name];
       if (typeof token === 'string' && token.length > 0) {
         try {
-          const user = await this.sessionService.verifySession(token, name);
+          const user = await this.tokenService.verifyToken(token, name);
           client.data.user = user;
 
           await this.userService.updateStatus({
@@ -58,7 +58,6 @@ export class DirectMessageGateway
             status: 'ONLINE',
           });
 
-          // Notify everyone that this user is now online
           this.server.emit('user:status', {
             userId: user.sub,
             status: 'ONLINE',
@@ -67,7 +66,7 @@ export class DirectMessageGateway
           void client.join(user.sub);
           return;
         } catch {
-          break;
+          continue;
         }
       }
     }

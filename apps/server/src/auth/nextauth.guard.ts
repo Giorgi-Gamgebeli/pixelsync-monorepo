@@ -5,41 +5,41 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { SessionPayloadSchema, z } from '@repo/zod';
-import { SessionService } from './session.service';
+import { TokenPayloadSchema, z } from '@repo/zod';
+import { TokenService } from './token.service';
 import { cookieNames } from 'src/constants/auth';
 
 export type RequestWithAuth = Omit<Request, 'user' | 'cookies'> & {
   cookies: Record<string, string | undefined>;
-  user?: z.infer<typeof SessionPayloadSchema>;
+  user?: z.infer<typeof TokenPayloadSchema>;
 };
 
 @Injectable()
 export class NextAuthGuard implements CanActivate {
-  constructor(private readonly sessionService: SessionService) {}
+  constructor(private readonly tokenService: TokenService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<RequestWithAuth>();
 
-    const sessionInfo = this.extractSessionToken(request);
+    const tokenInfo = this.extractToken(request);
 
-    if (!sessionInfo) {
-      console.warn('[NextAuthGuard] No session token found in cookies');
-      throw new UnauthorizedException('No session token found');
+    if (!tokenInfo) {
+      console.warn('[NextAuthGuard] No auth token found in cookies');
+      throw new UnauthorizedException('No auth token found');
     }
 
-    const session = await this.sessionService.verifySession(
-      sessionInfo.token,
-      sessionInfo.salt,
+    const user = await this.tokenService.verifyToken(
+      tokenInfo.token,
+      tokenInfo.salt,
     );
 
-    // Attach decoded session payload to request for downstream use
-    request.user = session;
+    // Attach decoded token payload to request for downstream use
+    request.user = user;
 
     return true;
   }
 
-  private extractSessionToken(
+  private extractToken(
     request: RequestWithAuth,
   ): { token: string; salt: string } | undefined {
     for (const name of cookieNames) {
