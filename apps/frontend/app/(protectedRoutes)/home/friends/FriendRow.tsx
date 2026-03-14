@@ -9,10 +9,11 @@ type FriendRowProps = {
   id: string;
   userName: string | null;
   status: UserStatus;
+  avatarConfig?: string | null;
   actions?: React.ReactNode;
 };
 
-function FriendRow({ id, userName, status, actions }: FriendRowProps) {
+function FriendRow({ id, userName, status, avatarConfig, actions }: FriendRowProps) {
   const isOnline = status === "ONLINE";
 
   return (
@@ -21,6 +22,7 @@ function FriendRow({ id, userName, status, actions }: FriendRowProps) {
         <UserAvatar
           userName={userName}
           id={id}
+          avatarConfig={avatarConfig}
           size={40}
           showStatus
           status={status}

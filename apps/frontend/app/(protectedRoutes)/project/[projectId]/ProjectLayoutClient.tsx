@@ -36,7 +36,7 @@ function ProjectLayoutClient({
   const [showInvite, setShowInvite] = useState(false);
 
   return (
-    <div className="flex flex-1 overflow-hidden">
+    <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
       <ProjectSidebar
         projectId={projectId}
         projectName={projectName}
@@ -45,7 +45,7 @@ function ProjectLayoutClient({
         onCreateRoom={() => setShowCreateRoom(true)}
         onInvite={() => setShowInvite(true)}
       />
-      <main className="flex flex-1 flex-col overflow-hidden">{children}</main>
+      <main className="flex flex-1 min-w-0 flex-col overflow-hidden">{children}</main>
 
       {showCreateRoom && (
         <CreateRoomModal

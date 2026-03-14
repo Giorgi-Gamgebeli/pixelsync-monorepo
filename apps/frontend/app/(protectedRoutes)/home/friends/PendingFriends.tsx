@@ -11,19 +11,21 @@ import {
 
 type PendingFriendsProps = {
   pendingFriendsRequests:
-    | {
-        friendRequestsToThem: {
-          userName: string | null;
-          name: string | null;
-          id: string;
-        }[];
-        friendRequestsToMe: {
-          userName: string | null;
-          name: string | null;
-          id: string;
-        }[];
-      }
-    | undefined;
+  | {
+    friendRequestsToThem: {
+      userName: string | null;
+      name: string | null;
+      id: string;
+      avatarConfig?: string | null;
+    }[];
+    friendRequestsToMe: {
+      userName: string | null;
+      name: string | null;
+      id: string;
+      avatarConfig?: string | null;
+    }[];
+  }
+  | undefined;
 };
 
 function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
@@ -58,13 +60,13 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
             Received &mdash; {friendRequestsToMe.length}
           </p>
           <div className="flex flex-col">
-            {friendRequestsToMe.map(({ userName, id }) => (
+            {friendRequestsToMe.map(({ userName, id, avatarConfig }) => (
               <div
                 key={id}
                 className="group flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-surface"
               >
                 <div className="flex items-center gap-3">
-                  <UserAvatar userName={userName} id={id} size={40} />
+                  <UserAvatar userName={userName} id={id} avatarConfig={avatarConfig} size={40} />
                   <div>
                     <p className="text-sm font-medium text-gray-200">
                       {userName}
@@ -111,13 +113,13 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
             Sent &mdash; {friendRequestsToThem.length}
           </p>
           <div className="flex flex-col">
-            {friendRequestsToThem.map(({ userName, id }) => (
+            {friendRequestsToThem.map(({ userName, id, avatarConfig }) => (
               <div
                 key={id}
                 className="group flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-surface"
               >
                 <div className="flex items-center gap-3">
-                  <UserAvatar userName={userName} id={id} size={40} />
+                  <UserAvatar userName={userName} id={id} avatarConfig={avatarConfig} size={40} />
                   <div>
                     <p className="text-sm font-medium text-gray-200">
                       {userName}

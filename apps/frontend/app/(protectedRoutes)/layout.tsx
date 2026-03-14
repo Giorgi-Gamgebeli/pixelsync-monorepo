@@ -4,11 +4,11 @@ import TopNavSkeleton from "../_components/skeletons/TopNavSkeleton";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-primary">
+    <div className="flex h-screen w-full flex-col bg-primary overflow-hidden">
       <Suspense fallback={<TopNavSkeleton />}>
         <TopNavWrapper />
       </Suspense>
-      <div className="flex flex-1 overflow-hidden">{children}</div>
+      <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">{children}</div>
     </div>
   );
 }

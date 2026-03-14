@@ -91,6 +91,7 @@ const nextAuth = NextAuth({
         select: {
           id: true,
           image: true,
+          avatarConfig: true,
           name: true,
           userName: true,
         },
@@ -101,6 +102,7 @@ const nextAuth = NextAuth({
       return {
         sub: existingUser.id,
         image: existingUser.image,
+        avatarConfig: existingUser.avatarConfig,
         name: existingUser.name,
         userName: existingUser.userName,
         email: token.email,
@@ -116,6 +118,7 @@ const nextAuth = NextAuth({
       if (session.user) {
         session.user.name = token.name;
         session.user.exp = token.exp;
+        session.user.avatarConfig = token.avatarConfig;
         session.user.image = token.image;
         session.user.userName = token.userName;
       }

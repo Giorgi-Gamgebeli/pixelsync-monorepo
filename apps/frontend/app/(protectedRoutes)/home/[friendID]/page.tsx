@@ -1,10 +1,6 @@
 import ClientIcon from "@/app/_components/ClientIcon";
 import UserAvatar from "@/app/_components/UserAvatar";
-import {
-  getDirectMessages,
-  getFriend,
-} from "@/app/_dataAccessLayer/userActions";
-import { auth } from "@/auth";
+import { getChatPageData } from "@/app/_dataAccessLayer/userActions";
 import Messages from "./Messages";
 
 export const revalidate = 0;
@@ -17,33 +13,9 @@ type Params = {
 
 async function Page({ params }: Params) {
   const { friendID } = await params;
-  const [friendResult, messagesResult, session] = await Promise.all([
-    getFriend({ id: friendID }),
-    getDirectMessages({ id: friendID }),
-    auth(),
-  ]);
+  const result = await getChatPageData(friendID);
 
-  if (!session) return <div className="p-6 text-gray-400">Loading...</div>;
-
-  if ("error" in friendResult)
-    return (
-      <div className="flex h-full items-center justify-center text-gray-400">
-        Error: {friendResult.error}
-      </div>
-    );
-
-  if ("error" in messagesResult)
-    return (
-      <div className="flex h-full items-center justify-center text-gray-400">
-        Error: {messagesResult.error}
-      </div>
-    );
-
-  const friend = friendResult;
-
-  const directMessages = messagesResult;
-
-  if (!friend) {
+  if (!result || "error" in result) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center">
         <div className="bg-surface mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
@@ -57,17 +29,19 @@ async function Page({ params }: Params) {
     );
   }
 
+  const { session, friend, messages } = result;
   const { status, userName } = friend;
   const isOnline = status === "ONLINE";
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       {/* Chat header */}
       <div className="border-border flex items-center justify-between border-b px-6 py-3">
         <div className="flex items-center gap-3">
           <UserAvatar
             userName={userName}
             id={friend.id}
+            avatarConfig={friend.avatarConfig}
             size={32}
             showStatus
             status={status}
@@ -97,7 +71,7 @@ async function Page({ params }: Params) {
 
       {/* Messages */}
       <div className="flex-1 overflow-hidden">
-        <Messages friend={friend} session={session} messages={directMessages} />
+        <Messages friend={friend} session={session} messages={messages} />
       </div>
     </div>
   );

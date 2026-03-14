@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { UserSchemaDatabase } from "./databaseSchemas";
+import { z } from 'zod';
+import { UserSchemaDatabase } from './databaseSchemas';
 
 type SuperValidateTypes = {
   passwordConfirm: string;
@@ -8,13 +8,13 @@ type SuperValidateTypes = {
 
 const superValidate = (
   { passwordConfirm, password }: SuperValidateTypes,
-  ctx: z.RefinementCtx,
+  ctx: z.RefinementCtx
 ) => {
   if (passwordConfirm !== password) {
     ctx.addIssue({
-      code: "custom",
-      message: "The passwords did not match",
-      path: ["passwordConfirm"],
+      code: 'custom',
+      message: 'The passwords did not match',
+      path: ['passwordConfirm'],
     });
   }
 };
@@ -24,10 +24,10 @@ export const SigninSchema = z.object({
 
   password: z
     .string({
-      message: "Only text is allowed",
+      message: 'Only text is allowed',
     })
     .min(1, {
-      message: "Password is required",
+      message: 'Password is required',
     }),
 });
 
@@ -43,14 +43,14 @@ export const SignupSchema = z
 
     password: z
       .string({
-        message: "Only text is allowed",
+        message: 'Only text is allowed',
       })
       .min(8, {
-        message: "Password needs a minimum of 8 characters",
+        message: 'Password needs a minimum of 8 characters',
       }),
 
     passwordConfirm: z.string({
-      message: "Only text is allowed",
+      message: 'Only text is allowed',
     }),
   })
   .superRefine(superValidate);
@@ -58,19 +58,19 @@ export const SignupSchema = z
 export const NewPasswordSchema = z
   .object({
     token: z.string({
-      message: "Only text is allowed",
+      message: 'Only text is allowed',
     }),
 
     password: z
       .string({
-        message: "Only text is allowed",
+        message: 'Only text is allowed',
       })
       .min(8, {
-        message: "Password needs a minimum of 8 characters",
+        message: 'Password needs a minimum of 8 characters',
       }),
 
     passwordConfirm: z.string({
-      message: "Only text is allowed",
+      message: 'Only text is allowed',
     }),
   })
   .superRefine(superValidate);
@@ -80,6 +80,7 @@ export const UserPayloadSchema = z.object({
   email: z.string().email(),
   name: z.string().optional().nullable(),
   userName: z.string().optional().nullable(),
+  avatarConfig: z.string().optional().nullable(),
   image: z.string().optional().nullable(),
   exp: z.number().optional(),
 });
@@ -89,6 +90,7 @@ export const TokenPayloadSchema = z.object({
   email: z.string().email(),
   name: z.string().optional().nullable(),
   userName: z.string().optional().nullable(),
+  avatarConfig: z.string().optional().nullable(),
   image: z.string().optional().nullable(),
   exp: z.number().optional(),
   iat: z.number().optional(),

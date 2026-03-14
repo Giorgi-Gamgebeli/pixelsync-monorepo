@@ -10,11 +10,11 @@ import UserAvatar from "@/app/_components/UserAvatar";
 
 type IconStripProps = {
   projects:
-    | {
-        id: number;
-        name: string;
-      }[]
-    | undefined;
+  | {
+    id: number;
+    name: string;
+  }[]
+  | undefined;
 };
 
 function IconStrip({ projects }: IconStripProps) {
@@ -27,11 +27,10 @@ function IconStrip({ projects }: IconStripProps) {
       {/* Home icon */}
       <Link
         href="/home/friends"
-        className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-all ${
-          isHome
+        className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-all ${isHome
             ? "bg-brand-500 rounded-xl"
             : "bg-surface hover:bg-surface/80 hover:rounded-xl"
-        }`}
+          }`}
       >
         <Image
           src={logo}
@@ -52,11 +51,10 @@ function IconStrip({ projects }: IconStripProps) {
             key={project.id}
             href={`/project/${project.id}`}
             title={project.name}
-            className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-semibold transition-all ${
-              isActive
+            className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-semibold transition-all ${isActive
                 ? "bg-brand-500 rounded-xl text-white"
                 : "bg-surface text-gray-400 hover:bg-surface/80 hover:rounded-xl hover:text-white"
-            }`}
+              }`}
           >
             {project.name.slice(0, 2).toUpperCase()}
           </Link>
@@ -79,6 +77,7 @@ function IconStrip({ projects }: IconStripProps) {
         <UserAvatar
           userName={session?.user?.userName ?? null}
           id={session?.user?.id}
+          avatarConfig={session?.user?.avatarConfig}
           size={40}
         />
       </div>

@@ -6,7 +6,7 @@ import ClientIcon from "@/app/_components/ClientIcon";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-1 overflow-hidden">
+    <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
       {/* Sidebar */}
       <aside className="scrollbar-thin flex w-64 flex-col border-r border-border bg-secondary/50">
         {/* Search */}
@@ -43,7 +43,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <main className="flex flex-1 flex-col overflow-hidden bg-primary">
+      <main className="flex flex-1 min-w-0 flex-col overflow-hidden bg-primary">
         {children}
       </main>
     </div>

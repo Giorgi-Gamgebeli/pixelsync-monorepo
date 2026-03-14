@@ -6,12 +6,13 @@ import FriendRow from "./FriendRow";
 
 type OnlineFriendsProps = {
   friends:
-    | {
-        id: string;
-        userName: string | null;
-        status: UserStatus;
-      }[]
-    | undefined;
+  | {
+    id: string;
+    userName: string | null;
+    status: UserStatus;
+    avatarConfig?: string | null;
+  }[]
+  | undefined;
 };
 
 function OnlineFriends({ friends: unsortedFriends }: OnlineFriendsProps) {

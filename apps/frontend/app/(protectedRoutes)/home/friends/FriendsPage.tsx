@@ -15,19 +15,19 @@ type FriendsPageProps = {
     status: UserStatus;
   }[];
   pendingFriendRequests:
-    | {
-        friendRequestsToThem: {
-          userName: string | null;
-          name: string | null;
-          id: string;
-        }[];
-        friendRequestsToMe: {
-          userName: string | null;
-          name: string | null;
-          id: string;
-        }[];
-      }
-    | undefined;
+  | {
+    friendRequestsToThem: {
+      userName: string | null;
+      name: string | null;
+      id: string;
+    }[];
+    friendRequestsToMe: {
+      userName: string | null;
+      name: string | null;
+      id: string;
+    }[];
+  }
+  | undefined;
 };
 
 function FriendsPage({ friends, pendingFriendRequests }: FriendsPageProps) {
@@ -47,7 +47,7 @@ function FriendsPage({ friends, pendingFriendRequests }: FriendsPageProps) {
   else content = <OnlineFriends friends={friends} />;
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex flex-1 min-h-0 min-w-0 flex-col overflow-hidden">
       <div className="flex items-center justify-between border-b border-border px-8 py-4">
         <h1 className="text-lg font-semibold text-white">Friends</h1>
         <Filter

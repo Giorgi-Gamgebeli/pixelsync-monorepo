@@ -8,20 +8,25 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import UserAvatar from "@/app/_components/UserAvatar";
+import AvatarBuilderModal from "@/app/_components/avatar/AvatarBuilderModal";
+import { updateAvatarConfig } from "@/app/_dataAccessLayer/userActions";
 
 type TopNavProps = {
   projects:
-    | {
-        id: number;
-        name: string;
-      }[]
-    | undefined;
+  | {
+    id: number;
+    name: string;
+  }[]
+  | undefined;
 };
 
 function TopNav({ projects }: TopNavProps) {
   const pathname = usePathname();
   const [projectsOpen, setProjectsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [builderOpen, setBuilderOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
 
   const isHome = pathname.startsWith("/home");
@@ -36,6 +41,12 @@ function TopNav({ projects }: TopNavProps) {
         !dropdownRef.current.contains(e.target as Node)
       ) {
         setProjectsOpen(false);
+      }
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(e.target as Node)
+      ) {
+        setProfileOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -59,11 +70,10 @@ function TopNav({ projects }: TopNavProps) {
         <div className="flex items-center gap-1">
           <Link
             href="/home/friends"
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              isHome
-                ? "bg-surface text-white"
-                : "text-gray-400 hover:bg-surface/50 hover:text-gray-200"
-            }`}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${isHome
+              ? "bg-surface text-white"
+              : "text-gray-400 hover:bg-surface/50 hover:text-gray-200"
+              }`}
           >
             Home
           </Link>
@@ -72,11 +82,10 @@ function TopNav({ projects }: TopNavProps) {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setProjectsOpen(!projectsOpen)}
-              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                activeProject
-                  ? "bg-surface text-white"
-                  : "text-gray-400 hover:bg-surface/50 hover:text-gray-200"
-              }`}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${activeProject
+                ? "bg-surface text-white"
+                : "text-gray-400 hover:bg-surface/50 hover:text-gray-200"
+                }`}
             >
               {activeProject ? activeProject.name : "Projects"}
               <Icon
@@ -94,11 +103,10 @@ function TopNav({ projects }: TopNavProps) {
                         key={project.id}
                         href={`/project/${project.id}`}
                         onClick={() => setProjectsOpen(false)}
-                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
-                          pathname.startsWith(`/project/${project.id}`)
-                            ? "bg-brand-500/10 text-brand-400"
-                            : "text-gray-300 hover:bg-surface"
-                        }`}
+                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${pathname.startsWith(`/project/${project.id}`)
+                          ? "bg-brand-500/10 text-brand-400"
+                          : "text-gray-300 hover:bg-surface"
+                          }`}
                       >
                         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface text-xs font-semibold text-gray-400">
                           {project.name.slice(0, 2).toUpperCase()}
@@ -144,11 +152,45 @@ function TopNav({ projects }: TopNavProps) {
 
         <div className="ml-1 h-5 w-px bg-border" />
 
-        {/* User avatar */}
-        <UserAvatar
-          userName={session?.user?.userName ?? null}
-          id={session?.user?.id}
-          size={32}
+        {/* User profile dropdown */}
+        <div className="relative" ref={profileDropdownRef}>
+          <button
+            onClick={() => setProfileOpen(!profileOpen)}
+            className="flex items-center justify-center rounded-full transition-transform hover:scale-105"
+          >
+            <UserAvatar
+              userName={session?.user?.userName ?? null}
+              id={session?.user?.id}
+              avatarConfig={session?.user?.avatarConfig}
+              size={32}
+            />
+          </button>
+
+          {profileOpen && (
+            <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-secondary p-1.5 shadow-xl z-50">
+              <button
+                onClick={() => {
+                  setProfileOpen(false);
+                  setBuilderOpen(true);
+                }}
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-surface hover:text-white"
+              >
+                <Icon icon="mdi:pencil" className="text-base" />
+                Customize Avatar
+              </button>
+            </div>
+          )}
+        </div>
+
+        <AvatarBuilderModal
+          isOpen={builderOpen}
+          onClose={() => setBuilderOpen(false)}
+          initialConfig={session?.user?.avatarConfig || null}
+          userName={session?.user?.userName}
+          userId={session?.user?.id}
+          onSave={async (config) => {
+            await updateAvatarConfig({ avatarConfig: config });
+          }}
         />
       </div>
     </nav>

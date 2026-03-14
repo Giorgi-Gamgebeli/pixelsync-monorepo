@@ -9,6 +9,7 @@ import {
   DeclineFriendRequestSchema,
   GetDirectMessagesSchema,
   GetFriendSchema,
+  UpdateAvatarConfigSchema,
 } from "@repo/zod";
 import { z } from "zod";
 import { handleErrorsOnServer } from "../_utils/helpers";
@@ -18,6 +19,7 @@ import { cache } from "react";
 export const getFriends = cache(async function getFriends() {
   try {
     const session = await auth();
+    // ... [Original getFriends body omitted as it will be preserved by StartLine trick]
     if (!session) throw new Error("Not authenticated!");
 
     const userWithFriends = await db.user.findUnique({
@@ -28,6 +30,7 @@ export const getFriends = cache(async function getFriends() {
             id: true,
             userName: true,
             status: true,
+            avatarConfig: true,
           },
         },
         friendOf: {
@@ -35,6 +38,7 @@ export const getFriends = cache(async function getFriends() {
             id: true,
             userName: true,
             status: true,
+            avatarConfig: true,
           },
         },
       },
@@ -70,6 +74,7 @@ export async function getFriend(values: z.infer<typeof GetFriendSchema>) {
         id: true,
         userName: true,
         status: true,
+        avatarConfig: true,
 
         friends: {
           where: {
@@ -98,6 +103,7 @@ export async function getFriend(values: z.infer<typeof GetFriendSchema>) {
       id: friend.id,
       userName: friend.userName,
       status: friend.status,
+      avatarConfig: friend.avatarConfig,
     };
   } catch (error) {
     return handleErrorsOnServer(error);
@@ -165,6 +171,62 @@ export async function getDirectMessages(
   }
 }
 
+export async function getChatPageData(friendId: string) {
+  try {
+    const session = await auth();
+    if (!session) throw new Error("Not authenticated!");
+
+    if (friendId === session.user.id) {
+      throw new Error("You cannot perform this action on yourself.");
+    }
+
+    const [friend, messages] = await Promise.all([
+      db.user.findUnique({
+        where: { id: friendId },
+        select: {
+          id: true,
+          userName: true,
+          status: true,
+          avatarConfig: true,
+          friends: { where: { id: session.user.id } },
+          friendOf: { where: { id: session.user.id } },
+        },
+      }),
+      db.directMessage.findMany({
+        where: {
+          OR: [
+            { receiverId: friendId, senderId: session.user.id },
+            { receiverId: session.user.id, senderId: friendId },
+          ],
+        },
+        orderBy: { createdAt: "asc" },
+      }),
+    ]);
+
+    if (!friend) throw new Error("Friend was not found!");
+
+    const isFriend = friend.friends.length > 0 && friend.friendOf.length > 0;
+    if (!isFriend) throw new Error("You are not friends with this user!");
+
+    return {
+      session,
+      friend: {
+        id: friend.id,
+        userName: friend.userName,
+        status: friend.status,
+        avatarConfig: friend.avatarConfig,
+      },
+      messages: messages.map((m) => ({
+        ...m,
+        createdAt: m.createdAt.toISOString(),
+        updatedAt: m.updatedAt.toISOString(),
+      })),
+    };
+  } catch (error) {
+    return handleErrorsOnServer(error);
+  }
+}
+
 export async function getPendingFriendRequests() {
   try {
     const session = await auth();
@@ -178,6 +240,7 @@ export async function getPendingFriendRequests() {
             id: true,
             userName: true,
             name: true,
+            avatarConfig: true,
           },
         },
         friendOf: {
@@ -185,6 +248,7 @@ export async function getPendingFriendRequests() {
             id: true,
             userName: true,
             name: true,
+            avatarConfig: true,
           },
         },
       },
@@ -345,5 +409,31 @@ export async function acceptFriendRequest(
     return handleErrorsOnServer(error);
   } finally {
     revalidatePath("/home", "layout");
+  }
+}
+
+export async function updateAvatarConfig(
+  values: z.infer<typeof UpdateAvatarConfigSchema>,
+) {
+  try {
+    const result = UpdateAvatarConfigSchema.safeParse(values);
+    if (result.error) throw new Error("Validation failed on server!");
+    const { avatarConfig } = result.data;
+
+    const session = await auth();
+    if (!session) throw new Error("Not authenticated!");
+
+    await db.user.update({
+      where: {
+        id: session.user.id,
+      },
+      data: {
+        avatarConfig,
+      },
+    });
+  } catch (error) {
+    return handleErrorsOnServer(error);
+  } finally {
+    revalidatePath("/", "layout"); // Revalidate entire app to update all avatars immediately
   }
 }
