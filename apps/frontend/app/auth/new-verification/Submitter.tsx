@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { newVerification } from "@/app/_dataAcessLayer/authActions";
 
-// just becouse useSearchParams hook needs to be wrapped in suspense
+// useSearchParams hook needs to be wrapped in Suspense
 function Submitter() {
   const searchParams = useSearchParams();
   const router = useRouter();

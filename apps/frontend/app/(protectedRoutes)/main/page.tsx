@@ -11,8 +11,6 @@ function Page() {
   }, []);
 
   if (!session) return <p>no session</p>;
-  console.log(session);
-
   return (
     <main className="h-screen w-screen">
       <div>{JSON.stringify(session?.user)}</div>

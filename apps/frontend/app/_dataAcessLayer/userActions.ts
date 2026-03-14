@@ -112,7 +112,7 @@ export async function getDirectMessages(
 ) {
   try {
     const res = GetDirectMessagesSchema.safeParse(values);
-    if (res.error) throw new Error("Validaiton failed on server!");
+    if (res.error) throw new Error("Validation failed on server!");
     const { id } = res.data;
 
     const session = await auth();
@@ -202,7 +202,7 @@ export async function getPendingFriendRequests() {
 
     return { friendRequestsToThem, friendRequestsToMe };
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -283,7 +283,7 @@ export async function cancelFriendRequest(
       },
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
   } finally {
     revalidatePath("/home/friends");
   }
@@ -343,7 +343,7 @@ export async function acceptFriendRequest(
       },
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
   } finally {
     revalidatePath("/home", "layout");
   }
