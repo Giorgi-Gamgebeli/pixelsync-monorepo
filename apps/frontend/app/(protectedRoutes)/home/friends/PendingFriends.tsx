@@ -1,25 +1,23 @@
 "use client";
 
-import defaultUser from "@/public/default-user.jpg";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import Image from "next/image";
+import { useTransition } from "react";
+import UserAvatar from "@/app/_components/UserAvatar";
 import {
   acceptFriendRequest,
   cancelFriendRequest,
   declineFriendRequest,
-} from "@/app/_dataAcessLayer/userActions";
+} from "@/app/_dataAccessLayer/userActions";
 
 type PendingFriendsProps = {
   pendingFriendsRequests:
     | {
         friendRequestsToThem: {
-          image: string | null;
           userName: string | null;
           name: string | null;
           id: string;
         }[];
         friendRequestsToMe: {
-          image: string | null;
           userName: string | null;
           name: string | null;
           id: string;
@@ -29,6 +27,8 @@ type PendingFriendsProps = {
 };
 
 function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
+  const [isPending, startTransition] = useTransition();
+
   if (
     !pendingFriendsRequests?.friendRequestsToThem.length &&
     !pendingFriendsRequests?.friendRequestsToMe.length
@@ -58,20 +58,13 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
             Received &mdash; {friendRequestsToMe.length}
           </p>
           <div className="flex flex-col">
-            {friendRequestsToMe.map(({ userName, image, id }) => (
+            {friendRequestsToMe.map(({ userName, id }) => (
               <div
                 key={id}
                 className="group flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-surface"
               >
                 <div className="flex items-center gap-3">
-                  <div className="relative h-10 w-10 shrink-0">
-                    <Image
-                      fill
-                      src={image || defaultUser}
-                      alt={userName || "user"}
-                      className="rounded-full object-cover"
-                    />
-                  </div>
+                  <UserAvatar userName={userName} id={id} size={40} />
                   <div>
                     <p className="text-sm font-medium text-gray-200">
                       {userName}
@@ -84,14 +77,24 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
 
                 <div className="flex items-center gap-2">
                   <button
-                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface text-gray-400 transition-colors hover:bg-green-500/20 hover:text-green-400"
-                    onClick={async () => acceptFriendRequest({ id })}
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface text-gray-400 transition-colors hover:bg-green-500/20 hover:text-green-400 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={isPending}
+                    onClick={() =>
+                      startTransition(async () => {
+                        await acceptFriendRequest({ id });
+                      })
+                    }
                   >
                     <Icon icon="mdi:check" className="text-lg" />
                   </button>
                   <button
-                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface text-gray-400 transition-colors hover:bg-red-500/20 hover:text-red-400"
-                    onClick={async () => declineFriendRequest({ id })}
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface text-gray-400 transition-colors hover:bg-red-500/20 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={isPending}
+                    onClick={() =>
+                      startTransition(async () => {
+                        await declineFriendRequest({ id });
+                      })
+                    }
                   >
                     <Icon icon="mdi:close" className="text-lg" />
                   </button>
@@ -108,20 +111,13 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
             Sent &mdash; {friendRequestsToThem.length}
           </p>
           <div className="flex flex-col">
-            {friendRequestsToThem.map(({ userName, image, id }) => (
+            {friendRequestsToThem.map(({ userName, id }) => (
               <div
                 key={id}
                 className="group flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-surface"
               >
                 <div className="flex items-center gap-3">
-                  <div className="relative h-10 w-10 shrink-0">
-                    <Image
-                      fill
-                      src={image || defaultUser}
-                      alt={userName || "user"}
-                      className="rounded-full object-cover"
-                    />
-                  </div>
+                  <UserAvatar userName={userName} id={id} size={40} />
                   <div>
                     <p className="text-sm font-medium text-gray-200">
                       {userName}
@@ -133,8 +129,13 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
                 </div>
 
                 <button
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface text-gray-400 transition-colors hover:bg-red-500/20 hover:text-red-400"
-                  onClick={async () => await cancelFriendRequest({ id })}
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface text-gray-400 transition-colors hover:bg-red-500/20 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={isPending}
+                  onClick={() =>
+                    startTransition(async () => {
+                      await cancelFriendRequest({ id });
+                    })
+                  }
                 >
                   <Icon icon="mdi:close" className="text-lg" />
                 </button>

@@ -4,20 +4,12 @@ import { Toaster } from "react-hot-toast";
 import { useDarkModeContext } from "./_context/DarkModeContext";
 import { Provider } from "react-redux";
 import store from "./store";
-// import { AppProgressBar } from "next-nprogress-bar";
 
 function ClientProviders({ children }: { children: React.ReactNode }) {
   const { isDarkMode } = useDarkModeContext();
 
-  // Best place to add progressbar seemd here
   return (
     <>
-      {/* <AppProgressBar
-        // height="2px"
-        // color="#4f46e5"
-        options={{ showSpinner: false }}
-      /> */}
-
       <Provider store={store}>{children}</Provider>
 
       <Toaster

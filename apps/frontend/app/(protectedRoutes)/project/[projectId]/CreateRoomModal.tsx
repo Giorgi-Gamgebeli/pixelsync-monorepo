@@ -2,6 +2,8 @@
 
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useState } from "react";
+import { createRoom } from "@/app/_dataAccessLayer/actions";
+import toast from "react-hot-toast";
 
 type CreateRoomModalProps = {
   projectId: string;
@@ -11,11 +13,26 @@ type CreateRoomModalProps = {
 function CreateRoomModal({ projectId, onClose }: CreateRoomModalProps) {
   const [roomName, setRoomName] = useState("");
   const [description, setDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleCreate() {
+  async function handleCreate() {
     if (!roomName.trim()) return;
-    // TODO: create room via server action
-    onClose();
+
+    setIsLoading(true);
+    try {
+      const result = await createRoom(Number(projectId), roomName.trim());
+
+      if (result && "error" in result) {
+        toast.error(result.error);
+      } else {
+        toast.success("Room created!");
+        onClose();
+      }
+    } catch {
+      toast.error("Failed to create room");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -25,6 +42,7 @@ function CreateRoomModal({ projectId, onClose }: CreateRoomModalProps) {
           <h2 className="text-lg font-semibold text-white">Create a Room</h2>
           <button
             onClick={onClose}
+            aria-label="Close"
             className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-gray-500 hover:bg-surface hover:text-gray-300"
           >
             <Icon icon="mdi:close" className="text-lg" />
@@ -78,10 +96,10 @@ function CreateRoomModal({ projectId, onClose }: CreateRoomModalProps) {
           </button>
           <button
             onClick={handleCreate}
-            disabled={!roomName.trim()}
+            disabled={!roomName.trim() || isLoading}
             className="bg-brand-500 hover:bg-brand-600 disabled:bg-brand-500/30 cursor-pointer rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed"
           >
-            Create Room
+            {isLoading ? "Creating..." : "Create Room"}
           </button>
         </div>
       </div>

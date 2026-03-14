@@ -8,7 +8,7 @@ function Page() {
     <main className="flex h-screen min-h-[40rem] items-center justify-center">
       <Logo className="absolute top-0 left-0 px-10 py-6" />
 
-      <div className="min-w-[35rem]">
+      <div className="w-full max-w-[35rem] px-6">
         <h1 className="text-[2.5rem]">Reset Your Password</h1>
 
         <h3 className="mb-12 text-lg text-gray-700">

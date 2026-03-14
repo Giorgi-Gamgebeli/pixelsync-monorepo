@@ -1,3 +1,5 @@
+import { getRoom } from "@/app/_dataAccessLayer/actions";
+import { notFound } from "next/navigation";
 import RoomCanvas from "./RoomCanvas";
 
 type Params = {
@@ -10,15 +12,17 @@ type Params = {
 async function Page({ params }: Params) {
   const { projectId, roomId } = await params;
 
-  // TODO: Fetch room data from database
-  const roomName = "Wireframes";
-  const onlineCount = 2;
+  const room = await getRoom(Number(roomId));
+
+  if (!room || "error" in room) {
+    notFound();
+  }
 
   return (
     <RoomCanvas
-      roomName={roomName}
+      roomName={room.title}
       projectId={projectId}
-      onlineCount={onlineCount}
+      onlineCount={0}
       onInvite={() => {}}
     />
   );

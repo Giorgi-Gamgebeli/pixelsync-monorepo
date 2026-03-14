@@ -10,7 +10,7 @@ const rubik = Rubik({
   weight: ["300", "400", "500", "600", "700", "800", "900"],
   subsets: ["latin"],
   display: "swap",
-  variable: "--fontFamily_Poppins",
+  variable: "--fontFamily_Rubik",
 });
 
 export const metadata: Metadata = {
@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${rubik.className} bg-gray-50`}>
+      <body className={rubik.className}>
         <ActiveSectionContextProvider>
           <DarkModeProvider>
             <SessionProvider>

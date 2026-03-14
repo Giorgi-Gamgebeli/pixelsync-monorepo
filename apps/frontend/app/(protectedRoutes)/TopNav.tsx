@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import logo from "@/public/noBGLogo.png";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useState, useRef, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import UserAvatar from "@/app/_components/UserAvatar";
 
 type TopNavProps = {
   projects:
@@ -20,6 +22,7 @@ function TopNav({ projects }: TopNavProps) {
   const pathname = usePathname();
   const [projectsOpen, setProjectsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
 
   const isHome = pathname.startsWith("/home");
   const activeProject = projects?.find((p) =>
@@ -142,9 +145,11 @@ function TopNav({ projects }: TopNavProps) {
         <div className="ml-1 h-5 w-px bg-border" />
 
         {/* User avatar */}
-        <button className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface transition-colors hover:bg-surface/80">
-          <Icon icon="mdi:account" className="text-lg text-gray-400" />
-        </button>
+        <UserAvatar
+          userName={session?.user?.userName ?? null}
+          id={session?.user?.id}
+          size={32}
+        />
       </div>
     </nav>
   );

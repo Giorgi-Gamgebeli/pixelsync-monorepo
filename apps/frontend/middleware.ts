@@ -28,7 +28,7 @@ const middleware = auth((req: NextRequest & { auth: Session | null }) => {
   }
 
   if (!isLoggedIn && !isPublicRoute) {
-    return Response.redirect(new URL("/", nextUrl));
+    return Response.redirect(new URL("/auth/signin", nextUrl));
   }
 
   return null;

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import logo from "@/public/noBGLogo.png";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { useSession } from "next-auth/react";
+import UserAvatar from "@/app/_components/UserAvatar";
 
 type IconStripProps = {
   projects:
@@ -18,6 +20,7 @@ type IconStripProps = {
 function IconStrip({ projects }: IconStripProps) {
   const pathname = usePathname();
   const isHome = pathname.startsWith("/home");
+  const { data: session } = useSession();
 
   return (
     <div className="scrollbar-thin flex w-icon-strip flex-col items-center gap-2 border-r border-border bg-sidebar py-3">
@@ -72,8 +75,12 @@ function IconStrip({ projects }: IconStripProps) {
       <div className="flex-1" />
 
       {/* User avatar at bottom */}
-      <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-surface">
-        <Icon icon="mdi:account" className="text-xl text-gray-400" />
+      <div className="mb-2">
+        <UserAvatar
+          userName={session?.user?.userName ?? null}
+          id={session?.user?.id}
+          size={40}
+        />
       </div>
     </div>
   );

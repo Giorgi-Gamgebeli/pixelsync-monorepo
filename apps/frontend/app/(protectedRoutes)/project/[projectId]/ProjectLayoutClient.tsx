@@ -55,6 +55,7 @@ function ProjectLayoutClient({
       )}
       {showInvite && (
         <InviteModal
+          projectId={projectId}
           projectName={projectName}
           onClose={() => setShowInvite(false)}
         />

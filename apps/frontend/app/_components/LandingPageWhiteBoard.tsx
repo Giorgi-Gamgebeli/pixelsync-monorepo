@@ -23,28 +23,12 @@ function LandingPageWhiteBoard() {
         autoFocus={true}
         onMount={handleMount}
         className="border-primary border"
-        // persistenceKey="example"
         components={{
           PageMenu: () => null,
           MenuPanel: () => null,
           ZoomMenu: () => null,
           ActionsMenu: () => null,
           KeyboardShortcutsDialog: () => null,
-
-          // Toolbar: () => (
-          //   <DefaultToolbar>
-          //     <SelectToolbarItem />
-          //     <DrawToolbarItem />
-          //     <RectangleToolbarItem />
-          //     <TextToolbarItem />
-          //     <EraserToolbarItem />
-          //     <EllipseToolbarItem />
-          //     <ArrowToolbarItem />
-          //     <FrameToolbarItem />
-          //     <NoteToolbarItem />
-          //     <LineToolbarItem />
-          //   </DefaultToolbar>
-          // ),
         }}
       />
     </Tilt>

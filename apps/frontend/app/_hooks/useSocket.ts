@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { ServerToClientEvents, ClientToServerEvents } from "@repo/types";
-import toast from "react-hot-toast";
 
 export function useSocket(userId: string) {
   const socketRef = useRef<Socket<
@@ -20,12 +19,12 @@ export function useSocket(userId: string) {
           transports: ["websocket"],
         },
       );
-
     } catch (error) {
       console.error("Socket initialization error:", error);
     }
 
     return () => {
+      socketRef.current?.off();
       socketRef.current?.disconnect();
       socketRef.current = null;
     };

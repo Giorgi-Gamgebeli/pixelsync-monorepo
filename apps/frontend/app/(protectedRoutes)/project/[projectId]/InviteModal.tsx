@@ -2,21 +2,40 @@
 
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useState } from "react";
+import { generateInviteLink } from "@/app/_dataAccessLayer/actions";
+import toast from "react-hot-toast";
 
 type InviteModalProps = {
+  projectId: string;
   projectName: string;
   onClose: () => void;
 };
 
-function InviteModal({ projectName, onClose }: InviteModalProps) {
+function InviteModal({ projectId, projectName, onClose }: InviteModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [copied, setCopied] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleCopyLink() {
-    // TODO: generate and copy actual invite link
-    navigator.clipboard.writeText(`https://pixelsync.app/invite/abc123`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  async function handleCopyLink() {
+    setIsLoading(true);
+    try {
+      const result = await generateInviteLink(Number(projectId));
+
+      if (result && "error" in result) {
+        toast.error(result.error);
+        return;
+      }
+
+      if (result && "success" in result) {
+        await navigator.clipboard.writeText(result.success);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch {
+      toast.error("Failed to generate invite link");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -28,6 +47,7 @@ function InviteModal({ projectName, onClose }: InviteModalProps) {
           </h2>
           <button
             onClick={onClose}
+            aria-label="Close"
             className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-gray-500 hover:bg-surface hover:text-gray-300"
           >
             <Icon icon="mdi:close" className="text-lg" />
@@ -67,13 +87,18 @@ function InviteModal({ projectName, onClose }: InviteModalProps) {
         {/* Copy invite link */}
         <button
           onClick={handleCopyLink}
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-surface"
+          disabled={isLoading}
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Icon
             icon={copied ? "mdi:check" : "mdi:link-variant"}
             className="text-lg"
           />
-          {copied ? "Link Copied!" : "Copy Invite Link"}
+          {isLoading
+            ? "Generating..."
+            : copied
+              ? "Link Copied!"
+              : "Copy Invite Link"}
         </button>
       </div>
     </div>

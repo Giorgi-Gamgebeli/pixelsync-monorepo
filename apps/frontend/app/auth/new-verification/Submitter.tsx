@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import { newVerification } from "@/app/_dataAcessLayer/authActions";
+import { newVerification } from "@/app/_dataAccessLayer/authActions";
 
 // useSearchParams hook needs to be wrapped in Suspense
 function Submitter() {

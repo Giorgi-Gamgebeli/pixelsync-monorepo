@@ -10,7 +10,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import FormRow from "../../_components/FormRow";
-import { signin } from "../../_dataAcessLayer/authActions";
+import { signin } from "../../_dataAccessLayer/authActions";
 import AuthButton from "../AuthButton";
 import ProviderButton from "../ProviderButton";
 

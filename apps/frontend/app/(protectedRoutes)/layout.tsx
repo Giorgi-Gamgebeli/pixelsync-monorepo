@@ -1,13 +1,13 @@
-import { getProjects } from "../_dataAcessLayer/actions";
-import TopNav from "./TopNav";
+import { Suspense } from "react";
+import TopNavWrapper from "./TopNavWrapper";
+import TopNavSkeleton from "../_components/skeletons/TopNavSkeleton";
 
-async function Layout({ children }: { children: React.ReactNode }) {
-  const result = await getProjects();
-  const projects = Array.isArray(result) ? result : undefined;
-
+function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-primary">
-      <TopNav projects={projects} />
+      <Suspense fallback={<TopNavSkeleton />}>
+        <TopNavWrapper />
+      </Suspense>
       <div className="flex flex-1 overflow-hidden">{children}</div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { getProjects } from "../_dataAcessLayer/actions";
+import { getProjects } from "../_dataAccessLayer/actions";
 import AddServer from "./AddProject";
 import Server from "./Project";
 

@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import FormRow from "../../_components/FormRow";
-import { resetPassword } from "@/app/_dataAcessLayer/authActions";
+import { resetPassword } from "@/app/_dataAccessLayer/authActions";
 import toast from "react-hot-toast";
 import { ResetPasswordSchema } from "@repo/zod";
 import { zodResolver } from "@hookform/resolvers/zod";

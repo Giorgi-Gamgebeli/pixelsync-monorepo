@@ -13,8 +13,9 @@ import {
 import { z } from "zod";
 import { handleErrorsOnServer } from "../_utils/helpers";
 import { revalidatePath } from "next/cache";
+import { cache } from "react";
 
-export async function getFriends() {
+export const getFriends = cache(async function getFriends() {
   try {
     const session = await auth();
     if (!session) throw new Error("Not authenticated!");
@@ -26,7 +27,6 @@ export async function getFriends() {
           select: {
             id: true,
             userName: true,
-            image: true,
             status: true,
           },
         },
@@ -34,7 +34,6 @@ export async function getFriends() {
           select: {
             id: true,
             userName: true,
-            image: true,
             status: true,
           },
         },
@@ -50,10 +49,9 @@ export async function getFriends() {
 
     return mutualFriends;
   } catch (error) {
-    console.error("Failed to get mutual friends:", error);
-    return [];
+    return handleErrorsOnServer(error);
   }
-}
+});
 
 export async function getFriend(values: z.infer<typeof GetFriendSchema>) {
   try {
@@ -71,7 +69,6 @@ export async function getFriend(values: z.infer<typeof GetFriendSchema>) {
       select: {
         id: true,
         userName: true,
-        image: true,
         status: true,
 
         friends: {
@@ -93,17 +90,17 @@ export async function getFriend(values: z.infer<typeof GetFriendSchema>) {
 
     if (!friend) throw new Error("Friend was not found!");
 
-    const { friends, friendOf, ...friendValues } = friend;
-    // console.log(friend);
-    // console.log(friends, friendOf);
-
     const isFriend = friend.friends.length > 0 && friend.friendOf.length > 0;
 
     if (!isFriend) throw new Error("You are not friends with this user!");
 
-    return friendValues;
+    return {
+      id: friend.id,
+      userName: friend.userName,
+      status: friend.status,
+    };
   } catch (error) {
-    console.error(error);
+    return handleErrorsOnServer(error);
   }
 }
 
@@ -160,7 +157,7 @@ export async function getDirectMessages(
 
     return messages;
   } catch (error) {
-    console.error(error);
+    return handleErrorsOnServer(error);
   }
 }
 
@@ -177,7 +174,6 @@ export async function getPendingFriendRequests() {
             id: true,
             userName: true,
             name: true,
-            image: true,
           },
         },
         friendOf: {
@@ -185,7 +181,6 @@ export async function getPendingFriendRequests() {
             id: true,
             userName: true,
             name: true,
-            image: true,
           },
         },
       },
@@ -202,7 +197,7 @@ export async function getPendingFriendRequests() {
 
     return { friendRequestsToThem, friendRequestsToMe };
   } catch (error) {
-    console.error(error);
+    return handleErrorsOnServer(error);
   }
 }
 
@@ -283,7 +278,7 @@ export async function cancelFriendRequest(
       },
     });
   } catch (error) {
-    console.error(error);
+    return handleErrorsOnServer(error);
   } finally {
     revalidatePath("/home/friends");
   }
@@ -313,7 +308,7 @@ export async function declineFriendRequest(
       },
     });
   } catch (error) {
-    console.error(error);
+    return handleErrorsOnServer(error);
   } finally {
     revalidatePath("/home/friends");
   }
@@ -343,7 +338,7 @@ export async function acceptFriendRequest(
       },
     });
   } catch (error) {
-    console.error(error);
+    return handleErrorsOnServer(error);
   } finally {
     revalidatePath("/home", "layout");
   }

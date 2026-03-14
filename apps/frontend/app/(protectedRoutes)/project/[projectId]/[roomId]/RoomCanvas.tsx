@@ -38,6 +38,7 @@ function RoomCanvas({
           <Link
             href={`/project/${projectId}`}
             className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-surface hover:text-gray-300"
+            aria-label="Back to project"
           >
             <Icon icon="mdi:arrow-left" className="text-lg" />
           </Link>
@@ -66,6 +67,7 @@ function RoomCanvas({
           {/* Chat toggle */}
           <button
             onClick={() => setChatOpen(!chatOpen)}
+            aria-label="Toggle chat"
             className={`relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors ${
               chatOpen
                 ? "bg-brand-500/10 text-brand-400"

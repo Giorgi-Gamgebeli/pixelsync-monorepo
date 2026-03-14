@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import FriendsList from "./FriendsList";
+import FriendsListSkeleton from "@/app/_components/skeletons/FriendsListSkeleton";
 import HomeNavLink from "./HomeNavLink";
 import ClientIcon from "@/app/_components/ClientIcon";
 
@@ -34,7 +36,9 @@ function Layout({ children }: { children: React.ReactNode }) {
 
         {/* DM list */}
         <div className="scrollbar-thin flex-1 overflow-y-auto px-3 py-1">
-          <FriendsList />
+          <Suspense fallback={<FriendsListSkeleton />}>
+            <FriendsList />
+          </Suspense>
         </div>
       </aside>
 

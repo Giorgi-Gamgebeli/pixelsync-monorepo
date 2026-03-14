@@ -1,6 +1,6 @@
 "use client";
 
-import { addFriend } from "@/app/_dataAcessLayer/userActions";
+import { addFriend } from "@/app/_dataAccessLayer/userActions";
 import { AddFriendSchema } from "@repo/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTransition } from "react";

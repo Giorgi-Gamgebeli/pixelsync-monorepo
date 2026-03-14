@@ -1,3 +1,5 @@
+import { getProject } from "@/app/_dataAccessLayer/actions";
+import { notFound } from "next/navigation";
 import ProjectLayoutClient from "./ProjectLayoutClient";
 
 type Params = {
@@ -10,23 +12,36 @@ type Params = {
 async function Layout({ params, children }: Params) {
   const { projectId } = await params;
 
-  // TODO: Fetch project data, rooms, and members from database
-  const projectName = "My Project";
-  const rooms = [
-    { id: "room-1", name: "Wireframes", onlineCount: 3 },
-    { id: "room-2", name: "Architecture" },
-    { id: "room-3", name: "Logo Ideas", onlineCount: 1 },
-  ];
+  const project = await getProject(Number(projectId));
+
+  if (!project || "error" in project) {
+    notFound();
+  }
+
+  const rooms = project.whiteboards.map((wb) => ({
+    id: String(wb.id),
+    name: wb.title,
+  }));
+
   const members = [
-    { id: "m-1", userName: "alex", status: "ONLINE" },
-    { id: "m-2", userName: "niko", status: "ONLINE" },
-    { id: "m-3", userName: "mari", status: "OFFLINE" },
+    {
+      id: project.owner.id,
+      userName: project.owner.userName,
+      status: project.owner.status,
+    },
+    ...project.users
+      .filter((u) => u.id !== project.owner.id)
+      .map((u) => ({
+        id: u.id,
+        userName: u.userName,
+        status: u.status,
+      })),
   ];
 
   return (
     <ProjectLayoutClient
       projectId={projectId}
-      projectName={projectName}
+      projectName={project.name}
       rooms={rooms}
       members={members}
     >

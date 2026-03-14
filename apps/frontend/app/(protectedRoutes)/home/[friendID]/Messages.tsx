@@ -5,7 +5,6 @@ import type { DirectMessage } from "@repo/db";
 import { Session } from "next-auth";
 import Message from "./Message";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { useEffect } from "react";
 
 type MessagesProps = {
   messages: DirectMessage[] | undefined;
@@ -15,29 +14,11 @@ type MessagesProps = {
         id: string;
         status: UserStatus;
         userName: string | null;
-        image: string | null;
       }
     | undefined;
 };
 
 function Messages({ messages, friend, session }: MessagesProps) {
-  useEffect(() => {
-    async function doFetch() {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/direct-message`,
-        {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-        },
-      );
-      const data = await res.json();
-      console.log(data, "dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-    }
-
-    doFetch();
-  }, []);
-
   return (
     <div className="flex h-full flex-col">
       {/* Messages area */}
@@ -76,7 +57,7 @@ function Messages({ messages, friend, session }: MessagesProps) {
       {/* Input bar */}
       <div className="border-border border-t px-6 py-3">
         <div className="flex items-center gap-3">
-          <button className="hover:bg-surface flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:text-gray-300">
+          <button aria-label="Attach file" className="hover:bg-surface flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:text-gray-300">
             <Icon icon="mdi:plus-circle" className="text-xl" />
           </button>
           <input
@@ -85,7 +66,7 @@ function Messages({ messages, friend, session }: MessagesProps) {
             placeholder={`Message @${friend?.userName || "friend"}`}
             className="border-border bg-surface focus:border-brand-500 flex-1 rounded-lg border px-4 py-2 text-sm text-white transition-colors outline-none placeholder:text-gray-500"
           />
-          <button className="bg-brand-500 hover:bg-brand-600 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-white transition-colors">
+          <button aria-label="Send message" className="bg-brand-500 hover:bg-brand-600 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-white transition-colors">
             <Icon icon="mdi:send" className="text-lg" />
           </button>
         </div>

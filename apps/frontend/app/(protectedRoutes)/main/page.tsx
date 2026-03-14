@@ -1,27 +1,8 @@
-"use client";
-
-import { signOut, useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { redirect } from "next/navigation";
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 
 function Page() {
-  const { data: session, update } = useSession();
-
-  useEffect(() => {
-    update();
-  }, []);
-
-  if (!session) return <p>no session</p>;
-  return (
-    <main className="h-screen w-screen">
-      <div>{JSON.stringify(session?.user)}</div>
-      <button
-        onClick={async () => await signOut()}
-        className="cursor-pointer border border-black"
-      >
-        signOut
-      </button>
-    </main>
-  );
+  redirect(DEFAULT_LOGIN_REDIRECT);
 }
 
 export default Page;

@@ -32,6 +32,7 @@ function ChatPanel({ roomName, isOpen, onToggle }: ChatPanelProps) {
         <h3 className="text-sm font-medium text-white">Chat</h3>
         <button
           onClick={onToggle}
+          aria-label="Close chat"
           className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-surface hover:text-gray-300"
         >
           <Icon icon="mdi:close" className="text-base" />
@@ -84,6 +85,7 @@ function ChatPanel({ roomName, isOpen, onToggle }: ChatPanelProps) {
           />
           <button
             disabled={!message.trim()}
+            aria-label="Send message"
             className="bg-brand-500 hover:bg-brand-600 disabled:bg-brand-500/30 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-white transition-colors disabled:cursor-not-allowed"
           >
             <Icon icon="mdi:send" className="text-sm" />

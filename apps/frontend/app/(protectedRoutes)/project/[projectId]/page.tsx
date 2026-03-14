@@ -1,21 +1,31 @@
+"use client";
+
 import ClientIcon from "@/app/_components/ClientIcon";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { getProjectRooms } from "@/app/_dataAccessLayer/actions";
+import CreateRoomModal from "./CreateRoomModal";
 
-type Params = {
-  params: Promise<{
-    projectId: string;
-  }>;
+type Room = {
+  id: number;
+  title: string;
 };
 
-async function Page({ params }: Params) {
-  const { projectId } = await params;
+function Page() {
+  const { projectId } = useParams<{ projectId: string }>();
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [showCreateRoom, setShowCreateRoom] = useState(false);
 
-  // TODO: Fetch rooms from database
-  const rooms = [
-    { id: "room-1", name: "Wireframes", onlineCount: 3 },
-    { id: "room-2", name: "Architecture", onlineCount: 0 },
-    { id: "room-3", name: "Logo Ideas", onlineCount: 1 },
-  ];
+  useEffect(() => {
+    async function loadRooms() {
+      const result = await getProjectRooms(Number(projectId));
+      if (Array.isArray(result)) {
+        setRooms(result);
+      }
+    }
+    loadRooms();
+  }, [projectId]);
 
   return (
     <div className="scrollbar-thin flex-1 overflow-y-auto p-8">
@@ -62,27 +72,29 @@ async function Page({ params }: Params) {
               <div className="flex items-center justify-between px-3 py-3">
                 <div>
                   <p className="text-sm font-medium text-gray-200 group-hover:text-white">
-                    {room.name}
+                    {room.title}
                   </p>
                 </div>
-                {room.onlineCount > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                    <span className="text-xs text-gray-500">
-                      {room.onlineCount}
-                    </span>
-                  </div>
-                )}
               </div>
             </Link>
           ))}
 
           {/* Create new room card */}
-          <button className="flex h-full min-h-[12rem] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-border bg-transparent p-4 text-gray-500 transition-all hover:border-gray-500 hover:bg-secondary/30 hover:text-gray-300">
+          <button
+            onClick={() => setShowCreateRoom(true)}
+            className="flex h-full min-h-[12rem] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-border bg-transparent p-4 text-gray-500 transition-all hover:border-gray-500 hover:bg-secondary/30 hover:text-gray-300"
+          >
             <ClientIcon icon="mdi:plus" className="mb-2 text-2xl" />
             <span className="text-sm font-medium">New Room</span>
           </button>
         </div>
+      )}
+
+      {showCreateRoom && (
+        <CreateRoomModal
+          projectId={projectId}
+          onClose={() => setShowCreateRoom(false)}
+        />
       )}
     </div>
   );

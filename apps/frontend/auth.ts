@@ -8,7 +8,7 @@ import Credentials from "next-auth/providers/credentials";
 import { generateUsername } from "./app/_utils/helpers";
 import authConfig from "./auth.config";
 
-const nexAuth = NextAuth({
+const nextAuth = NextAuth({
   ...authConfig,
   providers: [
     ...authConfig.providers,
@@ -137,5 +137,5 @@ export const {
   handlers: { GET, POST },
   signIn,
   signOut,
-} = nexAuth;
-export const auth: NextAuthResult["auth"] = nexAuth.auth;
+} = nextAuth;
+export const auth: NextAuthResult["auth"] = nextAuth.auth;

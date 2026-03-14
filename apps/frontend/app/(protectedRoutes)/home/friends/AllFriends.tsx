@@ -9,7 +9,6 @@ type AllFriendsProps = {
     | {
         id: string;
         userName: string | null;
-        image: string | null;
         status: UserStatus;
       }[]
     | undefined;

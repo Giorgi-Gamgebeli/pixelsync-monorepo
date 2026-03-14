@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SignupSchema } from "@repo/zod";
-import { signup } from "../../_dataAcessLayer/authActions";
+import { signup } from "../../_dataAccessLayer/authActions";
 import { useTransition } from "react";
 import AuthButton from "../AuthButton";
 import ProviderButton from "@/app/auth/ProviderButton";

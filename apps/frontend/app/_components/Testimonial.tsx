@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { Icon } from "@iconify/react";
-import defaultUserImg from "../../public/default-user.jpg";
 
 type TestimonialProps = {
   name: string;
@@ -31,7 +30,7 @@ function Testimonial({ name, rating, text, image }: TestimonialProps) {
   return (
     <div className="inline-flex min-w-[15.1rem] shrink-0 items-center gap-2 rounded-xl border border-gray-200 p-1">
       <Image
-        src={image || defaultUserImg}
+        src={image}
         height={25}
         width={25}
         alt={`Image of ${name}`}

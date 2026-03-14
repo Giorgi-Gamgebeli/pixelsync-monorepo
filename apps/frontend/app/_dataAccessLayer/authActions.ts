@@ -169,7 +169,7 @@ export async function newVerification(token: string) {
       },
     });
 
-    return { success: "Email verfiied!" };
+    return { success: "Email verified!" };
   } catch (error) {
     return handleErrorsOnServer(error);
   }
@@ -246,7 +246,7 @@ export async function newPassword(
       },
     });
 
-    if (!existingToken) throw new Error("Invaild token!");
+    if (!existingToken) throw new Error("Invalid token!");
 
     const hasExpired = new Date(existingToken.expires) < new Date();
 

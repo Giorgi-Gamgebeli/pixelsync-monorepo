@@ -1,11 +1,10 @@
 import ClientIcon from "@/app/_components/ClientIcon";
+import UserAvatar from "@/app/_components/UserAvatar";
 import {
   getDirectMessages,
   getFriend,
-} from "@/app/_dataAcessLayer/userActions";
+} from "@/app/_dataAccessLayer/userActions";
 import { auth } from "@/auth";
-import defaultUser from "@/public/default-user.jpg";
-import Image from "next/image";
 import Messages from "./Messages";
 
 export const revalidate = 0;
@@ -18,13 +17,19 @@ type Params = {
 
 async function Page({ params }: Params) {
   const { friendID } = await params;
-  const [friend, directMessages, session] = await Promise.all([
+  const [friendResult, messagesResult, session] = await Promise.all([
     getFriend({ id: friendID }),
     getDirectMessages({ id: friendID }),
     auth(),
   ]);
 
   if (!session) return <div className="p-6 text-gray-400">Loading...</div>;
+
+  const friend =
+    friendResult && "id" in friendResult ? friendResult : undefined;
+  const directMessages = Array.isArray(messagesResult)
+    ? messagesResult
+    : undefined;
 
   if (!friend) {
     return (
@@ -40,7 +45,7 @@ async function Page({ params }: Params) {
     );
   }
 
-  const { image, status, userName } = friend;
+  const { status, userName } = friend;
   const isOnline = status === "ONLINE";
 
   return (
@@ -48,17 +53,13 @@ async function Page({ params }: Params) {
       {/* Chat header */}
       <div className="border-border flex items-center justify-between border-b px-6 py-3">
         <div className="flex items-center gap-3">
-          <div className="relative h-8 w-8">
-            <Image
-              fill
-              src={image || defaultUser}
-              alt={userName || "user"}
-              className="rounded-full object-cover"
-            />
-            {isOnline && (
-              <div className="border-primary absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 bg-green-500" />
-            )}
-          </div>
+          <UserAvatar
+            userName={userName}
+            id={friend.id}
+            size={32}
+            showStatus
+            status={status}
+          />
           <div>
             <p className="text-sm font-medium text-white">{userName}</p>
             <p className="text-xs text-gray-500">
@@ -67,10 +68,10 @@ async function Page({ params }: Params) {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white">
+          <button aria-label="Call" className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white">
             <ClientIcon icon="mdi:phone" className="text-lg" />
           </button>
-          <button className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white">
+          <button aria-label="More options" className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white">
             <ClientIcon icon="mdi:dots-vertical" className="text-lg" />
           </button>
         </div>

@@ -3,6 +3,7 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import UserAvatar from "@/app/_components/UserAvatar";
 
 type Room = {
   id: string;
@@ -50,6 +51,7 @@ function ProjectSidebar({
           onClick={onInvite}
           className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-surface hover:text-gray-300"
           title="Invite members"
+          aria-label="Invite members"
         >
           <Icon icon="mdi:account-plus" className="text-base" />
         </button>
@@ -79,6 +81,7 @@ function ProjectSidebar({
           <button
             onClick={onCreateRoom}
             className="flex h-5 w-5 cursor-pointer items-center justify-center rounded text-gray-500 hover:text-gray-300"
+            aria-label="Create room"
           >
             <Icon icon="mdi:plus" className="text-sm" />
           </button>
@@ -127,10 +130,14 @@ function ProjectSidebar({
               key={member.id}
               className="flex items-center gap-2 rounded-lg px-2 py-1.5"
             >
-              <div className="relative flex h-6 w-6 items-center justify-center rounded-full bg-surface text-xs font-medium text-gray-300">
-                {member.userName?.charAt(0).toUpperCase() || "?"}
-                <div className="absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-secondary bg-green-500" />
-              </div>
+              <UserAvatar
+                userName={member.userName}
+                id={member.id}
+                size={24}
+                showStatus
+                status={member.status}
+                statusBorderColor="border-secondary"
+              />
               <span className="truncate text-sm text-gray-300">
                 {member.userName}
               </span>
@@ -141,9 +148,11 @@ function ProjectSidebar({
               key={member.id}
               className="flex items-center gap-2 rounded-lg px-2 py-1.5 opacity-40"
             >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-surface text-xs font-medium text-gray-400">
-                {member.userName?.charAt(0).toUpperCase() || "?"}
-              </div>
+              <UserAvatar
+                userName={member.userName}
+                id={member.id}
+                size={24}
+              />
               <span className="truncate text-sm text-gray-500">
                 {member.userName}
               </span>
