@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 
 export const createDirectMessageSchema = z.object({
   content: z
@@ -17,7 +17,7 @@ export const createDirectMessageSchema = z.object({
       message: "This field is required",
     }),
 
-  recieverId: z
+  receiverId: z
     .string({
       message: "Only text is allowed",
     })

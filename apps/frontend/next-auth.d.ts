@@ -1,19 +1,10 @@
 import { DefaultSession } from "next-auth";
-
-export type ExtendedUser = DefaultSession["user"] & {
-  avatar?: string;
-  userName: string;
-  id: string;
-  accessToken: string;
-};
-
+import { SessionPayloadSchema } from "@repo/zod";
+import { z } from "zod";
+ 
+export type ExtendedUser = DefaultSession["user"] & z.infer<typeof SessionPayloadSchema>;
+ 
 declare module "next-auth" {
-  // interface User {
-  //   avatar?: string;
-  //   userName: string;
-  //   numID: number;
-  // }
-
   interface Session {
     user: ExtendedUser;
   }

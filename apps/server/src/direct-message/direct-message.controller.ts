@@ -3,15 +3,15 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Patch,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
+import { createDirectMessageSchema, SessionPayloadSchema, z } from '@repo/zod';
+import { NextAuthGuard } from 'src/auth/nextauth.guard';
+import { SessionUser } from 'src/auth/session-user.decorator';
 import { DirectMessageService } from './direct-message.service';
-import z from 'zod';
-import { createDirectMessageSchema } from '@repo/zod';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('direct-message')
 export class DirectMessageController {
@@ -22,24 +22,24 @@ export class DirectMessageController {
     return this.directMessageService.create(body);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(NextAuthGuard)
   @Get()
-  findAll(@Req() req) {
-    return this.directMessageService.findAll(req);
+  findAll(@SessionUser() user: z.infer<typeof SessionPayloadSchema>) {
+    return this.directMessageService.findAll(user);
   }
 
-  @Get()
-  findOne() {
-    return this.directMessageService.findOne();
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.directMessageService.findOne(id);
   }
 
-  @Patch()
-  update() {
-    return this.directMessageService.update();
+  @Patch(':id')
+  update(@Param('id') id: string) {
+    return this.directMessageService.update(id);
   }
 
-  @Delete()
-  remove() {
-    return this.directMessageService.remove();
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.directMessageService.remove(id);
   }
 }

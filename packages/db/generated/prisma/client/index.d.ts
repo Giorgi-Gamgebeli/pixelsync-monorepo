@@ -1833,29 +1833,29 @@ export namespace Prisma {
    */
 
   export type UserCountOutputType = {
+    Account: number
     channelMessages: number
     receivedMessages: number
     sentMessages: number
     ownedProjects: number
+    Session: number
     channels: number
     friends: number
     friendOf: number
     Projects: number
-    Account: number
-    Session: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Account?: boolean | UserCountOutputTypeCountAccountArgs
     channelMessages?: boolean | UserCountOutputTypeCountChannelMessagesArgs
     receivedMessages?: boolean | UserCountOutputTypeCountReceivedMessagesArgs
     sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
     ownedProjects?: boolean | UserCountOutputTypeCountOwnedProjectsArgs
+    Session?: boolean | UserCountOutputTypeCountSessionArgs
     channels?: boolean | UserCountOutputTypeCountChannelsArgs
     friends?: boolean | UserCountOutputTypeCountFriendsArgs
     friendOf?: boolean | UserCountOutputTypeCountFriendOfArgs
     Projects?: boolean | UserCountOutputTypeCountProjectsArgs
-    Account?: boolean | UserCountOutputTypeCountAccountArgs
-    Session?: boolean | UserCountOutputTypeCountSessionArgs
   }
 
   // Custom InputTypes
@@ -1867,6 +1867,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the UserCountOutputType
      */
     select?: UserCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAccountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AccountWhereInput
   }
 
   /**
@@ -1900,6 +1907,13 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
+  export type UserCountOutputTypeCountSessionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SessionWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountChannelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ChannelWhereInput
   }
@@ -1923,20 +1937,6 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountProjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProjectsWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountAccountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AccountWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountSessionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SessionWhereInput
   }
 
 
@@ -2253,17 +2253,17 @@ export namespace Prisma {
     lastSeen?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    Account?: boolean | User$AccountArgs<ExtArgs>
     channelMessages?: boolean | User$channelMessagesArgs<ExtArgs>
     receivedMessages?: boolean | User$receivedMessagesArgs<ExtArgs>
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
-    settings?: boolean | User$settingsArgs<ExtArgs>
     ownedProjects?: boolean | User$ownedProjectsArgs<ExtArgs>
+    Session?: boolean | User$SessionArgs<ExtArgs>
+    settings?: boolean | User$settingsArgs<ExtArgs>
     channels?: boolean | User$channelsArgs<ExtArgs>
     friends?: boolean | User$friendsArgs<ExtArgs>
     friendOf?: boolean | User$friendOfArgs<ExtArgs>
     Projects?: boolean | User$ProjectsArgs<ExtArgs>
-    Account?: boolean | User$AccountArgs<ExtArgs>
-    Session?: boolean | User$SessionArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2314,17 +2314,17 @@ export namespace Prisma {
 
   export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "userName" | "image" | "password" | "emailVerified" | "status" | "statusMessage" | "lastSeen" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Account?: boolean | User$AccountArgs<ExtArgs>
     channelMessages?: boolean | User$channelMessagesArgs<ExtArgs>
     receivedMessages?: boolean | User$receivedMessagesArgs<ExtArgs>
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
-    settings?: boolean | User$settingsArgs<ExtArgs>
     ownedProjects?: boolean | User$ownedProjectsArgs<ExtArgs>
+    Session?: boolean | User$SessionArgs<ExtArgs>
+    settings?: boolean | User$settingsArgs<ExtArgs>
     channels?: boolean | User$channelsArgs<ExtArgs>
     friends?: boolean | User$friendsArgs<ExtArgs>
     friendOf?: boolean | User$friendOfArgs<ExtArgs>
     Projects?: boolean | User$ProjectsArgs<ExtArgs>
-    Account?: boolean | User$AccountArgs<ExtArgs>
-    Session?: boolean | User$SessionArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2333,17 +2333,17 @@ export namespace Prisma {
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
     objects: {
+      Account: Prisma.$AccountPayload<ExtArgs>[]
       channelMessages: Prisma.$ChannelMessagePayload<ExtArgs>[]
       receivedMessages: Prisma.$DirectMessagePayload<ExtArgs>[]
       sentMessages: Prisma.$DirectMessagePayload<ExtArgs>[]
-      settings: Prisma.$UserSettingsPayload<ExtArgs> | null
       ownedProjects: Prisma.$ProjectsPayload<ExtArgs>[]
+      Session: Prisma.$SessionPayload<ExtArgs>[]
+      settings: Prisma.$UserSettingsPayload<ExtArgs> | null
       channels: Prisma.$ChannelPayload<ExtArgs>[]
       friends: Prisma.$UserPayload<ExtArgs>[]
       friendOf: Prisma.$UserPayload<ExtArgs>[]
       Projects: Prisma.$ProjectsPayload<ExtArgs>[]
-      Account: Prisma.$AccountPayload<ExtArgs>[]
-      Session: Prisma.$SessionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2752,17 +2752,17 @@ export namespace Prisma {
    */
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    Account<T extends User$AccountArgs<ExtArgs> = {}>(args?: Subset<T, User$AccountArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     channelMessages<T extends User$channelMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$channelMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChannelMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     receivedMessages<T extends User$receivedMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$receivedMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DirectMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sentMessages<T extends User$sentMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DirectMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    settings<T extends User$settingsArgs<ExtArgs> = {}>(args?: Subset<T, User$settingsArgs<ExtArgs>>): Prisma__UserSettingsClient<$Result.GetResult<Prisma.$UserSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     ownedProjects<T extends User$ownedProjectsArgs<ExtArgs> = {}>(args?: Subset<T, User$ownedProjectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    Session<T extends User$SessionArgs<ExtArgs> = {}>(args?: Subset<T, User$SessionArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    settings<T extends User$settingsArgs<ExtArgs> = {}>(args?: Subset<T, User$settingsArgs<ExtArgs>>): Prisma__UserSettingsClient<$Result.GetResult<Prisma.$UserSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     channels<T extends User$channelsArgs<ExtArgs> = {}>(args?: Subset<T, User$channelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     friends<T extends User$friendsArgs<ExtArgs> = {}>(args?: Subset<T, User$friendsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     friendOf<T extends User$friendOfArgs<ExtArgs> = {}>(args?: Subset<T, User$friendOfArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     Projects<T extends User$ProjectsArgs<ExtArgs> = {}>(args?: Subset<T, User$ProjectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    Account<T extends User$AccountArgs<ExtArgs> = {}>(args?: Subset<T, User$AccountArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    Session<T extends User$SessionArgs<ExtArgs> = {}>(args?: Subset<T, User$SessionArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3192,6 +3192,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.Account
+   */
+  export type User$AccountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
+    select?: AccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Account
+     */
+    omit?: AccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AccountInclude<ExtArgs> | null
+    where?: AccountWhereInput
+    orderBy?: AccountOrderByWithRelationInput | AccountOrderByWithRelationInput[]
+    cursor?: AccountWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AccountScalarFieldEnum | AccountScalarFieldEnum[]
+  }
+
+  /**
    * User.channelMessages
    */
   export type User$channelMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3264,25 +3288,6 @@ export namespace Prisma {
   }
 
   /**
-   * User.settings
-   */
-  export type User$settingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserSettings
-     */
-    select?: UserSettingsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserSettings
-     */
-    omit?: UserSettingsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserSettingsInclude<ExtArgs> | null
-    where?: UserSettingsWhereInput
-  }
-
-  /**
    * User.ownedProjects
    */
   export type User$ownedProjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3304,6 +3309,49 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ProjectsScalarFieldEnum | ProjectsScalarFieldEnum[]
+  }
+
+  /**
+   * User.Session
+   */
+  export type User$SessionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
+    select?: SessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Session
+     */
+    omit?: SessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionInclude<ExtArgs> | null
+    where?: SessionWhereInput
+    orderBy?: SessionOrderByWithRelationInput | SessionOrderByWithRelationInput[]
+    cursor?: SessionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SessionScalarFieldEnum | SessionScalarFieldEnum[]
+  }
+
+  /**
+   * User.settings
+   */
+  export type User$settingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserSettings
+     */
+    select?: UserSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserSettings
+     */
+    omit?: UserSettingsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserSettingsInclude<ExtArgs> | null
+    where?: UserSettingsWhereInput
   }
 
   /**
@@ -3400,54 +3448,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ProjectsScalarFieldEnum | ProjectsScalarFieldEnum[]
-  }
-
-  /**
-   * User.Account
-   */
-  export type User$AccountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Account
-     */
-    select?: AccountSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Account
-     */
-    omit?: AccountOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AccountInclude<ExtArgs> | null
-    where?: AccountWhereInput
-    orderBy?: AccountOrderByWithRelationInput | AccountOrderByWithRelationInput[]
-    cursor?: AccountWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: AccountScalarFieldEnum | AccountScalarFieldEnum[]
-  }
-
-  /**
-   * User.Session
-   */
-  export type User$SessionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Session
-     */
-    select?: SessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Session
-     */
-    omit?: SessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SessionInclude<ExtArgs> | null
-    where?: SessionWhereInput
-    orderBy?: SessionOrderByWithRelationInput | SessionOrderByWithRelationInput[]
-    cursor?: SessionWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SessionScalarFieldEnum | SessionScalarFieldEnum[]
   }
 
   /**
@@ -12396,8 +12396,8 @@ export namespace Prisma {
     ownerId?: boolean
     userId?: boolean
     Channels?: boolean | Projects$ChannelsArgs<ExtArgs>
-    whiteboards?: boolean | Projects$whiteboardsArgs<ExtArgs>
     owner?: boolean | UserDefaultArgs<ExtArgs>
+    whiteboards?: boolean | Projects$whiteboardsArgs<ExtArgs>
     users?: boolean | Projects$usersArgs<ExtArgs>
     _count?: boolean | ProjectsCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["projects"]>
@@ -12434,8 +12434,8 @@ export namespace Prisma {
   export type ProjectsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "createdAt" | "updatedAt" | "ownerId" | "userId", ExtArgs["result"]["projects"]>
   export type ProjectsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     Channels?: boolean | Projects$ChannelsArgs<ExtArgs>
-    whiteboards?: boolean | Projects$whiteboardsArgs<ExtArgs>
     owner?: boolean | UserDefaultArgs<ExtArgs>
+    whiteboards?: boolean | Projects$whiteboardsArgs<ExtArgs>
     users?: boolean | Projects$usersArgs<ExtArgs>
     _count?: boolean | ProjectsCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -12450,8 +12450,8 @@ export namespace Prisma {
     name: "Projects"
     objects: {
       Channels: Prisma.$ChannelPayload<ExtArgs>[]
-      whiteboards: Prisma.$WhiteboardPayload<ExtArgs>[]
       owner: Prisma.$UserPayload<ExtArgs>
+      whiteboards: Prisma.$WhiteboardPayload<ExtArgs>[]
       users: Prisma.$UserPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -12856,8 +12856,8 @@ export namespace Prisma {
   export interface Prisma__ProjectsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     Channels<T extends Projects$ChannelsArgs<ExtArgs> = {}>(args?: Subset<T, Projects$ChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    whiteboards<T extends Projects$whiteboardsArgs<ExtArgs> = {}>(args?: Subset<T, Projects$whiteboardsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WhiteboardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     owner<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    whiteboards<T extends Projects$whiteboardsArgs<ExtArgs> = {}>(args?: Subset<T, Projects$whiteboardsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WhiteboardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     users<T extends Projects$usersArgs<ExtArgs> = {}>(args?: Subset<T, Projects$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -14810,17 +14810,17 @@ export namespace Prisma {
     lastSeen?: DateTimeFilter<"User"> | Date | string
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    Account?: AccountListRelationFilter
     channelMessages?: ChannelMessageListRelationFilter
     receivedMessages?: DirectMessageListRelationFilter
     sentMessages?: DirectMessageListRelationFilter
-    settings?: XOR<UserSettingsNullableScalarRelationFilter, UserSettingsWhereInput> | null
     ownedProjects?: ProjectsListRelationFilter
+    Session?: SessionListRelationFilter
+    settings?: XOR<UserSettingsNullableScalarRelationFilter, UserSettingsWhereInput> | null
     channels?: ChannelListRelationFilter
     friends?: UserListRelationFilter
     friendOf?: UserListRelationFilter
     Projects?: ProjectsListRelationFilter
-    Account?: AccountListRelationFilter
-    Session?: SessionListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -14836,17 +14836,17 @@ export namespace Prisma {
     lastSeen?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    Account?: AccountOrderByRelationAggregateInput
     channelMessages?: ChannelMessageOrderByRelationAggregateInput
     receivedMessages?: DirectMessageOrderByRelationAggregateInput
     sentMessages?: DirectMessageOrderByRelationAggregateInput
-    settings?: UserSettingsOrderByWithRelationInput
     ownedProjects?: ProjectsOrderByRelationAggregateInput
+    Session?: SessionOrderByRelationAggregateInput
+    settings?: UserSettingsOrderByWithRelationInput
     channels?: ChannelOrderByRelationAggregateInput
     friends?: UserOrderByRelationAggregateInput
     friendOf?: UserOrderByRelationAggregateInput
     Projects?: ProjectsOrderByRelationAggregateInput
-    Account?: AccountOrderByRelationAggregateInput
-    Session?: SessionOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -14865,17 +14865,17 @@ export namespace Prisma {
     lastSeen?: DateTimeFilter<"User"> | Date | string
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    Account?: AccountListRelationFilter
     channelMessages?: ChannelMessageListRelationFilter
     receivedMessages?: DirectMessageListRelationFilter
     sentMessages?: DirectMessageListRelationFilter
-    settings?: XOR<UserSettingsNullableScalarRelationFilter, UserSettingsWhereInput> | null
     ownedProjects?: ProjectsListRelationFilter
+    Session?: SessionListRelationFilter
+    settings?: XOR<UserSettingsNullableScalarRelationFilter, UserSettingsWhereInput> | null
     channels?: ChannelListRelationFilter
     friends?: UserListRelationFilter
     friendOf?: UserListRelationFilter
     Projects?: ProjectsListRelationFilter
-    Account?: AccountListRelationFilter
-    Session?: SessionListRelationFilter
   }, "id" | "id" | "email" | "userName">
 
   export type UserOrderByWithAggregationInput = {
@@ -15434,8 +15434,8 @@ export namespace Prisma {
     ownerId?: StringFilter<"Projects"> | string
     userId?: StringNullableFilter<"Projects"> | string | null
     Channels?: ChannelListRelationFilter
-    whiteboards?: WhiteboardListRelationFilter
     owner?: XOR<UserScalarRelationFilter, UserWhereInput>
+    whiteboards?: WhiteboardListRelationFilter
     users?: UserListRelationFilter
   }
 
@@ -15447,8 +15447,8 @@ export namespace Prisma {
     ownerId?: SortOrder
     userId?: SortOrderInput | SortOrder
     Channels?: ChannelOrderByRelationAggregateInput
-    whiteboards?: WhiteboardOrderByRelationAggregateInput
     owner?: UserOrderByWithRelationInput
+    whiteboards?: WhiteboardOrderByRelationAggregateInput
     users?: UserOrderByRelationAggregateInput
   }
 
@@ -15463,8 +15463,8 @@ export namespace Prisma {
     ownerId?: StringFilter<"Projects"> | string
     userId?: StringNullableFilter<"Projects"> | string | null
     Channels?: ChannelListRelationFilter
-    whiteboards?: WhiteboardListRelationFilter
     owner?: XOR<UserScalarRelationFilter, UserWhereInput>
+    whiteboards?: WhiteboardListRelationFilter
     users?: UserListRelationFilter
   }, "id" | "id">
 
@@ -15569,17 +15569,17 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsCreateNestedManyWithoutOwnerInput
+    Session?: SessionCreateNestedManyWithoutUserInput
+    settings?: UserSettingsCreateNestedOneWithoutUserInput
     channels?: ChannelCreateNestedManyWithoutMembersInput
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsCreateNestedManyWithoutUsersInput
-    Account?: AccountCreateNestedManyWithoutUserInput
-    Session?: SessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -15595,17 +15595,17 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageUncheckedCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageUncheckedCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageUncheckedCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsUncheckedCreateNestedManyWithoutOwnerInput
+    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
+    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     channels?: ChannelUncheckedCreateNestedManyWithoutMembersInput
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsUncheckedCreateNestedManyWithoutUsersInput
-    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
-    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -15621,17 +15621,17 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     channels?: ChannelUpdateManyWithoutMembersNestedInput
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUpdateManyWithoutUsersNestedInput
-    Account?: AccountUpdateManyWithoutUserNestedInput
-    Session?: SessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -15647,17 +15647,17 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUncheckedUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUncheckedUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUncheckedUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     channels?: ChannelUncheckedUpdateManyWithoutMembersNestedInput
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUncheckedUpdateManyWithoutUsersNestedInput
-    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -16217,8 +16217,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     userId?: string | null
     Channels?: ChannelCreateNestedManyWithoutWorkspaceInput
-    whiteboards?: WhiteboardCreateNestedManyWithoutWorkspaceInput
     owner: UserCreateNestedOneWithoutOwnedProjectsInput
+    whiteboards?: WhiteboardCreateNestedManyWithoutWorkspaceInput
     users?: UserCreateNestedManyWithoutProjectsInput
   }
 
@@ -16240,8 +16240,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     Channels?: ChannelUpdateManyWithoutWorkspaceNestedInput
-    whiteboards?: WhiteboardUpdateManyWithoutWorkspaceNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedProjectsNestedInput
+    whiteboards?: WhiteboardUpdateManyWithoutWorkspaceNestedInput
     users?: UserUpdateManyWithoutProjectsNestedInput
   }
 
@@ -16400,6 +16400,12 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type AccountListRelationFilter = {
+    every?: AccountWhereInput
+    some?: AccountWhereInput
+    none?: AccountWhereInput
+  }
+
   export type ChannelMessageListRelationFilter = {
     every?: ChannelMessageWhereInput
     some?: ChannelMessageWhereInput
@@ -16412,15 +16418,21 @@ export namespace Prisma {
     none?: DirectMessageWhereInput
   }
 
-  export type UserSettingsNullableScalarRelationFilter = {
-    is?: UserSettingsWhereInput | null
-    isNot?: UserSettingsWhereInput | null
-  }
-
   export type ProjectsListRelationFilter = {
     every?: ProjectsWhereInput
     some?: ProjectsWhereInput
     none?: ProjectsWhereInput
+  }
+
+  export type SessionListRelationFilter = {
+    every?: SessionWhereInput
+    some?: SessionWhereInput
+    none?: SessionWhereInput
+  }
+
+  export type UserSettingsNullableScalarRelationFilter = {
+    is?: UserSettingsWhereInput | null
+    isNot?: UserSettingsWhereInput | null
   }
 
   export type ChannelListRelationFilter = {
@@ -16435,21 +16447,13 @@ export namespace Prisma {
     none?: UserWhereInput
   }
 
-  export type AccountListRelationFilter = {
-    every?: AccountWhereInput
-    some?: AccountWhereInput
-    none?: AccountWhereInput
-  }
-
-  export type SessionListRelationFilter = {
-    every?: SessionWhereInput
-    some?: SessionWhereInput
-    none?: SessionWhereInput
-  }
-
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
+  }
+
+  export type AccountOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type ChannelMessageOrderByRelationAggregateInput = {
@@ -16464,19 +16468,15 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type SessionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type ChannelOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type UserOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type AccountOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type SessionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -17095,6 +17095,13 @@ export namespace Prisma {
     _max?: NestedBytesFilter<$PrismaModel>
   }
 
+  export type AccountCreateNestedManyWithoutUserInput = {
+    create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
+    createMany?: AccountCreateManyUserInputEnvelope
+    connect?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
+  }
+
   export type ChannelMessageCreateNestedManyWithoutSenderInput = {
     create?: XOR<ChannelMessageCreateWithoutSenderInput, ChannelMessageUncheckedCreateWithoutSenderInput> | ChannelMessageCreateWithoutSenderInput[] | ChannelMessageUncheckedCreateWithoutSenderInput[]
     connectOrCreate?: ChannelMessageCreateOrConnectWithoutSenderInput | ChannelMessageCreateOrConnectWithoutSenderInput[]
@@ -17116,17 +17123,24 @@ export namespace Prisma {
     connect?: DirectMessageWhereUniqueInput | DirectMessageWhereUniqueInput[]
   }
 
-  export type UserSettingsCreateNestedOneWithoutUserInput = {
-    create?: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
-    connectOrCreate?: UserSettingsCreateOrConnectWithoutUserInput
-    connect?: UserSettingsWhereUniqueInput
-  }
-
   export type ProjectsCreateNestedManyWithoutOwnerInput = {
     create?: XOR<ProjectsCreateWithoutOwnerInput, ProjectsUncheckedCreateWithoutOwnerInput> | ProjectsCreateWithoutOwnerInput[] | ProjectsUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: ProjectsCreateOrConnectWithoutOwnerInput | ProjectsCreateOrConnectWithoutOwnerInput[]
     createMany?: ProjectsCreateManyOwnerInputEnvelope
     connect?: ProjectsWhereUniqueInput | ProjectsWhereUniqueInput[]
+  }
+
+  export type SessionCreateNestedManyWithoutUserInput = {
+    create?: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput> | SessionCreateWithoutUserInput[] | SessionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SessionCreateOrConnectWithoutUserInput | SessionCreateOrConnectWithoutUserInput[]
+    createMany?: SessionCreateManyUserInputEnvelope
+    connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+  }
+
+  export type UserSettingsCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserSettingsCreateOrConnectWithoutUserInput
+    connect?: UserSettingsWhereUniqueInput
   }
 
   export type ChannelCreateNestedManyWithoutMembersInput = {
@@ -17153,18 +17167,11 @@ export namespace Prisma {
     connect?: ProjectsWhereUniqueInput | ProjectsWhereUniqueInput[]
   }
 
-  export type AccountCreateNestedManyWithoutUserInput = {
+  export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
     createMany?: AccountCreateManyUserInputEnvelope
     connect?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
-  }
-
-  export type SessionCreateNestedManyWithoutUserInput = {
-    create?: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput> | SessionCreateWithoutUserInput[] | SessionUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: SessionCreateOrConnectWithoutUserInput | SessionCreateOrConnectWithoutUserInput[]
-    createMany?: SessionCreateManyUserInputEnvelope
-    connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
   }
 
   export type ChannelMessageUncheckedCreateNestedManyWithoutSenderInput = {
@@ -17188,17 +17195,24 @@ export namespace Prisma {
     connect?: DirectMessageWhereUniqueInput | DirectMessageWhereUniqueInput[]
   }
 
-  export type UserSettingsUncheckedCreateNestedOneWithoutUserInput = {
-    create?: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
-    connectOrCreate?: UserSettingsCreateOrConnectWithoutUserInput
-    connect?: UserSettingsWhereUniqueInput
-  }
-
   export type ProjectsUncheckedCreateNestedManyWithoutOwnerInput = {
     create?: XOR<ProjectsCreateWithoutOwnerInput, ProjectsUncheckedCreateWithoutOwnerInput> | ProjectsCreateWithoutOwnerInput[] | ProjectsUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: ProjectsCreateOrConnectWithoutOwnerInput | ProjectsCreateOrConnectWithoutOwnerInput[]
     createMany?: ProjectsCreateManyOwnerInputEnvelope
     connect?: ProjectsWhereUniqueInput | ProjectsWhereUniqueInput[]
+  }
+
+  export type SessionUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput> | SessionCreateWithoutUserInput[] | SessionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SessionCreateOrConnectWithoutUserInput | SessionCreateOrConnectWithoutUserInput[]
+    createMany?: SessionCreateManyUserInputEnvelope
+    connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+  }
+
+  export type UserSettingsUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserSettingsCreateOrConnectWithoutUserInput
+    connect?: UserSettingsWhereUniqueInput
   }
 
   export type ChannelUncheckedCreateNestedManyWithoutMembersInput = {
@@ -17225,20 +17239,6 @@ export namespace Prisma {
     connect?: ProjectsWhereUniqueInput | ProjectsWhereUniqueInput[]
   }
 
-  export type AccountUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
-    createMany?: AccountCreateManyUserInputEnvelope
-    connect?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
-  }
-
-  export type SessionUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput> | SessionCreateWithoutUserInput[] | SessionUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: SessionCreateOrConnectWithoutUserInput | SessionCreateOrConnectWithoutUserInput[]
-    createMany?: SessionCreateManyUserInputEnvelope
-    connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
-  }
-
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -17257,6 +17257,20 @@ export namespace Prisma {
 
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
+  }
+
+  export type AccountUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
+    upsert?: AccountUpsertWithWhereUniqueWithoutUserInput | AccountUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AccountCreateManyUserInputEnvelope
+    set?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
+    disconnect?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
+    delete?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
+    connect?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
+    update?: AccountUpdateWithWhereUniqueWithoutUserInput | AccountUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AccountUpdateManyWithWhereWithoutUserInput | AccountUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AccountScalarWhereInput | AccountScalarWhereInput[]
   }
 
   export type ChannelMessageUpdateManyWithoutSenderNestedInput = {
@@ -17301,16 +17315,6 @@ export namespace Prisma {
     deleteMany?: DirectMessageScalarWhereInput | DirectMessageScalarWhereInput[]
   }
 
-  export type UserSettingsUpdateOneWithoutUserNestedInput = {
-    create?: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
-    connectOrCreate?: UserSettingsCreateOrConnectWithoutUserInput
-    upsert?: UserSettingsUpsertWithoutUserInput
-    disconnect?: UserSettingsWhereInput | boolean
-    delete?: UserSettingsWhereInput | boolean
-    connect?: UserSettingsWhereUniqueInput
-    update?: XOR<XOR<UserSettingsUpdateToOneWithWhereWithoutUserInput, UserSettingsUpdateWithoutUserInput>, UserSettingsUncheckedUpdateWithoutUserInput>
-  }
-
   export type ProjectsUpdateManyWithoutOwnerNestedInput = {
     create?: XOR<ProjectsCreateWithoutOwnerInput, ProjectsUncheckedCreateWithoutOwnerInput> | ProjectsCreateWithoutOwnerInput[] | ProjectsUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: ProjectsCreateOrConnectWithoutOwnerInput | ProjectsCreateOrConnectWithoutOwnerInput[]
@@ -17323,6 +17327,30 @@ export namespace Prisma {
     update?: ProjectsUpdateWithWhereUniqueWithoutOwnerInput | ProjectsUpdateWithWhereUniqueWithoutOwnerInput[]
     updateMany?: ProjectsUpdateManyWithWhereWithoutOwnerInput | ProjectsUpdateManyWithWhereWithoutOwnerInput[]
     deleteMany?: ProjectsScalarWhereInput | ProjectsScalarWhereInput[]
+  }
+
+  export type SessionUpdateManyWithoutUserNestedInput = {
+    create?: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput> | SessionCreateWithoutUserInput[] | SessionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SessionCreateOrConnectWithoutUserInput | SessionCreateOrConnectWithoutUserInput[]
+    upsert?: SessionUpsertWithWhereUniqueWithoutUserInput | SessionUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: SessionCreateManyUserInputEnvelope
+    set?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    disconnect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    delete?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    update?: SessionUpdateWithWhereUniqueWithoutUserInput | SessionUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: SessionUpdateManyWithWhereWithoutUserInput | SessionUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[]
+  }
+
+  export type UserSettingsUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserSettingsCreateOrConnectWithoutUserInput
+    upsert?: UserSettingsUpsertWithoutUserInput
+    disconnect?: UserSettingsWhereInput | boolean
+    delete?: UserSettingsWhereInput | boolean
+    connect?: UserSettingsWhereUniqueInput
+    update?: XOR<XOR<UserSettingsUpdateToOneWithWhereWithoutUserInput, UserSettingsUpdateWithoutUserInput>, UserSettingsUncheckedUpdateWithoutUserInput>
   }
 
   export type ChannelUpdateManyWithoutMembersNestedInput = {
@@ -17377,7 +17405,7 @@ export namespace Prisma {
     deleteMany?: ProjectsScalarWhereInput | ProjectsScalarWhereInput[]
   }
 
-  export type AccountUpdateManyWithoutUserNestedInput = {
+  export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
     upsert?: AccountUpsertWithWhereUniqueWithoutUserInput | AccountUpsertWithWhereUniqueWithoutUserInput[]
@@ -17389,20 +17417,6 @@ export namespace Prisma {
     update?: AccountUpdateWithWhereUniqueWithoutUserInput | AccountUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: AccountUpdateManyWithWhereWithoutUserInput | AccountUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: AccountScalarWhereInput | AccountScalarWhereInput[]
-  }
-
-  export type SessionUpdateManyWithoutUserNestedInput = {
-    create?: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput> | SessionCreateWithoutUserInput[] | SessionUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: SessionCreateOrConnectWithoutUserInput | SessionCreateOrConnectWithoutUserInput[]
-    upsert?: SessionUpsertWithWhereUniqueWithoutUserInput | SessionUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: SessionCreateManyUserInputEnvelope
-    set?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
-    disconnect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
-    delete?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
-    connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
-    update?: SessionUpdateWithWhereUniqueWithoutUserInput | SessionUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: SessionUpdateManyWithWhereWithoutUserInput | SessionUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[]
   }
 
   export type ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput = {
@@ -17447,16 +17461,6 @@ export namespace Prisma {
     deleteMany?: DirectMessageScalarWhereInput | DirectMessageScalarWhereInput[]
   }
 
-  export type UserSettingsUncheckedUpdateOneWithoutUserNestedInput = {
-    create?: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
-    connectOrCreate?: UserSettingsCreateOrConnectWithoutUserInput
-    upsert?: UserSettingsUpsertWithoutUserInput
-    disconnect?: UserSettingsWhereInput | boolean
-    delete?: UserSettingsWhereInput | boolean
-    connect?: UserSettingsWhereUniqueInput
-    update?: XOR<XOR<UserSettingsUpdateToOneWithWhereWithoutUserInput, UserSettingsUpdateWithoutUserInput>, UserSettingsUncheckedUpdateWithoutUserInput>
-  }
-
   export type ProjectsUncheckedUpdateManyWithoutOwnerNestedInput = {
     create?: XOR<ProjectsCreateWithoutOwnerInput, ProjectsUncheckedCreateWithoutOwnerInput> | ProjectsCreateWithoutOwnerInput[] | ProjectsUncheckedCreateWithoutOwnerInput[]
     connectOrCreate?: ProjectsCreateOrConnectWithoutOwnerInput | ProjectsCreateOrConnectWithoutOwnerInput[]
@@ -17469,6 +17473,30 @@ export namespace Prisma {
     update?: ProjectsUpdateWithWhereUniqueWithoutOwnerInput | ProjectsUpdateWithWhereUniqueWithoutOwnerInput[]
     updateMany?: ProjectsUpdateManyWithWhereWithoutOwnerInput | ProjectsUpdateManyWithWhereWithoutOwnerInput[]
     deleteMany?: ProjectsScalarWhereInput | ProjectsScalarWhereInput[]
+  }
+
+  export type SessionUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput> | SessionCreateWithoutUserInput[] | SessionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: SessionCreateOrConnectWithoutUserInput | SessionCreateOrConnectWithoutUserInput[]
+    upsert?: SessionUpsertWithWhereUniqueWithoutUserInput | SessionUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: SessionCreateManyUserInputEnvelope
+    set?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    disconnect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    delete?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+    update?: SessionUpdateWithWhereUniqueWithoutUserInput | SessionUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: SessionUpdateManyWithWhereWithoutUserInput | SessionUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[]
+  }
+
+  export type UserSettingsUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserSettingsCreateOrConnectWithoutUserInput
+    upsert?: UserSettingsUpsertWithoutUserInput
+    disconnect?: UserSettingsWhereInput | boolean
+    delete?: UserSettingsWhereInput | boolean
+    connect?: UserSettingsWhereUniqueInput
+    update?: XOR<XOR<UserSettingsUpdateToOneWithWhereWithoutUserInput, UserSettingsUpdateWithoutUserInput>, UserSettingsUncheckedUpdateWithoutUserInput>
   }
 
   export type ChannelUncheckedUpdateManyWithoutMembersNestedInput = {
@@ -17521,34 +17549,6 @@ export namespace Prisma {
     update?: ProjectsUpdateWithWhereUniqueWithoutUsersInput | ProjectsUpdateWithWhereUniqueWithoutUsersInput[]
     updateMany?: ProjectsUpdateManyWithWhereWithoutUsersInput | ProjectsUpdateManyWithWhereWithoutUsersInput[]
     deleteMany?: ProjectsScalarWhereInput | ProjectsScalarWhereInput[]
-  }
-
-  export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
-    upsert?: AccountUpsertWithWhereUniqueWithoutUserInput | AccountUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: AccountCreateManyUserInputEnvelope
-    set?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
-    disconnect?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
-    delete?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
-    connect?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
-    update?: AccountUpdateWithWhereUniqueWithoutUserInput | AccountUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: AccountUpdateManyWithWhereWithoutUserInput | AccountUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: AccountScalarWhereInput | AccountScalarWhereInput[]
-  }
-
-  export type SessionUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput> | SessionCreateWithoutUserInput[] | SessionUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: SessionCreateOrConnectWithoutUserInput | SessionCreateOrConnectWithoutUserInput[]
-    upsert?: SessionUpsertWithWhereUniqueWithoutUserInput | SessionUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: SessionCreateManyUserInputEnvelope
-    set?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
-    disconnect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
-    delete?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
-    connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
-    update?: SessionUpdateWithWhereUniqueWithoutUserInput | SessionUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: SessionUpdateManyWithWhereWithoutUserInput | SessionUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAccountInput = {
@@ -17778,17 +17778,17 @@ export namespace Prisma {
     connect?: ChannelWhereUniqueInput | ChannelWhereUniqueInput[]
   }
 
+  export type UserCreateNestedOneWithoutOwnedProjectsInput = {
+    create?: XOR<UserCreateWithoutOwnedProjectsInput, UserUncheckedCreateWithoutOwnedProjectsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutOwnedProjectsInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type WhiteboardCreateNestedManyWithoutWorkspaceInput = {
     create?: XOR<WhiteboardCreateWithoutWorkspaceInput, WhiteboardUncheckedCreateWithoutWorkspaceInput> | WhiteboardCreateWithoutWorkspaceInput[] | WhiteboardUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: WhiteboardCreateOrConnectWithoutWorkspaceInput | WhiteboardCreateOrConnectWithoutWorkspaceInput[]
     createMany?: WhiteboardCreateManyWorkspaceInputEnvelope
     connect?: WhiteboardWhereUniqueInput | WhiteboardWhereUniqueInput[]
-  }
-
-  export type UserCreateNestedOneWithoutOwnedProjectsInput = {
-    create?: XOR<UserCreateWithoutOwnedProjectsInput, UserUncheckedCreateWithoutOwnedProjectsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutOwnedProjectsInput
-    connect?: UserWhereUniqueInput
   }
 
   export type UserCreateNestedManyWithoutProjectsInput = {
@@ -17831,6 +17831,14 @@ export namespace Prisma {
     deleteMany?: ChannelScalarWhereInput | ChannelScalarWhereInput[]
   }
 
+  export type UserUpdateOneRequiredWithoutOwnedProjectsNestedInput = {
+    create?: XOR<UserCreateWithoutOwnedProjectsInput, UserUncheckedCreateWithoutOwnedProjectsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutOwnedProjectsInput
+    upsert?: UserUpsertWithoutOwnedProjectsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutOwnedProjectsInput, UserUpdateWithoutOwnedProjectsInput>, UserUncheckedUpdateWithoutOwnedProjectsInput>
+  }
+
   export type WhiteboardUpdateManyWithoutWorkspaceNestedInput = {
     create?: XOR<WhiteboardCreateWithoutWorkspaceInput, WhiteboardUncheckedCreateWithoutWorkspaceInput> | WhiteboardCreateWithoutWorkspaceInput[] | WhiteboardUncheckedCreateWithoutWorkspaceInput[]
     connectOrCreate?: WhiteboardCreateOrConnectWithoutWorkspaceInput | WhiteboardCreateOrConnectWithoutWorkspaceInput[]
@@ -17843,14 +17851,6 @@ export namespace Prisma {
     update?: WhiteboardUpdateWithWhereUniqueWithoutWorkspaceInput | WhiteboardUpdateWithWhereUniqueWithoutWorkspaceInput[]
     updateMany?: WhiteboardUpdateManyWithWhereWithoutWorkspaceInput | WhiteboardUpdateManyWithWhereWithoutWorkspaceInput[]
     deleteMany?: WhiteboardScalarWhereInput | WhiteboardScalarWhereInput[]
-  }
-
-  export type UserUpdateOneRequiredWithoutOwnedProjectsNestedInput = {
-    create?: XOR<UserCreateWithoutOwnedProjectsInput, UserUncheckedCreateWithoutOwnedProjectsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutOwnedProjectsInput
-    upsert?: UserUpsertWithoutOwnedProjectsInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutOwnedProjectsInput, UserUpdateWithoutOwnedProjectsInput>, UserUncheckedUpdateWithoutOwnedProjectsInput>
   }
 
   export type UserUpdateManyWithoutProjectsNestedInput = {
@@ -18194,6 +18194,44 @@ export namespace Prisma {
     _max?: NestedBytesFilter<$PrismaModel>
   }
 
+  export type AccountCreateWithoutUserInput = {
+    id?: string
+    type: string
+    provider: string
+    providerAccountId: string
+    refresh_token?: string | null
+    access_token?: string | null
+    expires_at?: number | null
+    token_type?: string | null
+    scope?: string | null
+    id_token?: string | null
+    session_state?: string | null
+  }
+
+  export type AccountUncheckedCreateWithoutUserInput = {
+    id?: string
+    type: string
+    provider: string
+    providerAccountId: string
+    refresh_token?: string | null
+    access_token?: string | null
+    expires_at?: number | null
+    token_type?: string | null
+    scope?: string | null
+    id_token?: string | null
+    session_state?: string | null
+  }
+
+  export type AccountCreateOrConnectWithoutUserInput = {
+    where: AccountWhereUniqueInput
+    create: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput>
+  }
+
+  export type AccountCreateManyUserInputEnvelope = {
+    data: AccountCreateManyUserInput | AccountCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ChannelMessageCreateWithoutSenderInput = {
     content: string
     createdAt?: Date | string
@@ -18275,24 +18313,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type UserSettingsCreateWithoutUserInput = {
-    theme?: $Enums.Theme
-    notifications?: boolean
-    soundEnabled?: boolean
-  }
-
-  export type UserSettingsUncheckedCreateWithoutUserInput = {
-    id?: number
-    theme?: $Enums.Theme
-    notifications?: boolean
-    soundEnabled?: boolean
-  }
-
-  export type UserSettingsCreateOrConnectWithoutUserInput = {
-    where: UserSettingsWhereUniqueInput
-    create: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
-  }
-
   export type ProjectsCreateWithoutOwnerInput = {
     name: string
     createdAt?: Date | string
@@ -18322,6 +18342,46 @@ export namespace Prisma {
   export type ProjectsCreateManyOwnerInputEnvelope = {
     data: ProjectsCreateManyOwnerInput | ProjectsCreateManyOwnerInput[]
     skipDuplicates?: boolean
+  }
+
+  export type SessionCreateWithoutUserInput = {
+    id?: string
+    sessionToken: string
+    expires: Date | string
+  }
+
+  export type SessionUncheckedCreateWithoutUserInput = {
+    id?: string
+    sessionToken: string
+    expires: Date | string
+  }
+
+  export type SessionCreateOrConnectWithoutUserInput = {
+    where: SessionWhereUniqueInput
+    create: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput>
+  }
+
+  export type SessionCreateManyUserInputEnvelope = {
+    data: SessionCreateManyUserInput | SessionCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserSettingsCreateWithoutUserInput = {
+    theme?: $Enums.Theme
+    notifications?: boolean
+    soundEnabled?: boolean
+  }
+
+  export type UserSettingsUncheckedCreateWithoutUserInput = {
+    id?: number
+    theme?: $Enums.Theme
+    notifications?: boolean
+    soundEnabled?: boolean
+  }
+
+  export type UserSettingsCreateOrConnectWithoutUserInput = {
+    where: UserSettingsWhereUniqueInput
+    create: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
   }
 
   export type ChannelCreateWithoutMembersInput = {
@@ -18363,16 +18423,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsCreateNestedManyWithoutOwnerInput
+    Session?: SessionCreateNestedManyWithoutUserInput
+    settings?: UserSettingsCreateNestedOneWithoutUserInput
     channels?: ChannelCreateNestedManyWithoutMembersInput
     friends?: UserCreateNestedManyWithoutFriendOfInput
     Projects?: ProjectsCreateNestedManyWithoutUsersInput
-    Account?: AccountCreateNestedManyWithoutUserInput
-    Session?: SessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFriendOfInput = {
@@ -18388,16 +18448,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageUncheckedCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageUncheckedCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageUncheckedCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsUncheckedCreateNestedManyWithoutOwnerInput
+    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
+    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     channels?: ChannelUncheckedCreateNestedManyWithoutMembersInput
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     Projects?: ProjectsUncheckedCreateNestedManyWithoutUsersInput
-    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
-    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFriendOfInput = {
@@ -18418,16 +18478,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsCreateNestedManyWithoutOwnerInput
+    Session?: SessionCreateNestedManyWithoutUserInput
+    settings?: UserSettingsCreateNestedOneWithoutUserInput
     channels?: ChannelCreateNestedManyWithoutMembersInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsCreateNestedManyWithoutUsersInput
-    Account?: AccountCreateNestedManyWithoutUserInput
-    Session?: SessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFriendsInput = {
@@ -18443,16 +18503,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageUncheckedCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageUncheckedCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageUncheckedCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsUncheckedCreateNestedManyWithoutOwnerInput
+    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
+    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     channels?: ChannelUncheckedCreateNestedManyWithoutMembersInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsUncheckedCreateNestedManyWithoutUsersInput
-    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
-    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFriendsInput = {
@@ -18466,8 +18526,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     userId?: string | null
     Channels?: ChannelCreateNestedManyWithoutWorkspaceInput
-    whiteboards?: WhiteboardCreateNestedManyWithoutWorkspaceInput
     owner: UserCreateNestedOneWithoutOwnedProjectsInput
+    whiteboards?: WhiteboardCreateNestedManyWithoutWorkspaceInput
   }
 
   export type ProjectsUncheckedCreateWithoutUsersInput = {
@@ -18486,64 +18546,38 @@ export namespace Prisma {
     create: XOR<ProjectsCreateWithoutUsersInput, ProjectsUncheckedCreateWithoutUsersInput>
   }
 
-  export type AccountCreateWithoutUserInput = {
-    id?: string
-    type: string
-    provider: string
-    providerAccountId: string
-    refresh_token?: string | null
-    access_token?: string | null
-    expires_at?: number | null
-    token_type?: string | null
-    scope?: string | null
-    id_token?: string | null
-    session_state?: string | null
-  }
-
-  export type AccountUncheckedCreateWithoutUserInput = {
-    id?: string
-    type: string
-    provider: string
-    providerAccountId: string
-    refresh_token?: string | null
-    access_token?: string | null
-    expires_at?: number | null
-    token_type?: string | null
-    scope?: string | null
-    id_token?: string | null
-    session_state?: string | null
-  }
-
-  export type AccountCreateOrConnectWithoutUserInput = {
+  export type AccountUpsertWithWhereUniqueWithoutUserInput = {
     where: AccountWhereUniqueInput
+    update: XOR<AccountUpdateWithoutUserInput, AccountUncheckedUpdateWithoutUserInput>
     create: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput>
   }
 
-  export type AccountCreateManyUserInputEnvelope = {
-    data: AccountCreateManyUserInput | AccountCreateManyUserInput[]
-    skipDuplicates?: boolean
+  export type AccountUpdateWithWhereUniqueWithoutUserInput = {
+    where: AccountWhereUniqueInput
+    data: XOR<AccountUpdateWithoutUserInput, AccountUncheckedUpdateWithoutUserInput>
   }
 
-  export type SessionCreateWithoutUserInput = {
-    id?: string
-    sessionToken: string
-    expires: Date | string
+  export type AccountUpdateManyWithWhereWithoutUserInput = {
+    where: AccountScalarWhereInput
+    data: XOR<AccountUpdateManyMutationInput, AccountUncheckedUpdateManyWithoutUserInput>
   }
 
-  export type SessionUncheckedCreateWithoutUserInput = {
-    id?: string
-    sessionToken: string
-    expires: Date | string
-  }
-
-  export type SessionCreateOrConnectWithoutUserInput = {
-    where: SessionWhereUniqueInput
-    create: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput>
-  }
-
-  export type SessionCreateManyUserInputEnvelope = {
-    data: SessionCreateManyUserInput | SessionCreateManyUserInput[]
-    skipDuplicates?: boolean
+  export type AccountScalarWhereInput = {
+    AND?: AccountScalarWhereInput | AccountScalarWhereInput[]
+    OR?: AccountScalarWhereInput[]
+    NOT?: AccountScalarWhereInput | AccountScalarWhereInput[]
+    id?: StringFilter<"Account"> | string
+    userId?: StringFilter<"Account"> | string
+    type?: StringFilter<"Account"> | string
+    provider?: StringFilter<"Account"> | string
+    providerAccountId?: StringFilter<"Account"> | string
+    refresh_token?: StringNullableFilter<"Account"> | string | null
+    access_token?: StringNullableFilter<"Account"> | string | null
+    expires_at?: IntNullableFilter<"Account"> | number | null
+    token_type?: StringNullableFilter<"Account"> | string | null
+    scope?: StringNullableFilter<"Account"> | string | null
+    id_token?: StringNullableFilter<"Account"> | string | null
+    session_state?: StringNullableFilter<"Account"> | string | null
   }
 
   export type ChannelMessageUpsertWithWhereUniqueWithoutSenderInput = {
@@ -18620,30 +18654,6 @@ export namespace Prisma {
     data: XOR<DirectMessageUpdateManyMutationInput, DirectMessageUncheckedUpdateManyWithoutSenderInput>
   }
 
-  export type UserSettingsUpsertWithoutUserInput = {
-    update: XOR<UserSettingsUpdateWithoutUserInput, UserSettingsUncheckedUpdateWithoutUserInput>
-    create: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
-    where?: UserSettingsWhereInput
-  }
-
-  export type UserSettingsUpdateToOneWithWhereWithoutUserInput = {
-    where?: UserSettingsWhereInput
-    data: XOR<UserSettingsUpdateWithoutUserInput, UserSettingsUncheckedUpdateWithoutUserInput>
-  }
-
-  export type UserSettingsUpdateWithoutUserInput = {
-    theme?: EnumThemeFieldUpdateOperationsInput | $Enums.Theme
-    notifications?: BoolFieldUpdateOperationsInput | boolean
-    soundEnabled?: BoolFieldUpdateOperationsInput | boolean
-  }
-
-  export type UserSettingsUncheckedUpdateWithoutUserInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    theme?: EnumThemeFieldUpdateOperationsInput | $Enums.Theme
-    notifications?: BoolFieldUpdateOperationsInput | boolean
-    soundEnabled?: BoolFieldUpdateOperationsInput | boolean
-  }
-
   export type ProjectsUpsertWithWhereUniqueWithoutOwnerInput = {
     where: ProjectsWhereUniqueInput
     update: XOR<ProjectsUpdateWithoutOwnerInput, ProjectsUncheckedUpdateWithoutOwnerInput>
@@ -18670,6 +18680,56 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Projects"> | Date | string
     ownerId?: StringFilter<"Projects"> | string
     userId?: StringNullableFilter<"Projects"> | string | null
+  }
+
+  export type SessionUpsertWithWhereUniqueWithoutUserInput = {
+    where: SessionWhereUniqueInput
+    update: XOR<SessionUpdateWithoutUserInput, SessionUncheckedUpdateWithoutUserInput>
+    create: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput>
+  }
+
+  export type SessionUpdateWithWhereUniqueWithoutUserInput = {
+    where: SessionWhereUniqueInput
+    data: XOR<SessionUpdateWithoutUserInput, SessionUncheckedUpdateWithoutUserInput>
+  }
+
+  export type SessionUpdateManyWithWhereWithoutUserInput = {
+    where: SessionScalarWhereInput
+    data: XOR<SessionUpdateManyMutationInput, SessionUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type SessionScalarWhereInput = {
+    AND?: SessionScalarWhereInput | SessionScalarWhereInput[]
+    OR?: SessionScalarWhereInput[]
+    NOT?: SessionScalarWhereInput | SessionScalarWhereInput[]
+    id?: StringFilter<"Session"> | string
+    sessionToken?: StringFilter<"Session"> | string
+    userId?: StringFilter<"Session"> | string
+    expires?: DateTimeFilter<"Session"> | Date | string
+  }
+
+  export type UserSettingsUpsertWithoutUserInput = {
+    update: XOR<UserSettingsUpdateWithoutUserInput, UserSettingsUncheckedUpdateWithoutUserInput>
+    create: XOR<UserSettingsCreateWithoutUserInput, UserSettingsUncheckedCreateWithoutUserInput>
+    where?: UserSettingsWhereInput
+  }
+
+  export type UserSettingsUpdateToOneWithWhereWithoutUserInput = {
+    where?: UserSettingsWhereInput
+    data: XOR<UserSettingsUpdateWithoutUserInput, UserSettingsUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserSettingsUpdateWithoutUserInput = {
+    theme?: EnumThemeFieldUpdateOperationsInput | $Enums.Theme
+    notifications?: BoolFieldUpdateOperationsInput | boolean
+    soundEnabled?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type UserSettingsUncheckedUpdateWithoutUserInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    theme?: EnumThemeFieldUpdateOperationsInput | $Enums.Theme
+    notifications?: BoolFieldUpdateOperationsInput | boolean
+    soundEnabled?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type ChannelUpsertWithWhereUniqueWithoutMembersInput = {
@@ -18767,66 +18827,6 @@ export namespace Prisma {
     data: XOR<ProjectsUpdateManyMutationInput, ProjectsUncheckedUpdateManyWithoutUsersInput>
   }
 
-  export type AccountUpsertWithWhereUniqueWithoutUserInput = {
-    where: AccountWhereUniqueInput
-    update: XOR<AccountUpdateWithoutUserInput, AccountUncheckedUpdateWithoutUserInput>
-    create: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput>
-  }
-
-  export type AccountUpdateWithWhereUniqueWithoutUserInput = {
-    where: AccountWhereUniqueInput
-    data: XOR<AccountUpdateWithoutUserInput, AccountUncheckedUpdateWithoutUserInput>
-  }
-
-  export type AccountUpdateManyWithWhereWithoutUserInput = {
-    where: AccountScalarWhereInput
-    data: XOR<AccountUpdateManyMutationInput, AccountUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type AccountScalarWhereInput = {
-    AND?: AccountScalarWhereInput | AccountScalarWhereInput[]
-    OR?: AccountScalarWhereInput[]
-    NOT?: AccountScalarWhereInput | AccountScalarWhereInput[]
-    id?: StringFilter<"Account"> | string
-    userId?: StringFilter<"Account"> | string
-    type?: StringFilter<"Account"> | string
-    provider?: StringFilter<"Account"> | string
-    providerAccountId?: StringFilter<"Account"> | string
-    refresh_token?: StringNullableFilter<"Account"> | string | null
-    access_token?: StringNullableFilter<"Account"> | string | null
-    expires_at?: IntNullableFilter<"Account"> | number | null
-    token_type?: StringNullableFilter<"Account"> | string | null
-    scope?: StringNullableFilter<"Account"> | string | null
-    id_token?: StringNullableFilter<"Account"> | string | null
-    session_state?: StringNullableFilter<"Account"> | string | null
-  }
-
-  export type SessionUpsertWithWhereUniqueWithoutUserInput = {
-    where: SessionWhereUniqueInput
-    update: XOR<SessionUpdateWithoutUserInput, SessionUncheckedUpdateWithoutUserInput>
-    create: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput>
-  }
-
-  export type SessionUpdateWithWhereUniqueWithoutUserInput = {
-    where: SessionWhereUniqueInput
-    data: XOR<SessionUpdateWithoutUserInput, SessionUncheckedUpdateWithoutUserInput>
-  }
-
-  export type SessionUpdateManyWithWhereWithoutUserInput = {
-    where: SessionScalarWhereInput
-    data: XOR<SessionUpdateManyMutationInput, SessionUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type SessionScalarWhereInput = {
-    AND?: SessionScalarWhereInput | SessionScalarWhereInput[]
-    OR?: SessionScalarWhereInput[]
-    NOT?: SessionScalarWhereInput | SessionScalarWhereInput[]
-    id?: StringFilter<"Session"> | string
-    sessionToken?: StringFilter<"Session"> | string
-    userId?: StringFilter<"Session"> | string
-    expires?: DateTimeFilter<"Session"> | Date | string
-  }
-
   export type UserCreateWithoutAccountInput = {
     id?: string
     email: string
@@ -18843,13 +18843,13 @@ export namespace Prisma {
     channelMessages?: ChannelMessageCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsCreateNestedManyWithoutOwnerInput
+    Session?: SessionCreateNestedManyWithoutUserInput
+    settings?: UserSettingsCreateNestedOneWithoutUserInput
     channels?: ChannelCreateNestedManyWithoutMembersInput
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsCreateNestedManyWithoutUsersInput
-    Session?: SessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountInput = {
@@ -18868,13 +18868,13 @@ export namespace Prisma {
     channelMessages?: ChannelMessageUncheckedCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageUncheckedCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageUncheckedCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsUncheckedCreateNestedManyWithoutOwnerInput
+    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
+    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     channels?: ChannelUncheckedCreateNestedManyWithoutMembersInput
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsUncheckedCreateNestedManyWithoutUsersInput
-    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountInput = {
@@ -18909,13 +18909,13 @@ export namespace Prisma {
     channelMessages?: ChannelMessageUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     channels?: ChannelUpdateManyWithoutMembersNestedInput
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUpdateManyWithoutUsersNestedInput
-    Session?: SessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountInput = {
@@ -18934,13 +18934,13 @@ export namespace Prisma {
     channelMessages?: ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUncheckedUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUncheckedUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUncheckedUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     channels?: ChannelUncheckedUpdateManyWithoutMembersNestedInput
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUncheckedUpdateManyWithoutUsersNestedInput
-    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionInput = {
@@ -18956,16 +18956,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsCreateNestedManyWithoutOwnerInput
+    settings?: UserSettingsCreateNestedOneWithoutUserInput
     channels?: ChannelCreateNestedManyWithoutMembersInput
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsCreateNestedManyWithoutUsersInput
-    Account?: AccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionInput = {
@@ -18981,16 +18981,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageUncheckedCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageUncheckedCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageUncheckedCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsUncheckedCreateNestedManyWithoutOwnerInput
+    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     channels?: ChannelUncheckedCreateNestedManyWithoutMembersInput
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsUncheckedCreateNestedManyWithoutUsersInput
-    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionInput = {
@@ -19022,16 +19022,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUpdateManyWithoutOwnerNestedInput
+    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     channels?: ChannelUpdateManyWithoutMembersNestedInput
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUpdateManyWithoutUsersNestedInput
-    Account?: AccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionInput = {
@@ -19047,16 +19047,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUncheckedUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUncheckedUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUncheckedUpdateManyWithoutOwnerNestedInput
+    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     channels?: ChannelUncheckedUpdateManyWithoutMembersNestedInput
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUncheckedUpdateManyWithoutUsersNestedInput
-    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSettingsInput = {
@@ -19072,16 +19072,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageCreateNestedManyWithoutSenderInput
     ownedProjects?: ProjectsCreateNestedManyWithoutOwnerInput
+    Session?: SessionCreateNestedManyWithoutUserInput
     channels?: ChannelCreateNestedManyWithoutMembersInput
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsCreateNestedManyWithoutUsersInput
-    Account?: AccountCreateNestedManyWithoutUserInput
-    Session?: SessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSettingsInput = {
@@ -19097,16 +19097,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageUncheckedCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageUncheckedCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageUncheckedCreateNestedManyWithoutSenderInput
     ownedProjects?: ProjectsUncheckedCreateNestedManyWithoutOwnerInput
+    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
     channels?: ChannelUncheckedCreateNestedManyWithoutMembersInput
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsUncheckedCreateNestedManyWithoutUsersInput
-    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
-    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSettingsInput = {
@@ -19138,16 +19138,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUpdateManyWithoutSenderNestedInput
     ownedProjects?: ProjectsUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUpdateManyWithoutUserNestedInput
     channels?: ChannelUpdateManyWithoutMembersNestedInput
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUpdateManyWithoutUsersNestedInput
-    Account?: AccountUpdateManyWithoutUserNestedInput
-    Session?: SessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSettingsInput = {
@@ -19163,16 +19163,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUncheckedUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUncheckedUpdateManyWithoutSenderNestedInput
     ownedProjects?: ProjectsUncheckedUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
     channels?: ChannelUncheckedUpdateManyWithoutMembersNestedInput
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUncheckedUpdateManyWithoutUsersNestedInput
-    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutReceivedMessagesInput = {
@@ -19188,16 +19188,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageCreateNestedManyWithoutSenderInput
     sentMessages?: DirectMessageCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsCreateNestedManyWithoutOwnerInput
+    Session?: SessionCreateNestedManyWithoutUserInput
+    settings?: UserSettingsCreateNestedOneWithoutUserInput
     channels?: ChannelCreateNestedManyWithoutMembersInput
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsCreateNestedManyWithoutUsersInput
-    Account?: AccountCreateNestedManyWithoutUserInput
-    Session?: SessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReceivedMessagesInput = {
@@ -19213,16 +19213,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageUncheckedCreateNestedManyWithoutSenderInput
     sentMessages?: DirectMessageUncheckedCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsUncheckedCreateNestedManyWithoutOwnerInput
+    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
+    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     channels?: ChannelUncheckedCreateNestedManyWithoutMembersInput
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsUncheckedCreateNestedManyWithoutUsersInput
-    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
-    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReceivedMessagesInput = {
@@ -19243,16 +19243,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageCreateNestedManyWithoutReceiverInput
-    settings?: UserSettingsCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsCreateNestedManyWithoutOwnerInput
+    Session?: SessionCreateNestedManyWithoutUserInput
+    settings?: UserSettingsCreateNestedOneWithoutUserInput
     channels?: ChannelCreateNestedManyWithoutMembersInput
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsCreateNestedManyWithoutUsersInput
-    Account?: AccountCreateNestedManyWithoutUserInput
-    Session?: SessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -19268,16 +19268,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageUncheckedCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageUncheckedCreateNestedManyWithoutReceiverInput
-    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsUncheckedCreateNestedManyWithoutOwnerInput
+    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
+    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     channels?: ChannelUncheckedCreateNestedManyWithoutMembersInput
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsUncheckedCreateNestedManyWithoutUsersInput
-    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
-    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -19309,16 +19309,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUpdateManyWithoutSenderNestedInput
     sentMessages?: DirectMessageUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     channels?: ChannelUpdateManyWithoutMembersNestedInput
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUpdateManyWithoutUsersNestedInput
-    Account?: AccountUpdateManyWithoutUserNestedInput
-    Session?: SessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReceivedMessagesInput = {
@@ -19334,16 +19334,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput
     sentMessages?: DirectMessageUncheckedUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUncheckedUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     channels?: ChannelUncheckedUpdateManyWithoutMembersNestedInput
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUncheckedUpdateManyWithoutUsersNestedInput
-    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutSentMessagesInput = {
@@ -19370,16 +19370,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUpdateManyWithoutReceiverNestedInput
-    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     channels?: ChannelUpdateManyWithoutMembersNestedInput
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUpdateManyWithoutUsersNestedInput
-    Account?: AccountUpdateManyWithoutUserNestedInput
-    Session?: SessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentMessagesInput = {
@@ -19395,16 +19395,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUncheckedUpdateManyWithoutReceiverNestedInput
-    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUncheckedUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     channels?: ChannelUncheckedUpdateManyWithoutMembersNestedInput
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUncheckedUpdateManyWithoutUsersNestedInput
-    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectsCreateWithoutChannelsInput = {
@@ -19412,8 +19412,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     userId?: string | null
-    whiteboards?: WhiteboardCreateNestedManyWithoutWorkspaceInput
     owner: UserCreateNestedOneWithoutOwnedProjectsInput
+    whiteboards?: WhiteboardCreateNestedManyWithoutWorkspaceInput
     users?: UserCreateNestedManyWithoutProjectsInput
   }
 
@@ -19473,16 +19473,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsCreateNestedManyWithoutOwnerInput
+    Session?: SessionCreateNestedManyWithoutUserInput
+    settings?: UserSettingsCreateNestedOneWithoutUserInput
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsCreateNestedManyWithoutUsersInput
-    Account?: AccountCreateNestedManyWithoutUserInput
-    Session?: SessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutChannelsInput = {
@@ -19498,16 +19498,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageUncheckedCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageUncheckedCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageUncheckedCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsUncheckedCreateNestedManyWithoutOwnerInput
+    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
+    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsUncheckedCreateNestedManyWithoutUsersInput
-    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
-    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutChannelsInput = {
@@ -19531,8 +19531,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
-    whiteboards?: WhiteboardUpdateManyWithoutWorkspaceNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedProjectsNestedInput
+    whiteboards?: WhiteboardUpdateManyWithoutWorkspaceNestedInput
     users?: UserUpdateManyWithoutProjectsNestedInput
   }
 
@@ -19618,16 +19618,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountCreateNestedManyWithoutUserInput
     receivedMessages?: DirectMessageCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsCreateNestedManyWithoutOwnerInput
+    Session?: SessionCreateNestedManyWithoutUserInput
+    settings?: UserSettingsCreateNestedOneWithoutUserInput
     channels?: ChannelCreateNestedManyWithoutMembersInput
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsCreateNestedManyWithoutUsersInput
-    Account?: AccountCreateNestedManyWithoutUserInput
-    Session?: SessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutChannelMessagesInput = {
@@ -19643,16 +19643,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
     receivedMessages?: DirectMessageUncheckedCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageUncheckedCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsUncheckedCreateNestedManyWithoutOwnerInput
+    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
+    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     channels?: ChannelUncheckedCreateNestedManyWithoutMembersInput
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
     Projects?: ProjectsUncheckedCreateNestedManyWithoutUsersInput
-    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
-    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutChannelMessagesInput = {
@@ -19716,16 +19716,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUpdateManyWithoutUserNestedInput
     receivedMessages?: DirectMessageUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     channels?: ChannelUpdateManyWithoutMembersNestedInput
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUpdateManyWithoutUsersNestedInput
-    Account?: AccountUpdateManyWithoutUserNestedInput
-    Session?: SessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChannelMessagesInput = {
@@ -19741,16 +19741,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
     receivedMessages?: DirectMessageUncheckedUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUncheckedUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUncheckedUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     channels?: ChannelUncheckedUpdateManyWithoutMembersNestedInput
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUncheckedUpdateManyWithoutUsersNestedInput
-    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ChannelCreateWithoutWorkspaceInput = {
@@ -19784,6 +19784,61 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type UserCreateWithoutOwnedProjectsInput = {
+    id?: string
+    email: string
+    name?: string | null
+    userName?: string | null
+    image?: string | null
+    password?: string | null
+    emailVerified?: Date | string | null
+    status?: $Enums.UserStatus
+    statusMessage?: string | null
+    lastSeen?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    Account?: AccountCreateNestedManyWithoutUserInput
+    channelMessages?: ChannelMessageCreateNestedManyWithoutSenderInput
+    receivedMessages?: DirectMessageCreateNestedManyWithoutReceiverInput
+    sentMessages?: DirectMessageCreateNestedManyWithoutSenderInput
+    Session?: SessionCreateNestedManyWithoutUserInput
+    settings?: UserSettingsCreateNestedOneWithoutUserInput
+    channels?: ChannelCreateNestedManyWithoutMembersInput
+    friends?: UserCreateNestedManyWithoutFriendOfInput
+    friendOf?: UserCreateNestedManyWithoutFriendsInput
+    Projects?: ProjectsCreateNestedManyWithoutUsersInput
+  }
+
+  export type UserUncheckedCreateWithoutOwnedProjectsInput = {
+    id?: string
+    email: string
+    name?: string | null
+    userName?: string | null
+    image?: string | null
+    password?: string | null
+    emailVerified?: Date | string | null
+    status?: $Enums.UserStatus
+    statusMessage?: string | null
+    lastSeen?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
+    channelMessages?: ChannelMessageUncheckedCreateNestedManyWithoutSenderInput
+    receivedMessages?: DirectMessageUncheckedCreateNestedManyWithoutReceiverInput
+    sentMessages?: DirectMessageUncheckedCreateNestedManyWithoutSenderInput
+    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
+    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
+    channels?: ChannelUncheckedCreateNestedManyWithoutMembersInput
+    friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
+    friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
+    Projects?: ProjectsUncheckedCreateNestedManyWithoutUsersInput
+  }
+
+  export type UserCreateOrConnectWithoutOwnedProjectsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutOwnedProjectsInput, UserUncheckedCreateWithoutOwnedProjectsInput>
+  }
+
   export type WhiteboardCreateWithoutWorkspaceInput = {
     title: string
     content: Bytes
@@ -19809,61 +19864,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type UserCreateWithoutOwnedProjectsInput = {
-    id?: string
-    email: string
-    name?: string | null
-    userName?: string | null
-    image?: string | null
-    password?: string | null
-    emailVerified?: Date | string | null
-    status?: $Enums.UserStatus
-    statusMessage?: string | null
-    lastSeen?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    channelMessages?: ChannelMessageCreateNestedManyWithoutSenderInput
-    receivedMessages?: DirectMessageCreateNestedManyWithoutReceiverInput
-    sentMessages?: DirectMessageCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsCreateNestedOneWithoutUserInput
-    channels?: ChannelCreateNestedManyWithoutMembersInput
-    friends?: UserCreateNestedManyWithoutFriendOfInput
-    friendOf?: UserCreateNestedManyWithoutFriendsInput
-    Projects?: ProjectsCreateNestedManyWithoutUsersInput
-    Account?: AccountCreateNestedManyWithoutUserInput
-    Session?: SessionCreateNestedManyWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutOwnedProjectsInput = {
-    id?: string
-    email: string
-    name?: string | null
-    userName?: string | null
-    image?: string | null
-    password?: string | null
-    emailVerified?: Date | string | null
-    status?: $Enums.UserStatus
-    statusMessage?: string | null
-    lastSeen?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    channelMessages?: ChannelMessageUncheckedCreateNestedManyWithoutSenderInput
-    receivedMessages?: DirectMessageUncheckedCreateNestedManyWithoutReceiverInput
-    sentMessages?: DirectMessageUncheckedCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
-    channels?: ChannelUncheckedCreateNestedManyWithoutMembersInput
-    friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
-    friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
-    Projects?: ProjectsUncheckedCreateNestedManyWithoutUsersInput
-    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
-    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutOwnedProjectsInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutOwnedProjectsInput, UserUncheckedCreateWithoutOwnedProjectsInput>
-  }
-
   export type UserCreateWithoutProjectsInput = {
     id?: string
     email: string
@@ -19877,16 +19877,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsCreateNestedManyWithoutOwnerInput
+    Session?: SessionCreateNestedManyWithoutUserInput
+    settings?: UserSettingsCreateNestedOneWithoutUserInput
     channels?: ChannelCreateNestedManyWithoutMembersInput
     friends?: UserCreateNestedManyWithoutFriendOfInput
     friendOf?: UserCreateNestedManyWithoutFriendsInput
-    Account?: AccountCreateNestedManyWithoutUserInput
-    Session?: SessionCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProjectsInput = {
@@ -19902,16 +19902,16 @@ export namespace Prisma {
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
     channelMessages?: ChannelMessageUncheckedCreateNestedManyWithoutSenderInput
     receivedMessages?: DirectMessageUncheckedCreateNestedManyWithoutReceiverInput
     sentMessages?: DirectMessageUncheckedCreateNestedManyWithoutSenderInput
-    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     ownedProjects?: ProjectsUncheckedCreateNestedManyWithoutOwnerInput
+    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
+    settings?: UserSettingsUncheckedCreateNestedOneWithoutUserInput
     channels?: ChannelUncheckedCreateNestedManyWithoutMembersInput
     friends?: UserUncheckedCreateNestedManyWithoutFriendOfInput
     friendOf?: UserUncheckedCreateNestedManyWithoutFriendsInput
-    Account?: AccountUncheckedCreateNestedManyWithoutUserInput
-    Session?: SessionUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProjectsInput = {
@@ -19933,6 +19933,67 @@ export namespace Prisma {
   export type ChannelUpdateManyWithWhereWithoutWorkspaceInput = {
     where: ChannelScalarWhereInput
     data: XOR<ChannelUpdateManyMutationInput, ChannelUncheckedUpdateManyWithoutWorkspaceInput>
+  }
+
+  export type UserUpsertWithoutOwnedProjectsInput = {
+    update: XOR<UserUpdateWithoutOwnedProjectsInput, UserUncheckedUpdateWithoutOwnedProjectsInput>
+    create: XOR<UserCreateWithoutOwnedProjectsInput, UserUncheckedCreateWithoutOwnedProjectsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutOwnedProjectsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutOwnedProjectsInput, UserUncheckedUpdateWithoutOwnedProjectsInput>
+  }
+
+  export type UserUpdateWithoutOwnedProjectsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUpdateManyWithoutUserNestedInput
+    channelMessages?: ChannelMessageUpdateManyWithoutSenderNestedInput
+    receivedMessages?: DirectMessageUpdateManyWithoutReceiverNestedInput
+    sentMessages?: DirectMessageUpdateManyWithoutSenderNestedInput
+    Session?: SessionUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUpdateOneWithoutUserNestedInput
+    channels?: ChannelUpdateManyWithoutMembersNestedInput
+    friends?: UserUpdateManyWithoutFriendOfNestedInput
+    friendOf?: UserUpdateManyWithoutFriendsNestedInput
+    Projects?: ProjectsUpdateManyWithoutUsersNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutOwnedProjectsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    channelMessages?: ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput
+    receivedMessages?: DirectMessageUncheckedUpdateManyWithoutReceiverNestedInput
+    sentMessages?: DirectMessageUncheckedUpdateManyWithoutSenderNestedInput
+    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+    channels?: ChannelUncheckedUpdateManyWithoutMembersNestedInput
+    friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
+    friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
+    Projects?: ProjectsUncheckedUpdateManyWithoutUsersNestedInput
   }
 
   export type WhiteboardUpsertWithWhereUniqueWithoutWorkspaceInput = {
@@ -19961,67 +20022,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Whiteboard"> | Date | string
     updatedAt?: DateTimeFilter<"Whiteboard"> | Date | string
     workspaceId?: IntFilter<"Whiteboard"> | number
-  }
-
-  export type UserUpsertWithoutOwnedProjectsInput = {
-    update: XOR<UserUpdateWithoutOwnedProjectsInput, UserUncheckedUpdateWithoutOwnedProjectsInput>
-    create: XOR<UserCreateWithoutOwnedProjectsInput, UserUncheckedCreateWithoutOwnedProjectsInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutOwnedProjectsInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutOwnedProjectsInput, UserUncheckedUpdateWithoutOwnedProjectsInput>
-  }
-
-  export type UserUpdateWithoutOwnedProjectsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    userName?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    channelMessages?: ChannelMessageUpdateManyWithoutSenderNestedInput
-    receivedMessages?: DirectMessageUpdateManyWithoutReceiverNestedInput
-    sentMessages?: DirectMessageUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUpdateOneWithoutUserNestedInput
-    channels?: ChannelUpdateManyWithoutMembersNestedInput
-    friends?: UserUpdateManyWithoutFriendOfNestedInput
-    friendOf?: UserUpdateManyWithoutFriendsNestedInput
-    Projects?: ProjectsUpdateManyWithoutUsersNestedInput
-    Account?: AccountUpdateManyWithoutUserNestedInput
-    Session?: SessionUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutOwnedProjectsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    userName?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: NullableStringFieldUpdateOperationsInput | string | null
-    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    channelMessages?: ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput
-    receivedMessages?: DirectMessageUncheckedUpdateManyWithoutReceiverNestedInput
-    sentMessages?: DirectMessageUncheckedUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
-    channels?: ChannelUncheckedUpdateManyWithoutMembersNestedInput
-    friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
-    friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
-    Projects?: ProjectsUncheckedUpdateManyWithoutUsersNestedInput
-    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutProjectsInput = {
@@ -20098,6 +20098,20 @@ export namespace Prisma {
     users?: UserUncheckedUpdateManyWithoutProjectsNestedInput
   }
 
+  export type AccountCreateManyUserInput = {
+    id?: string
+    type: string
+    provider: string
+    providerAccountId: string
+    refresh_token?: string | null
+    access_token?: string | null
+    expires_at?: number | null
+    token_type?: string | null
+    scope?: string | null
+    id_token?: string | null
+    session_state?: string | null
+  }
+
   export type ChannelMessageCreateManySenderInput = {
     id?: number
     content: string
@@ -20133,24 +20147,52 @@ export namespace Prisma {
     userId?: string | null
   }
 
-  export type AccountCreateManyUserInput = {
-    id?: string
-    type: string
-    provider: string
-    providerAccountId: string
-    refresh_token?: string | null
-    access_token?: string | null
-    expires_at?: number | null
-    token_type?: string | null
-    scope?: string | null
-    id_token?: string | null
-    session_state?: string | null
-  }
-
   export type SessionCreateManyUserInput = {
     id?: string
     sessionToken: string
     expires: Date | string
+  }
+
+  export type AccountUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    provider?: StringFieldUpdateOperationsInput | string
+    providerAccountId?: StringFieldUpdateOperationsInput | string
+    refresh_token?: NullableStringFieldUpdateOperationsInput | string | null
+    access_token?: NullableStringFieldUpdateOperationsInput | string | null
+    expires_at?: NullableIntFieldUpdateOperationsInput | number | null
+    token_type?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
+    id_token?: NullableStringFieldUpdateOperationsInput | string | null
+    session_state?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type AccountUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    provider?: StringFieldUpdateOperationsInput | string
+    providerAccountId?: StringFieldUpdateOperationsInput | string
+    refresh_token?: NullableStringFieldUpdateOperationsInput | string | null
+    access_token?: NullableStringFieldUpdateOperationsInput | string | null
+    expires_at?: NullableIntFieldUpdateOperationsInput | number | null
+    token_type?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
+    id_token?: NullableStringFieldUpdateOperationsInput | string | null
+    session_state?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type AccountUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    provider?: StringFieldUpdateOperationsInput | string
+    providerAccountId?: StringFieldUpdateOperationsInput | string
+    refresh_token?: NullableStringFieldUpdateOperationsInput | string | null
+    access_token?: NullableStringFieldUpdateOperationsInput | string | null
+    expires_at?: NullableIntFieldUpdateOperationsInput | number | null
+    token_type?: NullableStringFieldUpdateOperationsInput | string | null
+    scope?: NullableStringFieldUpdateOperationsInput | string | null
+    id_token?: NullableStringFieldUpdateOperationsInput | string | null
+    session_state?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ChannelMessageUpdateWithoutSenderInput = {
@@ -20260,6 +20302,24 @@ export namespace Prisma {
     userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
+  export type SessionUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionToken?: StringFieldUpdateOperationsInput | string
+    expires?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SessionUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionToken?: StringFieldUpdateOperationsInput | string
+    expires?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SessionUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionToken?: StringFieldUpdateOperationsInput | string
+    expires?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ChannelUpdateWithoutMembersInput = {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20304,16 +20364,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     channels?: ChannelUpdateManyWithoutMembersNestedInput
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     Projects?: ProjectsUpdateManyWithoutUsersNestedInput
-    Account?: AccountUpdateManyWithoutUserNestedInput
-    Session?: SessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFriendOfInput = {
@@ -20329,16 +20389,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUncheckedUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUncheckedUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUncheckedUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     channels?: ChannelUncheckedUpdateManyWithoutMembersNestedInput
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     Projects?: ProjectsUncheckedUpdateManyWithoutUsersNestedInput
-    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutFriendOfInput = {
@@ -20369,16 +20429,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     channels?: ChannelUpdateManyWithoutMembersNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUpdateManyWithoutUsersNestedInput
-    Account?: AccountUpdateManyWithoutUserNestedInput
-    Session?: SessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFriendsInput = {
@@ -20394,16 +20454,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUncheckedUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUncheckedUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUncheckedUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     channels?: ChannelUncheckedUpdateManyWithoutMembersNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUncheckedUpdateManyWithoutUsersNestedInput
-    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutFriendsInput = {
@@ -20427,8 +20487,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     Channels?: ChannelUpdateManyWithoutWorkspaceNestedInput
-    whiteboards?: WhiteboardUpdateManyWithoutWorkspaceNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedProjectsNestedInput
+    whiteboards?: WhiteboardUpdateManyWithoutWorkspaceNestedInput
   }
 
   export type ProjectsUncheckedUpdateWithoutUsersInput = {
@@ -20449,66 +20509,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type AccountUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    provider?: StringFieldUpdateOperationsInput | string
-    providerAccountId?: StringFieldUpdateOperationsInput | string
-    refresh_token?: NullableStringFieldUpdateOperationsInput | string | null
-    access_token?: NullableStringFieldUpdateOperationsInput | string | null
-    expires_at?: NullableIntFieldUpdateOperationsInput | number | null
-    token_type?: NullableStringFieldUpdateOperationsInput | string | null
-    scope?: NullableStringFieldUpdateOperationsInput | string | null
-    id_token?: NullableStringFieldUpdateOperationsInput | string | null
-    session_state?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type AccountUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    provider?: StringFieldUpdateOperationsInput | string
-    providerAccountId?: StringFieldUpdateOperationsInput | string
-    refresh_token?: NullableStringFieldUpdateOperationsInput | string | null
-    access_token?: NullableStringFieldUpdateOperationsInput | string | null
-    expires_at?: NullableIntFieldUpdateOperationsInput | number | null
-    token_type?: NullableStringFieldUpdateOperationsInput | string | null
-    scope?: NullableStringFieldUpdateOperationsInput | string | null
-    id_token?: NullableStringFieldUpdateOperationsInput | string | null
-    session_state?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type AccountUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    provider?: StringFieldUpdateOperationsInput | string
-    providerAccountId?: StringFieldUpdateOperationsInput | string
-    refresh_token?: NullableStringFieldUpdateOperationsInput | string | null
-    access_token?: NullableStringFieldUpdateOperationsInput | string | null
-    expires_at?: NullableIntFieldUpdateOperationsInput | number | null
-    token_type?: NullableStringFieldUpdateOperationsInput | string | null
-    scope?: NullableStringFieldUpdateOperationsInput | string | null
-    id_token?: NullableStringFieldUpdateOperationsInput | string | null
-    session_state?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type SessionUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sessionToken?: StringFieldUpdateOperationsInput | string
-    expires?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SessionUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sessionToken?: StringFieldUpdateOperationsInput | string
-    expires?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SessionUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sessionToken?: StringFieldUpdateOperationsInput | string
-    expires?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChannelMessageCreateManyChannelInput = {
@@ -20559,16 +20559,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUpdateManyWithoutUsersNestedInput
-    Account?: AccountUpdateManyWithoutUserNestedInput
-    Session?: SessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChannelsInput = {
@@ -20584,16 +20584,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUncheckedUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUncheckedUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUncheckedUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
     Projects?: ProjectsUncheckedUpdateManyWithoutUsersNestedInput
-    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutChannelsInput = {
@@ -20694,16 +20694,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUpdateOneWithoutUserNestedInput
     channels?: ChannelUpdateManyWithoutMembersNestedInput
     friends?: UserUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUpdateManyWithoutFriendsNestedInput
-    Account?: AccountUpdateManyWithoutUserNestedInput
-    Session?: SessionUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProjectsInput = {
@@ -20719,16 +20719,16 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
     channelMessages?: ChannelMessageUncheckedUpdateManyWithoutSenderNestedInput
     receivedMessages?: DirectMessageUncheckedUpdateManyWithoutReceiverNestedInput
     sentMessages?: DirectMessageUncheckedUpdateManyWithoutSenderNestedInput
-    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     ownedProjects?: ProjectsUncheckedUpdateManyWithoutOwnerNestedInput
+    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    settings?: UserSettingsUncheckedUpdateOneWithoutUserNestedInput
     channels?: ChannelUncheckedUpdateManyWithoutMembersNestedInput
     friends?: UserUncheckedUpdateManyWithoutFriendOfNestedInput
     friendOf?: UserUncheckedUpdateManyWithoutFriendsNestedInput
-    Account?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    Session?: SessionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutProjectsInput = {

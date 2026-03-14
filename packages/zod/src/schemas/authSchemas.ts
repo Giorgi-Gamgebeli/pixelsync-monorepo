@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 import { UserSchemaDatabase } from "./databaseSchemas";
 
 type SuperValidateTypes = {
@@ -74,3 +74,15 @@ export const NewPasswordSchema = z
     }),
   })
   .superRefine(superValidate);
+
+export const SessionPayloadSchema = z.object({
+  sub: z.string(),
+  email: z.string().email(),
+  name: z.string().optional().nullable(),
+  userName: z.string().optional().nullable(),
+  image: z.string().optional().nullable(),
+  iat: z.number().optional(),
+  exp: z.number().optional(),
+  jti: z.string().optional(),
+  accessToken: z.string().optional(),
+});

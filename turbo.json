@@ -17,10 +17,12 @@
     "NEXT_PUBLIC_BASE_URL",
     "NEXTAUTH_URL",
 
-    "SERVER_BASE_URL",
+    "NEXT_PUBLIC_SERVER_BASE_URL",
 
     "ACCESS_TOKEN_SECRET",
-    "REFRESH_TOKEN_SECRET"
+    "REFRESH_TOKEN_SECRET",
+
+    "SERVER_PORT"
   ],
   "tasks": {
     "build": {

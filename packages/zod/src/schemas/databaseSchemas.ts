@@ -13,7 +13,7 @@ export const RequestStatusEnum = z.enum(["PENDING", "ACCEPTED", "REJECTED"]);
 
 // User Schema
 export const UserSchemaDatabase = z.object({
-  id: z.number().int().positive(),
+  id: z.string().uuid(),
 
   email: z
     .string({
@@ -75,7 +75,7 @@ export const UserSettingsSchemaDatabase = z.object({
     })
     .default(true),
 
-  userId: z.number().int().positive(),
+  userId: z.string(),
 });
 
 // DirectMessage Schema
@@ -99,8 +99,8 @@ export const DirectMessageSchemaDatabase = z.object({
     })
     .default(false),
 
-  senderId: z.number().int().positive(),
-  receiverId: z.number().int().positive(),
+  senderId: z.string(),
+  receiverId: z.string(),
 });
 
 // Channel Schema
@@ -147,7 +147,7 @@ export const ChannelMessageSchemaDatabase = z.object({
     .default(false),
 
   channelId: z.number().int().positive(),
-  senderId: z.number().int().positive(),
+  senderId: z.string(),
 });
 
 // FriendRequest Schema
@@ -158,8 +158,8 @@ export const FriendRequestSchemaDatabase = z.object({
 
   status: RequestStatusEnum.default("PENDING"),
 
-  senderId: z.number().int().positive(),
-  receiverId: z.number().int().positive(),
+  senderId: z.string(),
+  receiverId: z.string(),
 });
 
 // Workspace Schema
@@ -177,7 +177,7 @@ export const WorkspaceSchemaDatabase = z.object({
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date(),
 
-  ownerId: z.number().int().positive(),
+  ownerId: z.string(),
 });
 
 // Whiteboard Schema

@@ -5,6 +5,7 @@ import type { DirectMessage } from "@repo/db";
 import { Session } from "next-auth";
 import Message from "./Message";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { useEffect } from "react";
 
 type MessagesProps = {
   messages: DirectMessage[] | undefined;
@@ -20,6 +21,23 @@ type MessagesProps = {
 };
 
 function Messages({ messages, friend, session }: MessagesProps) {
+  useEffect(() => {
+    async function doFetch() {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/direct-message`,
+        {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        },
+      );
+      const data = await res.json();
+      console.log(data, "dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    }
+
+    doFetch();
+  }, []);
+
   return (
     <div className="flex h-full flex-col">
       {/* Messages area */}

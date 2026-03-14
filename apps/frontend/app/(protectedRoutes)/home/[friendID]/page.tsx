@@ -1,12 +1,12 @@
-import Image from "next/image";
-import defaultUser from "@/public/default-user.jpg";
+import ClientIcon from "@/app/_components/ClientIcon";
 import {
   getDirectMessages,
   getFriend,
 } from "@/app/_dataAcessLayer/userActions";
-import Messages from "./Messages";
 import { auth } from "@/auth";
-import ClientIcon from "@/app/_components/ClientIcon";
+import defaultUser from "@/public/default-user.jpg";
+import Image from "next/image";
+import Messages from "./Messages";
 
 export const revalidate = 0;
 
@@ -29,7 +29,7 @@ async function Page({ params }: Params) {
   if (!friend) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface">
+        <div className="bg-surface mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
           <ClientIcon
             icon="mdi:account-off"
             className="text-3xl text-gray-500"
@@ -46,7 +46,7 @@ async function Page({ params }: Params) {
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Chat header */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-3">
+      <div className="border-border flex items-center justify-between border-b px-6 py-3">
         <div className="flex items-center gap-3">
           <div className="relative h-8 w-8">
             <Image
@@ -56,7 +56,7 @@ async function Page({ params }: Params) {
               className="rounded-full object-cover"
             />
             {isOnline && (
-              <div className="absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-primary bg-green-500" />
+              <div className="border-primary absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 bg-green-500" />
             )}
           </div>
           <div>
@@ -67,10 +67,10 @@ async function Page({ params }: Params) {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-surface hover:text-white">
+          <button className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white">
             <ClientIcon icon="mdi:phone" className="text-lg" />
           </button>
-          <button className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-surface hover:text-white">
+          <button className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white">
             <ClientIcon icon="mdi:dots-vertical" className="text-lg" />
           </button>
         </div>
