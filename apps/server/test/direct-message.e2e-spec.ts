@@ -54,6 +54,7 @@ describe('DirectMessage Gateway (e2e)', () => {
       const friends = friendships[userA] || [];
       return Promise.resolve(friends.includes(userB));
     }),
+    getGroupIds: jest.fn().mockResolvedValue([]),
     create: jest.fn(),
     findAll: jest.fn(),
     findOne: jest.fn(),

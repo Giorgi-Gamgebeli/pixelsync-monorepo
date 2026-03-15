@@ -31,6 +31,9 @@ export class GroupChatGateway {
   ) {
     const user = client.data.user;
 
+    if (!body.content || typeof body.content !== 'string' || !body.content.trim()) return;
+    if (!body.groupId || typeof body.groupId !== 'number') return;
+
     const isMember = await this.groupChatService.isMember(
       body.groupId,
       user.sub,
@@ -38,7 +41,6 @@ export class GroupChatGateway {
     if (!isMember) return;
 
     const payload = {
-      id: -Date.now(),
       content: body.content,
       groupId: body.groupId,
       senderId: user.sub,
@@ -61,11 +63,20 @@ export class GroupChatGateway {
   }
 
   @SubscribeMessage('group:typing')
-  handleGroupTyping(
+  async handleGroupTyping(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() body: { groupId: number; isTyping: boolean },
   ) {
     const user = client.data.user;
+
+    if (!body.groupId || typeof body.groupId !== 'number') return;
+
+    const isMember = await this.groupChatService.isMember(
+      body.groupId,
+      user.sub,
+    );
+    if (!isMember) return;
+
     client.to(`group:${body.groupId}`).emit('group:typing', {
       groupId: body.groupId,
       userId: user.sub,
@@ -74,10 +85,20 @@ export class GroupChatGateway {
   }
 
   @SubscribeMessage('group:join')
-  handleGroupJoin(
+  async handleGroupJoin(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() body: { groupId: number },
   ) {
+    const user = client.data.user;
+
+    if (!body.groupId || typeof body.groupId !== 'number') return;
+
+    const isMember = await this.groupChatService.isMember(
+      body.groupId,
+      user.sub,
+    );
+    if (!isMember) return;
+
     void client.join(`group:${body.groupId}`);
   }
 }
