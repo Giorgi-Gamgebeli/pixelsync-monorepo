@@ -10,7 +10,6 @@ import {
 import { createDirectMessageSchema, TokenPayloadSchema, z } from '@repo/zod';
 import { TokenService } from 'src/auth/token.service';
 import { cookieNames } from 'src/constants/auth';
-import { parse } from 'cookie';
 import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/users/users.service';
 import { DirectMessageService } from './direct-message.service';
@@ -23,7 +22,7 @@ interface AuthenticatedSocket extends Socket {
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.NEXT_PUBLIC_BASE_URL_SECONDARY,
+    origin: process.env.NEXT_PUBLIC_BASE_URL,
     credentials: true,
   },
 })
@@ -42,28 +41,32 @@ export class DirectMessageGateway
   async handleConnection(client: AuthenticatedSocket) {
     try {
       const cookieHeader = client.handshake.headers.cookie;
-      console.log('[DirectMessageGateway] New connection. Cookies:', cookieHeader ? 'Yes' : 'No');
-      
-      if (!cookieHeader) {
-        console.warn('[DirectMessageGateway] Connection rejected: No cookies found');
-        client.disconnect();
-        return;
+
+      // Manual parse of cookie header string
+      const cookies: Record<string, string> = {};
+      if (cookieHeader) {
+        cookieHeader.split(';').forEach((c) => {
+          const [key, ...v] = c.split('=');
+          if (key && v.length > 0) {
+            cookies[key.trim()] = v.join('=');
+          }
+        });
       }
 
-      const cookies = parse(cookieHeader);
       let tokenInfo: { token: string; salt: string } | undefined;
 
       for (const name of cookieNames) {
         const token = cookies[name];
         if (typeof token === 'string' && token.length > 0) {
           tokenInfo = { token, salt: name };
-          console.log('[DirectMessageGateway] Found token cookie:', name);
           break;
         }
       }
 
       if (!tokenInfo) {
-        console.warn('[DirectMessageGateway] Connection rejected: No matching session cookie found');
+        console.warn(
+          '[DirectMessageGateway] Connection rejected: No session cookie found',
+        );
         client.disconnect();
         return;
       }
@@ -72,10 +75,10 @@ export class DirectMessageGateway
         tokenInfo.token,
         tokenInfo.salt,
       );
-      
-      console.log('[DirectMessageGateway] Token verified for user:', user.sub);
 
       client.data.user = user;
+
+      console.log('[DirectMessageGateway] Token verified for user:', user.sub);
 
       void client.join(user.sub);
 

@@ -138,8 +138,7 @@ export async function generateInviteLink(projectId: number) {
 
     if (!project) throw new Error("Project not found!");
 
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL_SECONDARY || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const inviteUrl = `${baseUrl}/invite/${project.id}`;
 
     return { success: inviteUrl };
