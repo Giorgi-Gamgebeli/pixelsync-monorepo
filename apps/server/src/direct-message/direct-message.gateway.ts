@@ -56,17 +56,27 @@ export class DirectMessageGateway
       const user = TokenPayloadSchema.parse(payload);
       client.data.user = user;
 
+      void client.join(user.sub);
+
+      // Update status and notify only friends
       await this.userService.updateStatus({
         userId: user.sub,
         status: 'ONLINE',
       });
 
-      this.server.emit('user:status', {
+      const friendIds = await this.userService.getFriendIds(user.sub);
+      for (const friendId of friendIds) {
+        this.server.to(friendId).emit('user:status', {
+          userId: user.sub,
+          status: 'ONLINE',
+        });
+      }
+
+      // Also tell the connecting user about their own status
+      client.emit('user:status', {
         userId: user.sub,
         status: 'ONLINE',
       });
-
-      void client.join(user.sub);
 
       this.directMessageService
         .getUnreadCounts(user.sub)
@@ -79,13 +89,16 @@ export class DirectMessageGateway
 
   async handleDisconnect(client: AuthenticatedSocket) {
     const user = client.data.user;
-    if (user) {
-      await this.userService.updateStatus({
-        userId: user.sub,
-        status: 'OFFLINE',
-      });
+    if (!user) return;
 
-      this.server.emit('user:status', {
+    await this.userService.updateStatus({
+      userId: user.sub,
+      status: 'OFFLINE',
+    });
+
+    const friendIds = await this.userService.getFriendIds(user.sub);
+    for (const friendId of friendIds) {
+      this.server.to(friendId).emit('user:status', {
         userId: user.sub,
         status: 'OFFLINE',
       });
@@ -93,11 +106,18 @@ export class DirectMessageGateway
   }
 
   @SubscribeMessage('dm:send')
-  sendMessage(
+  async sendMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() body: z.infer<typeof createDirectMessageSchema>,
   ) {
     const user = client.data.user;
+
+    // Validate friendship
+    const friends = await this.userService.areFriends(
+      user.sub,
+      body.receiverId,
+    );
+    if (!friends) return;
 
     const payload = {
       ...body,
@@ -107,11 +127,9 @@ export class DirectMessageGateway
       isRead: false,
     };
 
-    // Don't wait for DB
     this.server.to(body.receiverId).emit('dm:receive', payload);
     client.emit('dm:receive', payload);
 
-    // Persist in background
     this.directMessageService
       .create({ ...body, senderId: user.sub })
       .catch((err) => {
@@ -126,7 +144,6 @@ export class DirectMessageGateway
   ) {
     const user = client.data.user;
 
-    // Notify the original sender that their messages were read
     this.server
       .to(body.senderId)
       .emit('dm:read-ack', { readBy: user.sub });
