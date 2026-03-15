@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import logo from "@/public/noBGLogo.png";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useState, useRef, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import UserAvatar from "@/app/_components/UserAvatar";
 import AvatarBuilderModal from "@/app/_components/avatar/AvatarBuilderModal";
 import { updateAvatarConfig } from "@/app/_dataAccessLayer/userActions";
@@ -177,6 +177,14 @@ function TopNav({ projects }: TopNavProps) {
               >
                 <Icon icon="mdi:pencil" className="text-base" />
                 Customize Avatar
+              </button>
+              <div className="my-1 border-t border-border" />
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-400 transition-colors hover:bg-surface hover:text-red-300"
+              >
+                <Icon icon="mdi:logout" className="text-base" />
+                Sign Out
               </button>
             </div>
           )}

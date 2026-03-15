@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 
 // This configuration is shared between the Middleware (Edge) and the main Auth (Node.js).
 const authConfig: NextAuthConfig = {
+  trustHost: true,
   session: {
     maxAge: 2 * 24 * 60 * 60,
     strategy: "jwt",
