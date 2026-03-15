@@ -74,6 +74,7 @@ export type CallMediaState = {
 };
 
 export interface ServerToCallEvents {
+  "call:ringing": (data: { callId: string }) => void;
   "call:incoming": (data: {
     callId: string;
     callerId: string;

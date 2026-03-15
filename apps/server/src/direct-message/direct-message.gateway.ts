@@ -389,6 +389,9 @@ export class DirectMessageGateway
     this.userActiveCalls.set(user.sub, callId);
     this.userActiveCalls.set(body.receiverId, callId);
 
+    // Tell the caller their callId
+    client.emit('call:ringing', { callId });
+
     this.server.to(body.receiverId).emit('call:incoming', {
       callId,
       callerId: user.sub,

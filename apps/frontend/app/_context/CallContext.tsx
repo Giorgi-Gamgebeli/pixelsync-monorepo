@@ -37,7 +37,7 @@ type CallContextValue = {
   remoteStreams: Map<string, MediaStream>;
   audioEnabled: boolean;
   videoEnabled: boolean;
-  groupParticipants: Map<string, string>; // userId -> userName
+  groupParticipants: Map<string, string>;
   initiateCall: (receiverId: string, callType: CallType) => void;
   acceptCall: () => void;
   declineCall: () => void;
@@ -89,16 +89,29 @@ function CallProvider({ children }: PropsWithChildren) {
     Map<string, string>
   >(new Map());
 
+  // Refs for values that socket handlers need without triggering effect re-runs
   const peerConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
-  const iceCandidateQueues = useRef<
-    Map<string, RTCIceCandidateInit[]>
-  >(new Map());
+  const iceCandidateQueues = useRef<Map<string, RTCIceCandidateInit[]>>(
+    new Map(),
+  );
   const callIdRef = useRef<string | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const callTypeRef = useRef<CallType | null>(null);
+  const incomingCallRef = useRef<IncomingCallInfo | null>(null);
 
-  // Keep ref in sync
+  // Keep refs in sync with state
   useEffect(() => {
     callIdRef.current = callId;
   }, [callId]);
+  useEffect(() => {
+    localStreamRef.current = localStream;
+  }, [localStream]);
+  useEffect(() => {
+    callTypeRef.current = callType;
+  }, [callType]);
+  useEffect(() => {
+    incomingCallRef.current = incomingCall;
+  }, [incomingCall]);
 
   const getMedia = useCallback(async (type: CallType) => {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -106,6 +119,7 @@ function CallProvider({ children }: PropsWithChildren) {
       video: type === "video",
     });
     setLocalStream(stream);
+    localStreamRef.current = stream;
     return stream;
   }, []);
 
@@ -126,11 +140,11 @@ function CallProvider({ children }: PropsWithChildren) {
       };
 
       pc.ontrack = (event) => {
-        const stream = event.streams[0];
-        if (!stream) return;
+        const remoteStream = event.streams[0];
+        if (!remoteStream) return;
         setRemoteStreams((prev) => {
           const next = new Map(prev);
-          next.set(remoteUserId, stream);
+          next.set(remoteUserId, remoteStream);
           return next;
         });
       };
@@ -140,7 +154,17 @@ function CallProvider({ children }: PropsWithChildren) {
           pc.connectionState === "disconnected" ||
           pc.connectionState === "failed"
         ) {
-          cleanupPeer(remoteUserId);
+          const existing = peerConnections.current.get(remoteUserId);
+          if (existing) {
+            existing.close();
+            peerConnections.current.delete(remoteUserId);
+          }
+          iceCandidateQueues.current.delete(remoteUserId);
+          setRemoteStreams((prev) => {
+            const next = new Map(prev);
+            next.delete(remoteUserId);
+            return next;
+          });
         }
       };
 
@@ -162,25 +186,14 @@ function CallProvider({ children }: PropsWithChildren) {
     [],
   );
 
-  const cleanupPeer = useCallback((userId: string) => {
-    const pc = peerConnections.current.get(userId);
-    if (pc) {
-      pc.close();
-      peerConnections.current.delete(userId);
-    }
-    iceCandidateQueues.current.delete(userId);
-    setRemoteStreams((prev) => {
-      const next = new Map(prev);
-      next.delete(userId);
-      return next;
-    });
-  }, []);
-
   const cleanupAll = useCallback(() => {
-    for (const [userId] of peerConnections.current) {
-      cleanupPeer(userId);
+    for (const [, pc] of peerConnections.current) {
+      pc.close();
     }
-    localStream?.getTracks().forEach((t) => t.stop());
+    peerConnections.current.clear();
+    iceCandidateQueues.current.clear();
+    localStreamRef.current?.getTracks().forEach((t) => t.stop());
+    localStreamRef.current = null;
     setLocalStream(null);
     setRemoteStreams(new Map());
     setCallState("idle");
@@ -191,30 +204,40 @@ function CallProvider({ children }: PropsWithChildren) {
     setAudioEnabled(true);
     setVideoEnabled(true);
     callIdRef.current = null;
-  }, [cleanupPeer, localStream]);
+    callTypeRef.current = null;
+    incomingCallRef.current = null;
+  }, []); // No deps — uses only refs and setters (stable)
 
-  // ── Socket event listeners ──
+  // ── Socket event listeners — depends only on socket + stable callbacks ──
 
   useEffect(() => {
     if (!socket) return;
 
+    const onRinging = (data: { callId: string }) => {
+      setCallId(data.callId);
+      callIdRef.current = data.callId;
+    };
+
     const onIncoming = (data: IncomingCallInfo) => {
       if (callIdRef.current) {
-        // Already in a call, auto-decline
         socket.emit("call:decline", { callId: data.callId });
         return;
       }
       setIncomingCall(data);
+      incomingCallRef.current = data;
       setCallState("ringing-incoming");
       setCallType(data.callType);
+      callTypeRef.current = data.callType;
       setCallId(data.callId);
+      callIdRef.current = data.callId;
     };
 
     const onAccepted = async (data: { callId: string; userId: string }) => {
       if (data.callId !== callIdRef.current) return;
       setCallState("active");
 
-      const stream = localStream ?? (await getMedia(callType!));
+      const stream =
+        localStreamRef.current ?? (await getMedia(callTypeRef.current!));
       const pc = createPeerConnection(data.userId, stream);
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
@@ -242,7 +265,8 @@ function CallProvider({ children }: PropsWithChildren) {
       offer: { type: string; sdp?: string };
     }) => {
       if (data.callId !== callIdRef.current) return;
-      const stream = localStream ?? (await getMedia(callType!));
+      const stream =
+        localStreamRef.current ?? (await getMedia(callTypeRef.current!));
       const pc = createPeerConnection(data.fromUserId, stream);
       await pc.setRemoteDescription(
         new RTCSessionDescription(data.offer as RTCSessionDescriptionInit),
@@ -282,7 +306,6 @@ function CallProvider({ children }: PropsWithChildren) {
       if (pc?.remoteDescription) {
         await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
       } else {
-        // Queue it until remote description is set
         const queue =
           iceCandidateQueues.current.get(data.fromUserId) ?? [];
         queue.push(data.candidate);
@@ -295,14 +318,15 @@ function CallProvider({ children }: PropsWithChildren) {
       participants: { userId: string; userName: string }[];
     }) => {
       setCallId(data.callId);
+      callIdRef.current = data.callId;
       setCallState("active");
 
-      const stream = localStream ?? (await getMedia(callType!));
+      const stream =
+        localStreamRef.current ?? (await getMedia(callTypeRef.current!));
 
       const newParticipants = new Map<string, string>();
       for (const p of data.participants) {
         newParticipants.set(p.userId, p.userName);
-        // Create offer to each existing participant
         const pc = createPeerConnection(p.userId, stream);
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
@@ -330,7 +354,17 @@ function CallProvider({ children }: PropsWithChildren) {
 
     const onGroupLeft = (data: { callId: string; userId: string }) => {
       if (data.callId !== callIdRef.current) return;
-      cleanupPeer(data.userId);
+      const pc = peerConnections.current.get(data.userId);
+      if (pc) {
+        pc.close();
+        peerConnections.current.delete(data.userId);
+      }
+      iceCandidateQueues.current.delete(data.userId);
+      setRemoteStreams((prev) => {
+        const next = new Map(prev);
+        next.delete(data.userId);
+        return next;
+      });
       setGroupParticipants((prev) => {
         const next = new Map(prev);
         next.delete(data.userId);
@@ -343,6 +377,7 @@ function CallProvider({ children }: PropsWithChildren) {
       cleanupAll();
     };
 
+    socket.on("call:ringing", onRinging);
     socket.on("call:incoming", onIncoming);
     socket.on("call:accepted", onAccepted);
     socket.on("call:declined", onDeclined);
@@ -356,6 +391,7 @@ function CallProvider({ children }: PropsWithChildren) {
     socket.on("call:error", onError);
 
     return () => {
+      socket.off("call:ringing", onRinging);
       socket.off("call:incoming", onIncoming);
       socket.off("call:accepted", onAccepted);
       socket.off("call:declined", onDeclined);
@@ -368,18 +404,9 @@ function CallProvider({ children }: PropsWithChildren) {
       socket.off("call:group-left", onGroupLeft);
       socket.off("call:error", onError);
     };
-  }, [
-    socket,
-    localStream,
-    callType,
-    getMedia,
-    createPeerConnection,
-    flushIceCandidates,
-    cleanupPeer,
-    cleanupAll,
-  ]);
+  }, [socket, getMedia, createPeerConnection, flushIceCandidates, cleanupAll]);
 
-  // Cleanup on unmount / tab close
+  // Cleanup on unmount / tab close only
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (callIdRef.current && socket) {
@@ -389,12 +416,8 @@ function CallProvider({ children }: PropsWithChildren) {
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      if (callIdRef.current && socket) {
-        socket.emit("call:hangup", { callId: callIdRef.current });
-      }
-      cleanupAll();
     };
-  }, [socket, cleanupAll]);
+  }, [socket]);
 
   // ── Exposed actions ──
 
@@ -402,6 +425,7 @@ function CallProvider({ children }: PropsWithChildren) {
     async (receiverId: string, type: CallType) => {
       if (!socket || callIdRef.current) return;
       setCallType(type);
+      callTypeRef.current = type;
       setCallState("ringing-outgoing");
       await getMedia(type);
       socket.emit("call:initiate", { receiverId, callType: type });
@@ -410,17 +434,18 @@ function CallProvider({ children }: PropsWithChildren) {
   );
 
   const acceptCall = useCallback(async () => {
-    if (!socket || !incomingCall) return;
+    if (!socket || !incomingCallRef.current) return;
+    const info = incomingCallRef.current;
     setCallState("active");
-    await getMedia(incomingCall.callType);
-    socket.emit("call:accept", { callId: incomingCall.callId });
-  }, [socket, incomingCall, getMedia]);
+    await getMedia(info.callType);
+    socket.emit("call:accept", { callId: info.callId });
+  }, [socket, getMedia]);
 
   const declineCall = useCallback(() => {
-    if (!socket || !incomingCall) return;
-    socket.emit("call:decline", { callId: incomingCall.callId });
+    if (!socket || !incomingCallRef.current) return;
+    socket.emit("call:decline", { callId: incomingCallRef.current.callId });
     cleanupAll();
-  }, [socket, incomingCall, cleanupAll]);
+  }, [socket, cleanupAll]);
 
   const hangup = useCallback(() => {
     if (!socket || !callIdRef.current) return;
@@ -429,8 +454,9 @@ function CallProvider({ children }: PropsWithChildren) {
   }, [socket, cleanupAll]);
 
   const toggleMute = useCallback(() => {
-    if (!localStream) return;
-    const audioTrack = localStream.getAudioTracks()[0];
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    const audioTrack = stream.getAudioTracks()[0];
     if (audioTrack) {
       audioTrack.enabled = !audioTrack.enabled;
       setAudioEnabled(audioTrack.enabled);
@@ -442,11 +468,12 @@ function CallProvider({ children }: PropsWithChildren) {
         });
       }
     }
-  }, [localStream, socket, videoEnabled]);
+  }, [socket, videoEnabled]);
 
   const toggleCamera = useCallback(() => {
-    if (!localStream) return;
-    const videoTrack = localStream.getVideoTracks()[0];
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    const videoTrack = stream.getVideoTracks()[0];
     if (videoTrack) {
       videoTrack.enabled = !videoTrack.enabled;
       setVideoEnabled(videoTrack.enabled);
@@ -458,12 +485,13 @@ function CallProvider({ children }: PropsWithChildren) {
         });
       }
     }
-  }, [localStream, socket, audioEnabled]);
+  }, [socket, audioEnabled]);
 
   const joinGroupCall = useCallback(
     async (groupId: number, type: CallType) => {
       if (!socket || callIdRef.current) return;
       setCallType(type);
+      callTypeRef.current = type;
       setCallState("active");
       await getMedia(type);
       socket.emit("call:group-join", { groupId, callType: type });

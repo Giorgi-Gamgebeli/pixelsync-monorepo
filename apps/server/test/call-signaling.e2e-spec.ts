@@ -152,7 +152,7 @@ describe('Call Signaling (e2e)', () => {
   // ── 1-on-1 Call Tests ──
 
   describe('1-on-1 calls', () => {
-    it('should send call:incoming to the receiver when caller initiates', async () => {
+    it('should send call:ringing to caller and call:incoming to receiver', async () => {
       makeFriends('caller', 'callee');
 
       const callerToken = await createSessionToken({
@@ -168,6 +168,7 @@ describe('Call Signaling (e2e)', () => {
       const caller = await connectAndWaitReady(port, callerToken, 'caller');
       const callee = await connectAndWaitReady(port, calleeToken, 'callee');
 
+      const ringing = waitForEvent(caller, 'call:ringing');
       const incoming = waitForEvent(callee, 'call:incoming');
 
       caller.emit('call:initiate', {
@@ -175,11 +176,12 @@ describe('Call Signaling (e2e)', () => {
         callType: 'audio',
       });
 
-      const data = await incoming;
-      expect(data.callerId).toBe('caller');
-      expect(data.callerName).toBe('CallerName');
-      expect(data.callType).toBe('audio');
-      expect(data.callId).toBeDefined();
+      const [ringingData, incomingData] = await Promise.all([ringing, incoming]);
+      expect(ringingData.callId).toBeDefined();
+      expect(incomingData.callerId).toBe('caller');
+      expect(incomingData.callerName).toBe('CallerName');
+      expect(incomingData.callType).toBe('audio');
+      expect(incomingData.callId).toBe(ringingData.callId);
 
       caller.close();
       callee.close();
