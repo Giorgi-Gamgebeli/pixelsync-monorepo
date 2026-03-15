@@ -9,7 +9,9 @@ import {
   DeclineFriendRequestSchema,
   GetDirectMessagesSchema,
   GetFriendSchema,
+  UnfriendSchema,
   UpdateAvatarConfigSchema,
+  UpdateUserNameSchema,
 } from "@repo/zod";
 import { z } from "zod";
 import { handleErrorsOnServer } from "../_utils/helpers";
@@ -441,6 +443,83 @@ export async function updateAvatarConfig(
     return handleErrorsOnServer(error);
   } finally {
     revalidatePath("/", "layout"); // Revalidate entire app to update all avatars immediately
+  }
+}
+
+export async function updateUserName(
+  values: z.infer<typeof UpdateUserNameSchema>,
+) {
+  try {
+    const result = UpdateUserNameSchema.safeParse(values);
+    if (result.error) throw new Error(result.error.issues[0]?.message || "Validation failed!");
+    const { userName } = result.data;
+
+    const session = await auth();
+    if (!session) throw new Error("Not authenticated!");
+
+    const existing = await db.user.findUnique({
+      where: { userName },
+      select: { id: true },
+    });
+
+    if (existing && existing.id !== session.user.id) {
+      throw new Error("Username already taken!");
+    }
+
+    await db.user.update({
+      where: { id: session.user.id },
+      data: { userName },
+    });
+  } catch (error) {
+    return handleErrorsOnServer(error);
+  } finally {
+    revalidatePath("/", "layout");
+  }
+}
+
+export async function updateDisplayName(name: string) {
+  try {
+    const session = await auth();
+    if (!session) throw new Error("Not authenticated!");
+
+    await db.user.update({
+      where: { id: session.user.id },
+      data: { name: name.trim() || null },
+    });
+  } catch (error) {
+    return handleErrorsOnServer(error);
+  } finally {
+    revalidatePath("/", "layout");
+  }
+}
+
+export async function unfriend(values: z.infer<typeof UnfriendSchema>) {
+  try {
+    const result = UnfriendSchema.safeParse(values);
+    if (result.error) throw new Error("Validation failed on server!");
+    const { id } = result.data;
+
+    const session = await auth();
+    if (!session) throw new Error("Not authenticated!");
+
+    if (id === session.user.id) {
+      throw new Error("You cannot unfriend yourself.");
+    }
+
+    await db.$transaction([
+      db.user.update({
+        where: { id: session.user.id },
+        data: { friends: { disconnect: { id } } },
+      }),
+      db.user.update({
+        where: { id },
+        data: { friends: { disconnect: { id: session.user.id } } },
+      }),
+    ]);
+  } catch (error) {
+    return handleErrorsOnServer(error);
+  } finally {
+    revalidatePath("/home", "layout");
   }
 }
 

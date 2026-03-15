@@ -166,4 +166,18 @@ export class DirectMessageGateway
       isTyping: body.isTyping,
     });
   }
+
+  @SubscribeMessage('user:profile-update')
+  async handleProfileUpdate(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody()
+    body: { userName?: string | null; name?: string | null; avatarConfig?: string | null },
+  ) {
+    const user = client.data.user;
+    const friendIds = await this.userService.getFriendIds(user.sub);
+    const payload = { userId: user.sub, ...body };
+    for (const friendId of friendIds) {
+      this.server.to(friendId).emit('user:profile-update', payload);
+    }
+  }
 }

@@ -13,6 +13,7 @@ import { io, Socket } from "socket.io-client";
 import {
   ServerToClientEvents,
   ClientToServerEvents,
+  ProfileUpdate,
   UserStatus,
 } from "@repo/types";
 import { getWsToken } from "../_dataAccessLayer/userActions";
@@ -25,9 +26,11 @@ type SocketContextValue = {
   statusMap: Record<string, UserStatus>;
   unreadMap: Record<string, number>;
   readAckSet: Set<string>;
+  profileMap: Record<string, Partial<ProfileUpdate>>;
   sendMessage: (receiverId: string, content: string) => void;
   setTyping: (receiverId: string, isTyping: boolean) => void;
   markAsRead: (friendId: string) => void;
+  broadcastProfileUpdate: (data: Omit<ProfileUpdate, "userId">) => void;
 };
 
 const SocketContext = createContext<SocketContextValue>({
@@ -36,9 +39,11 @@ const SocketContext = createContext<SocketContextValue>({
   statusMap: {},
   unreadMap: {},
   readAckSet: new Set(),
+  profileMap: {},
   sendMessage: () => {},
   setTyping: () => {},
   markAsRead: () => {},
+  broadcastProfileUpdate: () => {},
 });
 
 function SocketProvider({
@@ -50,6 +55,7 @@ function SocketProvider({
   const [statusMap, setStatusMap] = useState<Record<string, UserStatus>>({});
   const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
   const [readAckSet, setReadAckSet] = useState<Set<string>>(new Set());
+  const [profileMap, setProfileMap] = useState<Record<string, Partial<ProfileUpdate>>>({});
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -103,6 +109,13 @@ function SocketProvider({
           setReadAckSet((prev) => new Set(prev).add(readBy));
         });
 
+        socket.on("user:profile-update", (data) => {
+          setProfileMap((prev) => ({
+            ...prev,
+            [data.userId]: { ...prev[data.userId], ...data },
+          }));
+        });
+
         socketRef.current = socket;
         setIsConnected(socket.connected);
       } catch (error) {
@@ -146,6 +159,13 @@ function SocketProvider({
     socketRef.current?.emit("dm:read", { senderId: friendId });
   }, []);
 
+  const broadcastProfileUpdate = useCallback(
+    (data: Omit<ProfileUpdate, "userId">) => {
+      socketRef.current?.emit("user:profile-update", data);
+    },
+    [],
+  );
+
   return (
     <SocketContext.Provider
       value={{
@@ -154,9 +174,11 @@ function SocketProvider({
         statusMap,
         unreadMap,
         readAckSet,
+        profileMap,
         sendMessage,
         setTyping,
         markAsRead,
+        broadcastProfileUpdate,
       }}
     >
       {children}

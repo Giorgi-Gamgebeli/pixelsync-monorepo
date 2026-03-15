@@ -9,7 +9,9 @@ import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import UserAvatar from "@/app/_components/UserAvatar";
 import AvatarBuilderModal from "@/app/_components/avatar/AvatarBuilderModal";
+import ProfileSettingsPanel from "@/app/_components/ProfileSettingsPanel";
 import { updateAvatarConfig } from "@/app/_dataAccessLayer/userActions";
+import { useSocketContext } from "@/app/_context/SocketContext";
 
 type TopNavProps = {
   projects:
@@ -25,9 +27,11 @@ function TopNav({ projects }: TopNavProps) {
   const [projectsOpen, setProjectsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
+  const { broadcastProfileUpdate } = useSocketContext();
 
   const isHome = pathname.startsWith("/home");
   const activeProject = projects?.find((p) =>
@@ -188,6 +192,16 @@ function TopNav({ projects }: TopNavProps) {
               <button
                 onClick={() => {
                   setProfileOpen(false);
+                  setSettingsOpen(true);
+                }}
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-surface hover:text-white"
+              >
+                <Icon icon="mdi:cog" className="text-base" />
+                Profile Settings
+              </button>
+              <button
+                onClick={() => {
+                  setProfileOpen(false);
                   setBuilderOpen(true);
                 }}
                 className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-surface hover:text-white"
@@ -207,6 +221,15 @@ function TopNav({ projects }: TopNavProps) {
           )}
         </div>
 
+        <ProfileSettingsPanel
+          isOpen={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          onOpenAvatarBuilder={() => {
+            setSettingsOpen(false);
+            setBuilderOpen(true);
+          }}
+        />
+
         <AvatarBuilderModal
           isOpen={builderOpen}
           onClose={() => setBuilderOpen(false)}
@@ -215,6 +238,7 @@ function TopNav({ projects }: TopNavProps) {
           userId={session?.user?.id}
           onSave={async (config) => {
             await updateAvatarConfig({ avatarConfig: config });
+            broadcastProfileUpdate({ avatarConfig: config });
           }}
         />
       </div>
