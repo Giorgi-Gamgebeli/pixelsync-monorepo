@@ -42,7 +42,10 @@ export class DirectMessageGateway
   async handleConnection(client: AuthenticatedSocket) {
     try {
       const cookieHeader = client.handshake.headers.cookie;
+      console.log('[DirectMessageGateway] New connection. Cookies:', cookieHeader ? 'Yes' : 'No');
+      
       if (!cookieHeader) {
+        console.warn('[DirectMessageGateway] Connection rejected: No cookies found');
         client.disconnect();
         return;
       }
@@ -54,11 +57,13 @@ export class DirectMessageGateway
         const token = cookies[name];
         if (typeof token === 'string' && token.length > 0) {
           tokenInfo = { token, salt: name };
+          console.log('[DirectMessageGateway] Found token cookie:', name);
           break;
         }
       }
 
       if (!tokenInfo) {
+        console.warn('[DirectMessageGateway] Connection rejected: No matching session cookie found');
         client.disconnect();
         return;
       }
@@ -67,6 +72,8 @@ export class DirectMessageGateway
         tokenInfo.token,
         tokenInfo.salt,
       );
+      
+      console.log('[DirectMessageGateway] Token verified for user:', user.sub);
 
       client.data.user = user;
 
