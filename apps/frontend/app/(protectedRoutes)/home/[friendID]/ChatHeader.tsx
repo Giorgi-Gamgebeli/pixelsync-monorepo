@@ -6,6 +6,7 @@ import UserAvatar from "@/app/_components/UserAvatar";
 import FriendProfilePanel from "@/app/_components/FriendProfilePanel";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useSocketContext } from "@/app/_context/SocketContext";
+import { useCallContext } from "@/app/_context/CallContext";
 
 type ChatHeaderProps = {
   friend: {
@@ -18,6 +19,7 @@ type ChatHeaderProps = {
 
 function ChatHeader({ friend }: ChatHeaderProps) {
   const { statusMap, profileMap } = useSocketContext();
+  const { initiateCall } = useCallContext();
   const [profileOpen, setProfileOpen] = useState(false);
   const status = statusMap[friend.id] ?? friend.status;
   const isOnline = status === "ONLINE";
@@ -58,10 +60,18 @@ function ChatHeader({ friend }: ChatHeaderProps) {
         </div>
         <div className="flex items-center gap-1">
           <button
-            aria-label="Call"
+            aria-label="Voice call"
+            onClick={() => initiateCall(friend.id, "audio")}
             className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white"
           >
             <Icon icon="mdi:phone" className="text-lg" />
+          </button>
+          <button
+            aria-label="Video call"
+            onClick={() => initiateCall(friend.id, "video")}
+            className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white"
+          >
+            <Icon icon="mdi:video" className="text-lg" />
           </button>
           <button
             aria-label="More options"

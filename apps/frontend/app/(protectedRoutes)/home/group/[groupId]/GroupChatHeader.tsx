@@ -2,6 +2,7 @@
 
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { UserStatus } from "@repo/types";
+import { useCallContext } from "@/app/_context/CallContext";
 
 type GroupChatHeaderProps = {
   group: {
@@ -17,6 +18,7 @@ type GroupChatHeaderProps = {
 };
 
 function GroupChatHeader({ group }: GroupChatHeaderProps) {
+  const { joinGroupCall } = useCallContext();
   const onlineCount = group.members.filter((m) => m.status === "ONLINE").length;
 
   return (
@@ -34,6 +36,20 @@ function GroupChatHeader({ group }: GroupChatHeaderProps) {
         </div>
       </div>
       <div className="flex items-center gap-1">
+        <button
+          aria-label="Voice call"
+          onClick={() => joinGroupCall(group.id, "audio")}
+          className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white"
+        >
+          <Icon icon="mdi:phone" className="text-lg" />
+        </button>
+        <button
+          aria-label="Video call"
+          onClick={() => joinGroupCall(group.id, "video")}
+          className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white"
+        >
+          <Icon icon="mdi:video" className="text-lg" />
+        </button>
         <button
           aria-label="Members"
           className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-white"

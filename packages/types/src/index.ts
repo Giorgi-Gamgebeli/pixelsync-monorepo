@@ -5,7 +5,7 @@ export type ProfileUpdate = {
   avatarConfig?: string | null;
 };
 
-export interface ServerToClientEvents {
+export interface ServerToClientEvents extends ServerToCallEvents {
   "dm:receive": (message: DirectMessage) => void;
   "user:status": (update: { userId: string; status: UserStatus }) => void;
   "user:profile-update": (data: ProfileUpdate) => void;
@@ -13,14 +13,23 @@ export interface ServerToClientEvents {
   "dm:unread": (counts: Record<string, number>) => void;
   "dm:read-ack": (data: { readBy: string }) => void;
   "group:receive": (message: GroupMessage) => void;
-  "group:typing": (data: { groupId: number; userId: string; isTyping: boolean }) => void;
+  "group:typing": (data: {
+    groupId: number;
+    userId: string;
+    isTyping: boolean;
+  }) => void;
 }
 
-export interface ClientToServerEvents {
-  "dm:send": (data: { receiverId: string; content: string; senderId: string }) => void;
+export interface ClientToServerEvents extends ClientToCallEvents {
+  "dm:send": (data: {
+    receiverId: string;
+    content: string;
+    senderId: string;
+  }) => void;
   "dm:typing": (data: { receiverId: string; isTyping: boolean }) => void;
   "dm:read": (data: { senderId: string }) => void;
   "user:profile-update": (data: Omit<ProfileUpdate, "userId">) => void;
+  "user:set-status": (data: { status: UserStatus }) => void;
   "group:send": (data: { groupId: number; content: string }) => void;
   "group:typing": (data: { groupId: number; isTyping: boolean }) => void;
   "group:join": (data: { groupId: number }) => void;
@@ -55,3 +64,87 @@ export interface GroupMessage {
 }
 
 export type UserStatus = "ONLINE" | "OFFLINE" | "IDLE" | "DO_NOT_DISTURB";
+
+export type CallType = "audio" | "video";
+
+export type CallMediaState = {
+  userId: string;
+  audioEnabled: boolean;
+  videoEnabled: boolean;
+};
+
+export interface ServerToCallEvents {
+  "call:incoming": (data: {
+    callId: string;
+    callerId: string;
+    callerName: string;
+    callType: CallType;
+  }) => void;
+  "call:accepted": (data: { callId: string; userId: string }) => void;
+  "call:declined": (data: { callId: string; userId: string }) => void;
+  "call:ended": (data: { callId: string; reason: string }) => void;
+  "call:offer": (data: {
+    callId: string;
+    fromUserId: string;
+    offer: { type: string; sdp?: string };
+  }) => void;
+  "call:answer": (data: {
+    callId: string;
+    fromUserId: string;
+    answer: { type: string; sdp?: string };
+  }) => void;
+  "call:ice-candidate": (data: {
+    callId: string;
+    fromUserId: string;
+    candidate: {
+      candidate?: string;
+      sdpMid?: string | null;
+      sdpMLineIndex?: number | null;
+    };
+  }) => void;
+  "call:group-joined": (data: {
+    callId: string;
+    userId: string;
+    userName: string;
+  }) => void;
+  "call:group-left": (data: { callId: string; userId: string }) => void;
+  "call:group-active": (data: {
+    callId: string;
+    participants: { userId: string; userName: string }[];
+  }) => void;
+  "call:media-state": (data: CallMediaState) => void;
+  "call:error": (data: { message: string }) => void;
+}
+
+export interface ClientToCallEvents {
+  "call:initiate": (data: { receiverId: string; callType: CallType }) => void;
+  "call:accept": (data: { callId: string }) => void;
+  "call:decline": (data: { callId: string }) => void;
+  "call:hangup": (data: { callId: string }) => void;
+  "call:offer": (data: {
+    callId: string;
+    toUserId: string;
+    offer: { type: string; sdp?: string };
+  }) => void;
+  "call:answer": (data: {
+    callId: string;
+    toUserId: string;
+    answer: { type: string; sdp?: string };
+  }) => void;
+  "call:ice-candidate": (data: {
+    callId: string;
+    toUserId: string;
+    candidate: {
+      candidate?: string;
+      sdpMid?: string | null;
+      sdpMLineIndex?: number | null;
+    };
+  }) => void;
+  "call:group-join": (data: { groupId: number; callType: CallType }) => void;
+  "call:group-leave": (data: { callId: string }) => void;
+  "call:media-state": (data: {
+    callId: string;
+    audioEnabled: boolean;
+    videoEnabled: boolean;
+  }) => void;
+}

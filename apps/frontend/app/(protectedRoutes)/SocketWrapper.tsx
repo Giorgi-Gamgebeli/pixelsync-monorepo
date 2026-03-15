@@ -3,6 +3,9 @@
 import { type PropsWithChildren } from "react";
 import { useSession } from "next-auth/react";
 import { SocketProvider } from "@/app/_context/SocketContext";
+import { CallProvider } from "@/app/_context/CallContext";
+import IncomingCallModal from "@/app/_components/IncomingCallModal";
+import CallOverlay from "@/app/_components/CallOverlay";
 
 function SocketWrapper({ children }: PropsWithChildren) {
   const { data: session } = useSession();
@@ -10,7 +13,15 @@ function SocketWrapper({ children }: PropsWithChildren) {
 
   if (!userId) return children;
 
-  return <SocketProvider userId={userId}>{children}</SocketProvider>;
+  return (
+    <SocketProvider userId={userId}>
+      <CallProvider>
+        {children}
+        <IncomingCallModal />
+        <CallOverlay />
+      </CallProvider>
+    </SocketProvider>
+  );
 }
 
 export default SocketWrapper;

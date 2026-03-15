@@ -13,11 +13,29 @@ import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/users/users.service';
 import { DirectMessageService } from './direct-message.service';
 import { GroupChatService } from 'src/group-chat/group-chat.service';
+import type { CallType } from '@repo/types';
 
 interface AuthenticatedSocket extends Socket {
   data: {
     user: z.infer<typeof TokenPayloadSchema>;
   };
+}
+
+interface DmCall {
+  id: string;
+  callerId: string;
+  callerName: string;
+  receiverId: string;
+  callType: CallType;
+  status: 'ringing' | 'active';
+  timeout: ReturnType<typeof setTimeout>;
+}
+
+interface GroupCall {
+  id: string;
+  groupId: number;
+  callType: CallType;
+  participants: Map<string, { userName: string }>;
 }
 
 @WebSocketGateway({
@@ -28,6 +46,10 @@ export class DirectMessageGateway
 {
   @WebSocketServer()
   declare server: Server;
+
+  private dmCalls = new Map<string, DmCall>();
+  private groupCalls = new Map<string, GroupCall>();
+  private userActiveCalls = new Map<string, string>(); // userId -> callId
 
   constructor(
     private readonly directMessageService: DirectMessageService,
@@ -103,6 +125,8 @@ export class DirectMessageGateway
     const user = client.data.user;
     if (!user) return;
 
+    this.cleanupUserCalls(user.sub);
+
     await this.userService.updateStatus({
       userId: user.sub,
       status: 'OFFLINE',
@@ -115,6 +139,38 @@ export class DirectMessageGateway
         status: 'OFFLINE',
       });
     }
+  }
+
+  private cleanupUserCalls(userId: string) {
+    const callId = this.userActiveCalls.get(userId);
+    if (!callId) return;
+
+    const dmCall = this.dmCalls.get(callId);
+    if (dmCall) {
+      clearTimeout(dmCall.timeout);
+      const otherUserId =
+        dmCall.callerId === userId ? dmCall.receiverId : dmCall.callerId;
+      this.server.to(otherUserId).emit('call:ended', {
+        callId,
+        reason: 'disconnect',
+      });
+      this.dmCalls.delete(callId);
+      this.userActiveCalls.delete(otherUserId);
+    }
+
+    const groupCall = this.groupCalls.get(callId);
+    if (groupCall) {
+      groupCall.participants.delete(userId);
+      this.server.to(`group:${groupCall.groupId}`).emit('call:group-left', {
+        callId,
+        userId,
+      });
+      if (groupCall.participants.size === 0) {
+        this.groupCalls.delete(callId);
+      }
+    }
+
+    this.userActiveCalls.delete(userId);
   }
 
   // ── Direct Messages ──
@@ -272,5 +328,323 @@ export class DirectMessageGateway
     if (!isMember) return;
 
     void client.join(`group:${body.groupId}`);
+  }
+
+  // ── Call Signaling (1-on-1) ──
+
+  @SubscribeMessage('call:initiate')
+  async handleCallInitiate(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { receiverId: string; callType: CallType },
+  ) {
+    const user = client.data.user;
+
+    if (this.userActiveCalls.has(user.sub)) {
+      client.emit('call:error', { message: 'Already in a call' });
+      return;
+    }
+
+    if (this.userActiveCalls.has(body.receiverId)) {
+      client.emit('call:error', { message: 'User is already in a call' });
+      return;
+    }
+
+    const friends = await this.userService.areFriends(
+      user.sub,
+      body.receiverId,
+    );
+    if (!friends) {
+      client.emit('call:error', { message: 'Not friends' });
+      return;
+    }
+
+    const callId = crypto.randomUUID();
+
+    const timeout = setTimeout(() => {
+      const call = this.dmCalls.get(callId);
+      if (call && call.status === 'ringing') {
+        this.server
+          .to(call.callerId)
+          .emit('call:ended', { callId, reason: 'no-answer' });
+        this.server
+          .to(call.receiverId)
+          .emit('call:ended', { callId, reason: 'no-answer' });
+        this.dmCalls.delete(callId);
+        this.userActiveCalls.delete(call.callerId);
+        this.userActiveCalls.delete(call.receiverId);
+      }
+    }, 30_000);
+
+    const call: DmCall = {
+      id: callId,
+      callerId: user.sub,
+      callerName: user.userName ?? 'Unknown',
+      receiverId: body.receiverId,
+      callType: body.callType,
+      status: 'ringing',
+      timeout,
+    };
+
+    this.dmCalls.set(callId, call);
+    this.userActiveCalls.set(user.sub, callId);
+    this.userActiveCalls.set(body.receiverId, callId);
+
+    this.server.to(body.receiverId).emit('call:incoming', {
+      callId,
+      callerId: user.sub,
+      callerName: call.callerName,
+      callType: body.callType,
+    });
+  }
+
+  @SubscribeMessage('call:accept')
+  handleCallAccept(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { callId: string },
+  ) {
+    const user = client.data.user;
+    const call = this.dmCalls.get(body.callId);
+    if (!call || call.receiverId !== user.sub || call.status !== 'ringing')
+      return;
+
+    clearTimeout(call.timeout);
+    call.status = 'active';
+
+    this.server.to(call.callerId).emit('call:accepted', {
+      callId: body.callId,
+      userId: user.sub,
+    });
+  }
+
+  @SubscribeMessage('call:decline')
+  handleCallDecline(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { callId: string },
+  ) {
+    const user = client.data.user;
+    const call = this.dmCalls.get(body.callId);
+    if (!call || call.receiverId !== user.sub) return;
+
+    clearTimeout(call.timeout);
+    this.server.to(call.callerId).emit('call:declined', {
+      callId: body.callId,
+      userId: user.sub,
+    });
+    this.dmCalls.delete(body.callId);
+    this.userActiveCalls.delete(call.callerId);
+    this.userActiveCalls.delete(call.receiverId);
+  }
+
+  @SubscribeMessage('call:hangup')
+  handleCallHangup(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { callId: string },
+  ) {
+    const user = client.data.user;
+
+    const dmCall = this.dmCalls.get(body.callId);
+    if (dmCall) {
+      clearTimeout(dmCall.timeout);
+      const otherUserId =
+        dmCall.callerId === user.sub ? dmCall.receiverId : dmCall.callerId;
+      this.server
+        .to(otherUserId)
+        .emit('call:ended', { callId: body.callId, reason: 'hangup' });
+      this.dmCalls.delete(body.callId);
+      this.userActiveCalls.delete(dmCall.callerId);
+      this.userActiveCalls.delete(dmCall.receiverId);
+      return;
+    }
+
+    // Could be a group call hangup via call:hangup
+    const groupCall = this.groupCalls.get(body.callId);
+    if (groupCall) {
+      groupCall.participants.delete(user.sub);
+      this.userActiveCalls.delete(user.sub);
+      this.server
+        .to(`group:${groupCall.groupId}`)
+        .emit('call:group-left', { callId: body.callId, userId: user.sub });
+      if (groupCall.participants.size === 0) {
+        this.groupCalls.delete(body.callId);
+      }
+    }
+  }
+
+  @SubscribeMessage('call:offer')
+  handleCallOffer(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody()
+    body: {
+      callId: string;
+      toUserId: string;
+      offer: { type: string; sdp?: string };
+    },
+  ) {
+    const user = client.data.user;
+    this.server.to(body.toUserId).emit('call:offer', {
+      callId: body.callId,
+      fromUserId: user.sub,
+      offer: body.offer,
+    });
+  }
+
+  @SubscribeMessage('call:answer')
+  handleCallAnswer(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody()
+    body: {
+      callId: string;
+      toUserId: string;
+      answer: { type: string; sdp?: string };
+    },
+  ) {
+    const user = client.data.user;
+    this.server.to(body.toUserId).emit('call:answer', {
+      callId: body.callId,
+      fromUserId: user.sub,
+      answer: body.answer,
+    });
+  }
+
+  @SubscribeMessage('call:ice-candidate')
+  handleCallIceCandidate(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody()
+    body: {
+      callId: string;
+      toUserId: string;
+      candidate: {
+        candidate?: string;
+        sdpMid?: string | null;
+        sdpMLineIndex?: number | null;
+      };
+    },
+  ) {
+    const user = client.data.user;
+    this.server.to(body.toUserId).emit('call:ice-candidate', {
+      callId: body.callId,
+      fromUserId: user.sub,
+      candidate: body.candidate,
+    });
+  }
+
+  @SubscribeMessage('call:media-state')
+  handleCallMediaState(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody()
+    body: { callId: string; audioEnabled: boolean; videoEnabled: boolean },
+  ) {
+    const user = client.data.user;
+
+    const dmCall = this.dmCalls.get(body.callId);
+    if (dmCall) {
+      const otherUserId =
+        dmCall.callerId === user.sub ? dmCall.receiverId : dmCall.callerId;
+      this.server.to(otherUserId).emit('call:media-state', {
+        userId: user.sub,
+        audioEnabled: body.audioEnabled,
+        videoEnabled: body.videoEnabled,
+      });
+      return;
+    }
+
+    const groupCall = this.groupCalls.get(body.callId);
+    if (groupCall) {
+      for (const [participantId] of groupCall.participants) {
+        if (participantId !== user.sub) {
+          this.server.to(participantId).emit('call:media-state', {
+            userId: user.sub,
+            audioEnabled: body.audioEnabled,
+            videoEnabled: body.videoEnabled,
+          });
+        }
+      }
+    }
+  }
+
+  // ── Call Signaling (Group) ──
+
+  @SubscribeMessage('call:group-join')
+  async handleGroupCallJoin(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { groupId: number; callType: CallType },
+  ) {
+    const user = client.data.user;
+
+    if (this.userActiveCalls.has(user.sub)) {
+      client.emit('call:error', { message: 'Already in a call' });
+      return;
+    }
+
+    const isMember = await this.groupChatService.isMember(
+      body.groupId,
+      user.sub,
+    );
+    if (!isMember) {
+      client.emit('call:error', { message: 'Not a group member' });
+      return;
+    }
+
+    // Find or create the group call
+    let groupCall: GroupCall | undefined;
+    for (const gc of this.groupCalls.values()) {
+      if (gc.groupId === body.groupId) {
+        groupCall = gc;
+        break;
+      }
+    }
+
+    if (!groupCall) {
+      const callId = crypto.randomUUID();
+      groupCall = {
+        id: callId,
+        groupId: body.groupId,
+        callType: body.callType,
+        participants: new Map(),
+      };
+      this.groupCalls.set(callId, groupCall);
+    }
+
+    // Tell the joiner who's already in the call
+    const existingParticipants = Array.from(
+      groupCall.participants.entries(),
+    ).map(([userId, info]) => ({ userId, userName: info.userName }));
+
+    client.emit('call:group-active', {
+      callId: groupCall.id,
+      participants: existingParticipants,
+    });
+
+    const userName = user.userName ?? 'Unknown';
+    groupCall.participants.set(user.sub, { userName });
+    this.userActiveCalls.set(user.sub, groupCall.id);
+
+    // Notify existing participants
+    client.to(`group:${body.groupId}`).emit('call:group-joined', {
+      callId: groupCall.id,
+      userId: user.sub,
+      userName,
+    });
+  }
+
+  @SubscribeMessage('call:group-leave')
+  handleGroupCallLeave(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { callId: string },
+  ) {
+    const user = client.data.user;
+    const groupCall = this.groupCalls.get(body.callId);
+    if (!groupCall || !groupCall.participants.has(user.sub)) return;
+
+    groupCall.participants.delete(user.sub);
+    this.userActiveCalls.delete(user.sub);
+
+    this.server
+      .to(`group:${groupCall.groupId}`)
+      .emit('call:group-left', { callId: body.callId, userId: user.sub });
+
+    if (groupCall.participants.size === 0) {
+      this.groupCalls.delete(body.callId);
+    }
   }
 }
