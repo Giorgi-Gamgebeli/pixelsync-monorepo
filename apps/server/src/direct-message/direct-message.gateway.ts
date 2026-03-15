@@ -12,6 +12,7 @@ import { decode } from '@auth/core/jwt';
 import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/users/users.service';
 import { DirectMessageService } from './direct-message.service';
+import { GroupChatService } from 'src/group-chat/group-chat.service';
 
 interface AuthenticatedSocket extends Socket {
   data: {
@@ -31,6 +32,7 @@ export class DirectMessageGateway
   constructor(
     private readonly directMessageService: DirectMessageService,
     private readonly userService: UsersService,
+    private readonly groupChatService: GroupChatService,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
@@ -115,6 +117,8 @@ export class DirectMessageGateway
     }
   }
 
+  // ── Direct Messages ──
+
   @SubscribeMessage('dm:send')
   async sendMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
@@ -122,7 +126,6 @@ export class DirectMessageGateway
   ) {
     const user = client.data.user;
 
-    // Validate friendship
     const friends = await this.userService.areFriends(
       user.sub,
       body.receiverId,
@@ -143,7 +146,7 @@ export class DirectMessageGateway
     this.directMessageService
       .create({ ...body, senderId: user.sub })
       .catch((err) => {
-        console.error('[DirectMessageGateway] Failed to persist message:', err);
+        console.error('[Gateway] Failed to persist DM:', err);
       });
   }
 
@@ -161,7 +164,7 @@ export class DirectMessageGateway
     this.directMessageService
       .markAsRead(body.senderId, user.sub)
       .catch((err) => {
-        console.error('[DirectMessageGateway] Failed to mark as read:', err);
+        console.error('[Gateway] Failed to mark as read:', err);
       });
   }
 
@@ -189,5 +192,85 @@ export class DirectMessageGateway
     for (const friendId of friendIds) {
       this.server.to(friendId).emit('user:profile-update', payload);
     }
+  }
+
+  // ── Group Chat ──
+
+  @SubscribeMessage('group:send')
+  async handleGroupSend(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { groupId: number; content: string },
+  ) {
+    const user = client.data.user;
+
+    if (!body.content || typeof body.content !== 'string' || !body.content.trim()) return;
+    if (!body.groupId || typeof body.groupId !== 'number') return;
+
+    const isMember = await this.groupChatService.isMember(
+      body.groupId,
+      user.sub,
+    );
+    if (!isMember) return;
+
+    const payload = {
+      content: body.content,
+      groupId: body.groupId,
+      senderId: user.sub,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isEdited: false,
+      sender: {
+        userName: user.userName ?? null,
+        avatarConfig: user.avatarConfig ?? null,
+      },
+    };
+
+    this.server.to(`group:${body.groupId}`).emit('group:receive', payload);
+
+    this.groupChatService
+      .createMessage(body.groupId, user.sub, body.content)
+      .catch((err) => {
+        console.error('[Gateway] Failed to persist group message:', err);
+      });
+  }
+
+  @SubscribeMessage('group:typing')
+  async handleGroupTyping(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { groupId: number; isTyping: boolean },
+  ) {
+    const user = client.data.user;
+
+    if (!body.groupId || typeof body.groupId !== 'number') return;
+
+    const isMember = await this.groupChatService.isMember(
+      body.groupId,
+      user.sub,
+    );
+    if (!isMember) return;
+
+    client.to(`group:${body.groupId}`).emit('group:typing', {
+      groupId: body.groupId,
+      userId: user.sub,
+      isTyping: body.isTyping,
+    });
+  }
+
+  @SubscribeMessage('group:join')
+  async handleGroupJoin(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { groupId: number },
+  ) {
+    const user = client.data.user;
+
+    if (!body.groupId || typeof body.groupId !== 'number') return;
+
+    const isMember = await this.groupChatService.isMember(
+      body.groupId,
+      user.sub,
+    );
+    if (!isMember) return;
+
+    void client.join(`group:${body.groupId}`);
   }
 }

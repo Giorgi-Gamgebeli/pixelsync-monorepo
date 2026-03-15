@@ -3,11 +3,12 @@ import { DirectMessageController } from './direct-message.controller';
 import { DirectMessageService } from './direct-message.service';
 import { AuthModule } from 'src/auth/auth.module';
 import { UsersModule } from 'src/users/users.module';
+import { GroupChatModule } from 'src/group-chat/group-chat.module';
 
 import { DirectMessageGateway } from './direct-message.gateway';
 
 @Module({
-  imports: [AuthModule, UsersModule],
+  imports: [AuthModule, UsersModule, GroupChatModule],
   controllers: [DirectMessageController],
   providers: [DirectMessageService, DirectMessageGateway],
 })
