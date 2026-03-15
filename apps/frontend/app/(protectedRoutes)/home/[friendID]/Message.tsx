@@ -83,7 +83,7 @@ function Message({
   if (grouped) {
     return (
       <div
-        className={`group relative flex w-full items-center gap-2 ${
+        className={`group flex w-full items-center gap-2 ${
           isOwn ? "flex-row-reverse" : "flex-row"
         } ${pending ? "opacity-50" : "opacity-100"}`}
       >
@@ -92,31 +92,27 @@ function Message({
 
         <div>
           <div
-            className={`relative max-w-[75%] rounded-2xl px-4 py-1.5 wrap-break-word shadow-sm ${
+            className={`relative rounded-2xl px-4 py-1.5 wrap-break-word shadow-sm ${
               isOwn
                 ? "bg-brand-500 text-white selection:bg-white/30"
                 : "bg-surface border border-white/5 text-gray-200 selection:bg-brand-500/30"
-            }`}
+            } ${isOwn ? "pr-8" : ""}`}
           >
             <p className="text-[13.5px] leading-relaxed">
               {renderTextWithLinks(text)}
-              {isOwn && (
-                <span
-                  className={`ml-1.5 inline-block align-middle text-[10px] leading-none ${isRead ? "text-white" : "text-white/40"}`}
-                >
-                  {isRead ? "✓✓" : "✓"}
-                </span>
-              )}
             </p>
+            {isOwn && (
+              <span
+                className={`absolute right-2 bottom-1 text-[10px] leading-none ${isRead ? "text-white" : "text-white/40"}`}
+              >
+                {isRead ? "✓✓" : "✓"}
+              </span>
+            )}
           </div>
           <LinkPreview text={text} />
         </div>
 
-        <span
-          className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-[10px] whitespace-nowrap text-gray-500 opacity-0 transition-opacity group-hover:opacity-100 ${
-            isOwn ? "left-2" : "right-2"
-          }`}
-        >
+        <span className="shrink-0 text-[10px] whitespace-nowrap text-gray-500 opacity-0 transition-opacity group-hover:opacity-100">
           {formattedTime}
         </span>
       </div>
@@ -157,18 +153,18 @@ function Message({
               isOwn
                 ? "bg-brand-500 rounded-tr-none text-white selection:bg-white/30"
                 : "bg-surface rounded-tl-none border border-white/5 text-gray-200 selection:bg-brand-500/30"
-            }`}
+            } ${isOwn ? "pr-8" : ""}`}
           >
             <p className="text-[13.5px] leading-relaxed">
               {renderTextWithLinks(text)}
-              {isOwn && (
-                <span
-                  className={`ml-1.5 inline-block align-middle text-[10px] leading-none ${isRead ? "text-white" : "text-white/40"}`}
-                >
-                  {isRead ? "✓✓" : "✓"}
-                </span>
-              )}
             </p>
+            {isOwn && (
+              <span
+                className={`absolute right-2 bottom-1.5 text-[10px] leading-none ${isRead ? "text-white" : "text-white/40"}`}
+              >
+                {isRead ? "✓✓" : "✓"}
+              </span>
+            )}
 
             {isOwn && (
               <div className="bg-brand-400 absolute inset-0 -z-10 rounded-2xl opacity-20 blur-md" />
