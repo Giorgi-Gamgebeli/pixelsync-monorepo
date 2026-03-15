@@ -160,13 +160,20 @@ export class DirectMessageGateway
 
     const groupCall = this.groupCalls.get(callId);
     if (groupCall) {
+      const groupId = groupCall.groupId;
       groupCall.participants.delete(userId);
-      this.server.to(`group:${groupCall.groupId}`).emit('call:group-left', {
+      const participantCount = groupCall.participants.size;
+      this.server.to(`group:${groupId}`).emit('call:group-left', {
         callId,
+        groupId,
         userId,
+        participantCount,
       });
-      if (groupCall.participants.size === 0) {
+      if (participantCount === 0) {
         this.groupCalls.delete(callId);
+        this.server.to(`group:${groupId}`).emit('call:group-call-ended', {
+          groupId,
+        });
       }
     }
 
@@ -622,12 +629,25 @@ export class DirectMessageGateway
     groupCall.participants.set(user.sub, { userName });
     this.userActiveCalls.set(user.sub, groupCall.id);
 
-    // Notify existing participants
-    client.to(`group:${body.groupId}`).emit('call:group-joined', {
-      callId: groupCall.id,
-      userId: user.sub,
-      userName,
-    });
+    const participantCount = groupCall.participants.size;
+
+    // First joiner: notify whole group that a call started
+    if (participantCount === 1) {
+      this.server.to(`group:${body.groupId}`).emit('call:group-call-started', {
+        groupId: body.groupId,
+        callId: groupCall.id,
+        participantCount: 1,
+      });
+    } else {
+      // Notify existing participants (excludes sender)
+      this.server.to(`group:${body.groupId}`).emit('call:group-joined', {
+        callId: groupCall.id,
+        groupId: body.groupId,
+        userId: user.sub,
+        userName,
+        participantCount,
+      });
+    }
   }
 
   @SubscribeMessage('call:group-leave')
@@ -639,15 +659,23 @@ export class DirectMessageGateway
     const groupCall = this.groupCalls.get(body.callId);
     if (!groupCall || !groupCall.participants.has(user.sub)) return;
 
+    const groupId = groupCall.groupId;
     groupCall.participants.delete(user.sub);
     this.userActiveCalls.delete(user.sub);
+    const participantCount = groupCall.participants.size;
 
-    this.server
-      .to(`group:${groupCall.groupId}`)
-      .emit('call:group-left', { callId: body.callId, userId: user.sub });
+    this.server.to(`group:${groupId}`).emit('call:group-left', {
+      callId: body.callId,
+      groupId,
+      userId: user.sub,
+      participantCount,
+    });
 
-    if (groupCall.participants.size === 0) {
+    if (participantCount === 0) {
       this.groupCalls.delete(body.callId);
+      this.server.to(`group:${groupId}`).emit('call:group-call-ended', {
+        groupId,
+      });
     }
   }
 }

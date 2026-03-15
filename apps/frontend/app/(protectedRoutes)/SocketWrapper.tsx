@@ -6,6 +6,7 @@ import { SocketProvider } from "@/app/_context/SocketContext";
 import { CallProvider } from "@/app/_context/CallContext";
 import IncomingCallModal from "@/app/_components/IncomingCallModal";
 import CallOverlay from "@/app/_components/CallOverlay";
+import CallMiniBar from "@/app/_components/CallMiniBar";
 
 function SocketWrapper({ children }: PropsWithChildren) {
   const { data: session } = useSession();
@@ -19,6 +20,7 @@ function SocketWrapper({ children }: PropsWithChildren) {
         {children}
         <IncomingCallModal />
         <CallOverlay />
+        <CallMiniBar />
       </CallProvider>
     </SocketProvider>
   );

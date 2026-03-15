@@ -105,10 +105,23 @@ export interface ServerToCallEvents {
   }) => void;
   "call:group-joined": (data: {
     callId: string;
+    groupId: number;
     userId: string;
     userName: string;
+    participantCount: number;
   }) => void;
-  "call:group-left": (data: { callId: string; userId: string }) => void;
+  "call:group-left": (data: {
+    callId: string;
+    groupId: number;
+    userId: string;
+    participantCount: number;
+  }) => void;
+  "call:group-call-started": (data: {
+    groupId: number;
+    callId: string;
+    participantCount: number;
+  }) => void;
+  "call:group-call-ended": (data: { groupId: number }) => void;
   "call:group-active": (data: {
     callId: string;
     participants: { userId: string; userName: string }[];

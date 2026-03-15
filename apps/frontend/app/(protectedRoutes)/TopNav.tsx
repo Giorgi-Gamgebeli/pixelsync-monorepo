@@ -12,6 +12,7 @@ import AvatarBuilderModal from "@/app/_components/avatar/AvatarBuilderModal";
 import ProfileSettingsPanel from "@/app/_components/ProfileSettingsPanel";
 import { updateAvatarConfig } from "@/app/_dataAccessLayer/userActions";
 import { useSocketContext } from "@/app/_context/SocketContext";
+import { useCallContext } from "@/app/_context/CallContext";
 
 function NotificationBell() {
   const { unreadMap } = useSocketContext();
@@ -53,6 +54,7 @@ function TopNav({ projects }: TopNavProps) {
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
   const { broadcastProfileUpdate } = useSocketContext();
+  const { callState, setCallUiMode } = useCallContext();
 
   const isHome = pathname.startsWith("/home");
   const activeProject = projects?.find((p) =>
@@ -172,6 +174,16 @@ function TopNav({ projects }: TopNavProps) {
         </Link>
 
         <NotificationBell />
+
+        {callState !== "idle" && (
+          <button
+            onClick={() => setCallUiMode("panel")}
+            className="hover:bg-surface/60 flex items-center gap-1 rounded-full bg-surface/40 px-3 py-1 text-xs text-gray-200 transition-colors"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+            <span>In call</span>
+          </button>
+        )}
 
         <div className="bg-border ml-1 h-5 w-px" />
 

@@ -32,8 +32,14 @@ function IncomingCallModal() {
   const isVideo = incomingCall.callType === "video";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-surface border-border flex w-80 flex-col items-center gap-6 rounded-2xl border p-8">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onClick={declineCall}
+    >
+      <div
+        className="bg-surface border-border flex w-80 flex-col items-center gap-5 rounded-2xl border p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-500/20">
           <Icon
             icon={isVideo ? "mdi:video" : "mdi:phone"}
@@ -46,9 +52,11 @@ function IncomingCallModal() {
             {incomingCall.callerName}
           </p>
           <p className="text-sm text-gray-400">
-            Incoming {isVideo ? "video" : "voice"} call...
+            Incoming {isVideo ? "video" : "voice"} call
           </p>
-          <p className="mt-1 text-xs text-gray-500">{timeLeft}s</p>
+          <p className="mt-1 text-xs text-gray-500">
+            Rings for {timeLeft}s • You can keep browsing while this rings.
+          </p>
         </div>
 
         <div className="flex gap-6">

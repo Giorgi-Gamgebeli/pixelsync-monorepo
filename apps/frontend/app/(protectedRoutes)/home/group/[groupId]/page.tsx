@@ -2,6 +2,7 @@ import ClientIcon from "@/app/_components/ClientIcon";
 import { getGroupChatPageData } from "@/app/_dataAccessLayer/groupActions";
 import Messages from "../../[friendID]/Messages";
 import GroupChatHeader from "./GroupChatHeader";
+import GroupCallBanner from "./GroupCallBanner";
 
 export const revalidate = 0;
 
@@ -34,6 +35,7 @@ async function Page({ params }: Params) {
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       <GroupChatHeader group={group} />
+      <GroupCallBanner groupId={group.id} groupName={group.name} />
 
       <div className="flex-1 overflow-hidden">
         <Messages

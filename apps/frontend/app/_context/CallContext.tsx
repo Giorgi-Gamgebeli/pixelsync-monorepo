@@ -21,6 +21,10 @@ const ICE_SERVERS: RTCConfiguration = {
 
 type CallState = "idle" | "ringing-outgoing" | "ringing-incoming" | "active";
 
+type CallUiMode = "idle" | "mini" | "panel" | "full";
+
+type CallConnectionState = "stable" | "reconnecting" | "failed";
+
 type IncomingCallInfo = {
   callId: string;
   callerId: string;
@@ -33,6 +37,13 @@ type CallContextValue = {
   callType: CallType | null;
   callId: string | null;
   incomingCall: IncomingCallInfo | null;
+  callStartedAt: number | null;
+  callUiMode: CallUiMode;
+  callConnectionState: CallConnectionState;
+  /** Groups that have an active call right now (even if we're not in it). groupId -> { callId, participantCount } */
+  activeGroupCalls: Record<number, { callId: string; participantCount: number }>;
+  /** When we're in a group call, the group id */
+  activeGroupId: number | null;
   localStream: MediaStream | null;
   remoteStreams: Map<string, MediaStream>;
   audioEnabled: boolean;
@@ -46,6 +57,7 @@ type CallContextValue = {
   toggleCamera: () => void;
   joinGroupCall: (groupId: number, callType: CallType) => void;
   leaveGroupCall: () => void;
+  setCallUiMode: (mode: CallUiMode) => void;
 };
 
 const noop = () => {};
@@ -56,6 +68,11 @@ const CallContext = createContext<CallContextValue>({
   callType: null,
   callId: null,
   incomingCall: null,
+  callStartedAt: null,
+  callUiMode: "idle",
+  callConnectionState: "stable",
+  activeGroupCalls: {},
+  activeGroupId: null,
   localStream: null,
   remoteStreams: new Map(),
   audioEnabled: true,
@@ -69,6 +86,7 @@ const CallContext = createContext<CallContextValue>({
   toggleCamera: noop,
   joinGroupCall: noopAsync,
   leaveGroupCall: noop,
+  setCallUiMode: noop,
 });
 
 function CallProvider({ children }: PropsWithChildren) {
@@ -79,6 +97,10 @@ function CallProvider({ children }: PropsWithChildren) {
   const [incomingCall, setIncomingCall] = useState<IncomingCallInfo | null>(
     null,
   );
+  const [callStartedAt, setCallStartedAt] = useState<number | null>(null);
+  const [callUiMode, setCallUiMode] = useState<CallUiMode>("idle");
+  const [callConnectionState, setCallConnectionState] =
+    useState<CallConnectionState>("stable");
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState<Map<string, MediaStream>>(
     new Map(),
@@ -88,6 +110,10 @@ function CallProvider({ children }: PropsWithChildren) {
   const [groupParticipants, setGroupParticipants] = useState<
     Map<string, string>
   >(new Map());
+  const [activeGroupCalls, setActiveGroupCalls] = useState<
+    Record<number, { callId: string; participantCount: number }>
+  >({});
+  const [activeGroupId, setActiveGroupId] = useState<number | null>(null);
 
   // Refs for values that socket handlers need without triggering effect re-runs
   const peerConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
@@ -98,6 +124,12 @@ function CallProvider({ children }: PropsWithChildren) {
   const localStreamRef = useRef<MediaStream | null>(null);
   const callTypeRef = useRef<CallType | null>(null);
   const incomingCallRef = useRef<IncomingCallInfo | null>(null);
+  const callStartedAtRef = useRef<number | null>(null);
+
+  // Audio elements for call sounds
+  const incomingSoundRef = useRef<HTMLAudioElement | null>(null);
+  const outgoingSoundRef = useRef<HTMLAudioElement | null>(null);
+  const endSoundRef = useRef<HTMLAudioElement | null>(null);
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -112,6 +144,29 @@ function CallProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     incomingCallRef.current = incomingCall;
   }, [incomingCall]);
+  useEffect(() => {
+    callStartedAtRef.current = callStartedAt;
+  }, [callStartedAt]);
+
+  // Initialize audio elements once on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    incomingSoundRef.current = new Audio("/sounds/incoming_call.mp3");
+    outgoingSoundRef.current = new Audio("/sounds/outgoing_call.mp3");
+    endSoundRef.current = new Audio("/sounds/call_end.mp3");
+
+    if (incomingSoundRef.current) {
+      incomingSoundRef.current.loop = true;
+      incomingSoundRef.current.volume = 0.6;
+    }
+    if (outgoingSoundRef.current) {
+      outgoingSoundRef.current.loop = true;
+      outgoingSoundRef.current.volume = 0.5;
+    }
+    if (endSoundRef.current) {
+      endSoundRef.current.volume = 0.6;
+    }
+  }, []);
 
   const getMedia = useCallback(async (type: CallType) => {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -197,16 +252,72 @@ function CallProvider({ children }: PropsWithChildren) {
     setLocalStream(null);
     setRemoteStreams(new Map());
     setCallState("idle");
+    setCallUiMode("idle");
+    setCallConnectionState("stable");
+    setCallStartedAt(null);
     setCallType(null);
     setCallId(null);
     setIncomingCall(null);
     setGroupParticipants(new Map());
+    setActiveGroupId(null);
     setAudioEnabled(true);
     setVideoEnabled(true);
     callIdRef.current = null;
     callTypeRef.current = null;
     incomingCallRef.current = null;
+    callStartedAtRef.current = null;
+
+    // Stop any playing sounds
+    incomingSoundRef.current?.pause();
+    outgoingSoundRef.current?.pause();
+    if (incomingSoundRef.current) incomingSoundRef.current.currentTime = 0;
+    if (outgoingSoundRef.current) outgoingSoundRef.current.currentTime = 0;
   }, []); // No deps — uses only refs and setters (stable)
+
+  // Drive call sounds from high-level call state
+  useEffect(() => {
+    const incoming = incomingSoundRef.current;
+    const outgoing = outgoingSoundRef.current;
+    const end = endSoundRef.current;
+
+    if (!incoming || !outgoing) return;
+
+    if (callState === "ringing-incoming") {
+      // Incoming call ringtone
+      outgoing.pause();
+      outgoing.currentTime = 0;
+      incoming
+        .play()
+        .catch(() => {
+          // Autoplay might be blocked; ignore
+        });
+    } else if (callState === "ringing-outgoing") {
+      // Outgoing call ringback
+      incoming.pause();
+      incoming.currentTime = 0;
+      outgoing
+        .play()
+        .catch(() => {
+          // Autoplay might be blocked; ignore
+        });
+    } else {
+      // Any other state: stop ringing
+      const wasRinging =
+        !incoming.paused || !outgoing.paused;
+      incoming.pause();
+      outgoing.pause();
+      incoming.currentTime = 0;
+      outgoing.currentTime = 0;
+      // Optional: play a short end sound when leaving a ringing state to idle
+      if (callState === "idle" && wasRinging && end) {
+        end
+          .play()
+          .catch(() => {
+            // ignore
+          });
+      }
+    }
+  }, [callState]);
 
   // ── Socket event listeners — depends only on socket + stable callbacks ──
 
@@ -235,6 +346,8 @@ function CallProvider({ children }: PropsWithChildren) {
     const onAccepted = async (data: { callId: string; userId: string }) => {
       if (data.callId !== callIdRef.current) return;
       setCallState("active");
+      setCallUiMode("full");
+      setCallStartedAt(Date.now());
 
       const stream =
         localStreamRef.current ?? (await getMedia(callTypeRef.current!));
@@ -320,6 +433,8 @@ function CallProvider({ children }: PropsWithChildren) {
       setCallId(data.callId);
       callIdRef.current = data.callId;
       setCallState("active");
+      setCallUiMode("full");
+      setCallStartedAt(Date.now());
 
       const stream =
         localStreamRef.current ?? (await getMedia(callTypeRef.current!));
@@ -339,11 +454,34 @@ function CallProvider({ children }: PropsWithChildren) {
       setGroupParticipants(newParticipants);
     };
 
+    const onGroupCallStarted = (data: {
+      groupId: number;
+      callId: string;
+      participantCount: number;
+    }) => {
+      setActiveGroupCalls((prev) => ({
+        ...prev,
+        [data.groupId]: {
+          callId: data.callId,
+          participantCount: data.participantCount,
+        },
+      }));
+    };
+
     const onGroupJoined = (data: {
       callId: string;
+      groupId: number;
       userId: string;
       userName: string;
+      participantCount: number;
     }) => {
+      setActiveGroupCalls((prev) => ({
+        ...prev,
+        [data.groupId]: {
+          callId: data.callId,
+          participantCount: data.participantCount,
+        },
+      }));
       if (data.callId !== callIdRef.current) return;
       setGroupParticipants((prev) => {
         const next = new Map(prev);
@@ -352,7 +490,24 @@ function CallProvider({ children }: PropsWithChildren) {
       });
     };
 
-    const onGroupLeft = (data: { callId: string; userId: string }) => {
+    const onGroupLeft = (data: {
+      callId: string;
+      groupId: number;
+      userId: string;
+      participantCount: number;
+    }) => {
+      setActiveGroupCalls((prev) => {
+        const next = { ...prev };
+        if (data.participantCount <= 0) {
+          delete next[data.groupId];
+        } else {
+          next[data.groupId] = {
+            callId: data.callId,
+            participantCount: data.participantCount,
+          };
+        }
+        return next;
+      });
       if (data.callId !== callIdRef.current) return;
       const pc = peerConnections.current.get(data.userId);
       if (pc) {
@@ -372,6 +527,14 @@ function CallProvider({ children }: PropsWithChildren) {
       });
     };
 
+    const onGroupCallEnded = (data: { groupId: number }) => {
+      setActiveGroupCalls((prev) => {
+        const next = { ...prev };
+        delete next[data.groupId];
+        return next;
+      });
+    };
+
     const onError = (data: { message: string }) => {
       console.error("[Call]", data.message);
       cleanupAll();
@@ -385,9 +548,11 @@ function CallProvider({ children }: PropsWithChildren) {
     socket.on("call:offer", onOffer);
     socket.on("call:answer", onAnswer);
     socket.on("call:ice-candidate", onIceCandidate);
+    socket.on("call:group-call-started", onGroupCallStarted);
     socket.on("call:group-active", onGroupActive);
     socket.on("call:group-joined", onGroupJoined);
     socket.on("call:group-left", onGroupLeft);
+    socket.on("call:group-call-ended", onGroupCallEnded);
     socket.on("call:error", onError);
 
     return () => {
@@ -399,9 +564,11 @@ function CallProvider({ children }: PropsWithChildren) {
       socket.off("call:offer", onOffer);
       socket.off("call:answer", onAnswer);
       socket.off("call:ice-candidate", onIceCandidate);
+      socket.off("call:group-call-started", onGroupCallStarted);
       socket.off("call:group-active", onGroupActive);
       socket.off("call:group-joined", onGroupJoined);
       socket.off("call:group-left", onGroupLeft);
+      socket.off("call:group-call-ended", onGroupCallEnded);
       socket.off("call:error", onError);
     };
   }, [socket, getMedia, createPeerConnection, flushIceCandidates, cleanupAll]);
@@ -427,6 +594,8 @@ function CallProvider({ children }: PropsWithChildren) {
       setCallType(type);
       callTypeRef.current = type;
       setCallState("ringing-outgoing");
+      setCallUiMode("full");
+      setCallConnectionState("stable");
       await getMedia(type);
       socket.emit("call:initiate", { receiverId, callType: type });
     },
@@ -437,6 +606,9 @@ function CallProvider({ children }: PropsWithChildren) {
     if (!socket || !incomingCallRef.current) return;
     const info = incomingCallRef.current;
     setCallState("active");
+    setCallUiMode("full");
+    setCallStartedAt(Date.now());
+    setCallConnectionState("stable");
     await getMedia(info.callType);
     socket.emit("call:accept", { callId: info.callId });
   }, [socket, getMedia]);
@@ -490,9 +662,13 @@ function CallProvider({ children }: PropsWithChildren) {
   const joinGroupCall = useCallback(
     async (groupId: number, type: CallType) => {
       if (!socket || callIdRef.current) return;
+      setActiveGroupId(groupId);
       setCallType(type);
       callTypeRef.current = type;
       setCallState("active");
+      setCallUiMode("full");
+      setCallStartedAt(Date.now());
+      setCallConnectionState("stable");
       await getMedia(type);
       socket.emit("call:group-join", { groupId, callType: type });
     },
@@ -512,6 +688,11 @@ function CallProvider({ children }: PropsWithChildren) {
         callType,
         callId,
         incomingCall,
+        callStartedAt,
+        callUiMode,
+        callConnectionState,
+        activeGroupCalls,
+        activeGroupId,
         localStream,
         remoteStreams,
         audioEnabled,
@@ -525,6 +706,7 @@ function CallProvider({ children }: PropsWithChildren) {
         toggleCamera,
         joinGroupCall,
         leaveGroupCall,
+        setCallUiMode,
       }}
     >
       {children}

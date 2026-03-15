@@ -56,6 +56,8 @@ function CallOverlay() {
     leaveGroupCall,
     toggleMute,
     toggleCamera,
+    callUiMode,
+    setCallUiMode,
   } = useCallContext();
 
   const isGroup = groupParticipants.size > 0;
@@ -63,14 +65,21 @@ function CallOverlay() {
   const isActive = callState === "active";
 
   if (!isRinging && !isActive) return null;
+  if (callUiMode === "idle" || callUiMode === "mini") return null;
 
   const remoteEntries = Array.from(remoteStreams.entries());
   const isVideoCall = callType === "video";
 
+  const isFull = callUiMode === "full";
+
+  const containerClasses = isFull
+    ? "fixed inset-0 z-50 flex flex-col bg-gray-950"
+    : "fixed bottom-4 right-4 z-50 flex h-[min(360px,60vh)] w-[min(420px,100%-2rem)] flex-col overflow-hidden rounded-2xl bg-gray-950 shadow-2xl border border-gray-800";
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-950">
+    <div className={containerClasses}>
       {/* Video area */}
-      <div className="flex flex-1 items-center justify-center p-4">
+      <div className="relative flex flex-1 items-center justify-center p-4">
         {isRinging && (
           <div className="flex flex-col items-center gap-4">
             <div className="h-20 w-20 animate-pulse rounded-full bg-blue-500/20" />
@@ -115,12 +124,12 @@ function CallOverlay() {
           stream={localStream}
           muted
           label="You"
-          className="absolute bottom-24 right-4 h-36 w-28"
+          className={isFull ? "absolute bottom-24 right-4 h-36 w-28" : "absolute bottom-3 right-3 h-24 w-20"}
         />
       )}
 
       {/* Controls */}
-      <div className="flex items-center justify-center gap-4 pb-8 pt-4">
+      <div className="flex items-center justify-center gap-3 pb-4 pt-3">
         <button
           onClick={toggleMute}
           className={`flex h-12 w-12 items-center justify-center rounded-full transition-colors ${
@@ -152,6 +161,17 @@ function CallOverlay() {
             />
           </button>
         )}
+
+        <button
+          onClick={() => setCallUiMode(isFull ? "panel" : "full")}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 text-gray-200 transition-colors hover:bg-gray-700"
+          aria-label={isFull ? "Dock call" : "Maximize call"}
+        >
+          <Icon
+            icon={isFull ? "mdi:dock-bottom" : "mdi:arrow-expand"}
+            className="text-xl"
+          />
+        </button>
 
         <button
           onClick={isGroup ? leaveGroupCall : hangup}
