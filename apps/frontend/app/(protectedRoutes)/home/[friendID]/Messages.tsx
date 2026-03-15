@@ -62,6 +62,8 @@ function Messages(props: MessagesProps) {
   const { messages, session, currentUserAvatarConfig, mode } = props;
   const friend = mode === "dm" ? props.friend : null;
   const group = mode === "group" ? props.group : null;
+  const friendId = friend?.id ?? null;
+  const groupId = group?.id ?? null;
 
   const {
     socket,
@@ -86,8 +88,8 @@ function Messages(props: MessagesProps) {
   }, [messages]);
 
   useEffect(() => {
-    if (friend) markAsRead(friend.id);
-  }, [friend?.id, markAsRead]);
+    if (friendId) markAsRead(friendId);
+  }, [friendId, markAsRead]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -100,9 +102,7 @@ function Messages(props: MessagesProps) {
   useEffect(() => {
     if (!socket || !isConnected) return;
 
-    if (friend) {
-      const friendId = friend.id;
-
+    if (friendId) {
       const onReceive = (message: DirectMessage) => {
         const isFromFriend = message.senderId === friendId;
         const isToFriend = message.receiverId === friendId;
@@ -137,9 +137,7 @@ function Messages(props: MessagesProps) {
       };
     }
 
-    if (group) {
-      const groupId = group.id;
-
+    if (groupId) {
       const onReceive = (message: GroupMessage) => {
         if (message.groupId !== groupId) return;
 
@@ -175,7 +173,7 @@ function Messages(props: MessagesProps) {
         socket.off("group:typing", onTyping);
       };
     }
-  }, [isConnected, socket, session.user.id, friend?.id, group?.id]);
+  }, [isConnected, socket, session.user.id, friendId, groupId]);
 
   const handleSend = () => {
     const text = inputValue.trim();
