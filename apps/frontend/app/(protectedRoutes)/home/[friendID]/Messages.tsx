@@ -74,6 +74,11 @@ function Messages({
     if (!socket || !isConnected) return;
 
     const onReceive = (message: DirectMessage) => {
+      // Only handle messages belonging to this conversation
+      const isFromFriend = message.senderId === friend.id;
+      const isToFriend = message.receiverId === friend.id;
+      if (!isFromFriend && !isToFriend) return;
+
       setLocalMessages((prev) => {
         // If it's our own message, find and replace the pending one
         if (message.senderId === session.user.id) {
