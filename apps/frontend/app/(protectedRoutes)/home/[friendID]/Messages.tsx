@@ -4,7 +4,7 @@ import { UserStatus, DirectMessage } from "@repo/types";
 import { Session } from "next-auth";
 import Message from "./Message";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { useSocket } from "@/app/_hooks/useSocket";
+import { useSocket } from "@/app/_context/SocketContext";
 import { useEffect, useRef, useState } from "react";
 
 type MessagesProps = {
@@ -18,9 +18,7 @@ type MessagesProps = {
 };
 
 function Messages({ messages, friend, session }: MessagesProps) {
-  const { socket, isConnected, sendMessage, setTyping } = useSocket(
-    session.user.id,
-  );
+  const { socket, isConnected, sendMessage, setTyping } = useSocket();
 
   const [localMessages, setLocalMessages] = useState<DirectMessage[]>(messages);
   const [inputValue, setInputValue] = useState("");
