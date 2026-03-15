@@ -26,6 +26,7 @@ function FriendItem({ friend }: { friend: Friend }) {
         showStatus
         status={status}
         statusBorderColor="border-secondary"
+        avatarConfig={friend.avatarConfig}
       />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm text-gray-300">{friend.userName}</p>

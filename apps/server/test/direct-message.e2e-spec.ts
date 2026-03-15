@@ -264,25 +264,38 @@ describe('DirectMessage Gateway (e2e)', () => {
     socket.close();
   });
 
-  it('should mark messages as read via dm:read', async () => {
-    const token = await createSessionToken({
+  it('should mark messages as read and notify sender', async () => {
+    const token1 = await createSessionToken({
       sub: 'user-1',
       email: 'user1@test.com',
     });
+    const token2 = await createSessionToken({
+      sub: 'user-2',
+      email: 'user2@test.com',
+    });
 
-    const socket = await connectAndWaitReady(port, token, 'user-1');
+    const sender = await connectAndWaitReady(port, token1, 'user-1');
+    const reader = await connectAndWaitReady(port, token2, 'user-2');
 
-    socket.emit('dm:read', { senderId: 'user-2' });
+    const readAck = new Promise<any>((resolve) => {
+      sender.on('dm:read-ack', (data) => resolve(data));
+    });
 
-    // Give the server a moment to process the event
+    reader.emit('dm:read', { senderId: 'user-1' });
+
+    const ack = await readAck;
+    expect(ack).toEqual({ readBy: 'user-2' });
+
+    // Give the server a moment to process the DB call
     await new Promise((r) => setTimeout(r, 100));
 
     expect(mockDirectMessageService.markAsRead).toHaveBeenCalledWith(
-      'user-2',
       'user-1',
+      'user-2',
     );
 
-    socket.close();
+    sender.close();
+    reader.close();
   });
 
   it('should persist messages in background after emitting', async () => {

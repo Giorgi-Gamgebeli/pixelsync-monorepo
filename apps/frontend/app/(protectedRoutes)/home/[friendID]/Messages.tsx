@@ -7,6 +7,21 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { useSocketContext } from "@/app/_context/SocketContext";
 import { useEffect, useRef, useState } from "react";
 
+const GROUPING_WINDOW_MS = 5 * 60 * 1000;
+
+function shouldGroupMessage(
+  current: DirectMessage,
+  previous: DirectMessage | undefined,
+): boolean {
+  if (!previous) return false;
+  if (current.senderId !== previous.senderId) return false;
+  return (
+    new Date(current.createdAt).getTime() -
+      new Date(previous.createdAt).getTime() <
+    GROUPING_WINDOW_MS
+  );
+}
+
 type MessagesProps = {
   messages: DirectMessage[];
   session: Session;
@@ -14,12 +29,25 @@ type MessagesProps = {
     id: string;
     status: UserStatus;
     userName: string | null;
+    avatarConfig?: string | null;
   };
+  currentUserAvatarConfig?: string | null;
 };
 
-function Messages({ messages, friend, session }: MessagesProps) {
-  const { socket, isConnected, sendMessage, setTyping, markAsRead } =
-    useSocketContext();
+function Messages({
+  messages,
+  friend,
+  session,
+  currentUserAvatarConfig,
+}: MessagesProps) {
+  const {
+    socket,
+    isConnected,
+    sendMessage,
+    setTyping,
+    markAsRead,
+    readAckSet,
+  } = useSocketContext();
 
   const [localMessages, setLocalMessages] = useState<DirectMessage[]>(messages);
   const [inputValue, setInputValue] = useState("");
@@ -120,6 +148,14 @@ function Messages({ messages, friend, session }: MessagesProps) {
               }
               createdAt={m.createdAt}
               pending={m.id < 0}
+              grouped={shouldGroupMessage(m, localMessages[i - 1])}
+              senderId={m.senderId}
+              avatarConfig={
+                m.senderId !== session.user.id
+                  ? friend?.avatarConfig
+                  : currentUserAvatarConfig
+              }
+              isRead={m.isRead || readAckSet.has(friend.id)}
             />
           ))
         ) : (

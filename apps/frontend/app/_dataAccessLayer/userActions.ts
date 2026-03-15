@@ -181,7 +181,7 @@ export async function getChatPageData(friendId: string) {
       throw new Error("You cannot perform this action on yourself.");
     }
 
-    const [friend, messages] = await Promise.all([
+    const [friend, currentUser, messages] = await Promise.all([
       db.user.findUnique({
         where: { id: friendId },
         select: {
@@ -192,6 +192,10 @@ export async function getChatPageData(friendId: string) {
           friends: { where: { id: session.user.id } },
           friendOf: { where: { id: session.user.id } },
         },
+      }),
+      db.user.findUnique({
+        where: { id: session.user.id },
+        select: { avatarConfig: true },
       }),
       db.directMessage.findMany({
         where: {
@@ -217,6 +221,7 @@ export async function getChatPageData(friendId: string) {
         status: friend.status,
         avatarConfig: friend.avatarConfig,
       },
+      currentUserAvatarConfig: currentUser?.avatarConfig ?? null,
       messages: messages.map((m) => ({
         ...m,
         createdAt: m.createdAt.toISOString(),
