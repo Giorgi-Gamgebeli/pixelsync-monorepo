@@ -105,7 +105,7 @@ function Message({
 
         <div className="max-w-[75%]">
           <div
-            className={`inline-flex items-end gap-1 rounded-2xl px-3 py-1 wrap-break-word ${bubbleClasses}`}
+            className={`inline-flex items-end gap-1 rounded-2xl px-3 py-1 break-words ${bubbleClasses}`}
           >
             <span className="text-[13.5px] leading-relaxed">
               {renderTextWithLinks(text)}
@@ -145,14 +145,14 @@ function Message({
           }`}
         >
           <span className="font-semibold text-white">{senderName}</span>
-          <span className="text-[10px] whitespace-nowrap text-gray-500">
+          <span className="text-[10px] whitespace-nowrap text-gray-500 opacity-0 transition-opacity group-hover:opacity-100">
             {formattedDate}
           </span>
         </div>
 
         <div>
           <div
-            className={`mt-1 inline-flex items-end gap-1 rounded-2xl px-3 py-1.5 wrap-break-word ${bubbleClasses}`}
+            className={`mt-1 inline-flex items-end gap-1 rounded-2xl px-3 py-1.5 break-words ${bubbleClasses}`}
           >
             <span className="text-[13.5px] leading-relaxed">
               {renderTextWithLinks(text)}
