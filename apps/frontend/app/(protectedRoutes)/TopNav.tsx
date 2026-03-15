@@ -167,7 +167,24 @@ function TopNav({ projects }: TopNavProps) {
           </button>
 
           {profileOpen && (
-            <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-secondary p-1.5 shadow-xl z-50">
+            <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-border bg-secondary p-1.5 shadow-xl z-50">
+              <div className="flex items-center gap-2.5 px-3 py-2">
+                <UserAvatar
+                  userName={session?.user?.userName ?? null}
+                  id={session?.user?.id}
+                  avatarConfig={session?.user?.avatarConfig}
+                  size={28}
+                />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-white">
+                    {session?.user?.userName || session?.user?.name}
+                  </p>
+                  <p className="truncate text-[10px] text-gray-500">
+                    {session?.user?.email}
+                  </p>
+                </div>
+              </div>
+              <div className="my-1 border-t border-border" />
               <button
                 onClick={() => {
                   setProfileOpen(false);

@@ -3,7 +3,6 @@ import FriendsList from "./FriendsList";
 import FriendsListSkeleton from "@/app/_components/skeletons/FriendsListSkeleton";
 import HomeNavLink from "./HomeNavLink";
 import ClientIcon from "@/app/_components/ClientIcon";
-import UserPanel from "./UserPanel";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -42,8 +41,6 @@ function Layout({ children }: { children: React.ReactNode }) {
           </Suspense>
         </div>
 
-        {/* User panel */}
-        <UserPanel />
       </aside>
 
       {/* Main content */}

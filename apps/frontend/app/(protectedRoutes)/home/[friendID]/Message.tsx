@@ -60,6 +60,16 @@ function renderTextWithLinks(text: string) {
   }, []);
 }
 
+function ReadReceipt({ isRead }: { isRead?: boolean }) {
+  return (
+    <span
+      className={`ml-1.5 inline-flex shrink-0 align-middle text-[10px] leading-none ${isRead ? "text-white" : "text-white/40"}`}
+    >
+      {isRead ? "✓✓" : "✓"}
+    </span>
+  );
+}
+
 function Message({
   text,
   isOwn,
@@ -80,6 +90,10 @@ function Message({
     setFormattedTime(formatTime(date));
   }, [createdAt]);
 
+  const bubbleClasses = isOwn
+    ? "bg-brand-500 text-white selection:bg-white/30"
+    : "bg-surface border border-white/5 text-gray-200 selection:bg-brand-500/30";
+
   if (grouped) {
     return (
       <div
@@ -87,27 +101,16 @@ function Message({
           isOwn ? "flex-row-reverse" : "flex-row"
         } ${pending ? "opacity-50" : "opacity-100"}`}
       >
-        {/* Spacer matching avatar width */}
         <div className="w-8 shrink-0" />
 
-        <div>
+        <div className="max-w-[75%]">
           <div
-            className={`relative rounded-2xl px-4 py-1.5 wrap-break-word shadow-sm ${
-              isOwn
-                ? "bg-brand-500 text-white selection:bg-white/30"
-                : "bg-surface border border-white/5 text-gray-200 selection:bg-brand-500/30"
-            } ${isOwn ? "pr-8" : ""}`}
+            className={`inline-flex items-end gap-1 rounded-2xl px-3 py-1 wrap-break-word ${bubbleClasses}`}
           >
-            <p className="text-[13.5px] leading-relaxed">
+            <span className="text-[13.5px] leading-relaxed">
               {renderTextWithLinks(text)}
-            </p>
-            {isOwn && (
-              <span
-                className={`absolute right-2 bottom-1 text-[10px] leading-none ${isRead ? "text-white" : "text-white/40"}`}
-              >
-                {isRead ? "✓✓" : "✓"}
-              </span>
-            )}
+            </span>
+            {isOwn && <ReadReceipt isRead={isRead} />}
           </div>
           <LinkPreview text={text} />
         </div>
@@ -134,7 +137,7 @@ function Message({
       />
 
       <div
-        className={`flex min-w-0 flex-col ${isOwn ? "items-end" : "items-start"}`}
+        className={`flex min-w-0 max-w-[75%] flex-col ${isOwn ? "items-end" : "items-start"}`}
       >
         <div
           className={`flex items-center gap-2 px-1 text-xs ${
@@ -149,26 +152,12 @@ function Message({
 
         <div>
           <div
-            className={`relative mt-1 max-w-[75%] rounded-2xl px-4 py-2 wrap-break-word shadow-sm ${
-              isOwn
-                ? "bg-brand-500 rounded-tr-none text-white selection:bg-white/30"
-                : "bg-surface rounded-tl-none border border-white/5 text-gray-200 selection:bg-brand-500/30"
-            } ${isOwn ? "pr-8" : ""}`}
+            className={`mt-1 inline-flex items-end gap-1 rounded-2xl px-3 py-1.5 wrap-break-word ${bubbleClasses}`}
           >
-            <p className="text-[13.5px] leading-relaxed">
+            <span className="text-[13.5px] leading-relaxed">
               {renderTextWithLinks(text)}
-            </p>
-            {isOwn && (
-              <span
-                className={`absolute right-2 bottom-1.5 text-[10px] leading-none ${isRead ? "text-white" : "text-white/40"}`}
-              >
-                {isRead ? "✓✓" : "✓"}
-              </span>
-            )}
-
-            {isOwn && (
-              <div className="bg-brand-400 absolute inset-0 -z-10 rounded-2xl opacity-20 blur-md" />
-            )}
+            </span>
+            {isOwn && <ReadReceipt isRead={isRead} />}
           </div>
           <LinkPreview text={text} />
         </div>
