@@ -35,7 +35,7 @@ type MessagesProps = {
 };
 
 function Messages({ messages, friend, session, currentUserAvatarConfig }: MessagesProps) {
-  const { socket, isConnected, sendMessage, setTyping, markAsRead } =
+  const { socket, isConnected, sendMessage, setTyping, markAsRead, readAckSet } =
     useSocketContext();
 
   const [localMessages, setLocalMessages] = useState<DirectMessage[]>(messages);
@@ -149,6 +149,7 @@ function Messages({ messages, friend, session, currentUserAvatarConfig }: Messag
                   ? friend?.avatarConfig
                   : currentUserAvatarConfig
               }
+              isRead={m.isRead || readAckSet.has(friend.id)}
             />
           ))
         ) : (

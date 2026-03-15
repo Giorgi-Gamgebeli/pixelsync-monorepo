@@ -125,6 +125,12 @@ export class DirectMessageGateway
     @MessageBody() body: { senderId: string },
   ) {
     const user = client.data.user;
+
+    // Notify the original sender that their messages were read
+    this.server
+      .to(body.senderId)
+      .emit('dm:read-ack', { readBy: user.sub });
+
     this.directMessageService
       .markAsRead(body.senderId, user.sub)
       .catch((err) => {

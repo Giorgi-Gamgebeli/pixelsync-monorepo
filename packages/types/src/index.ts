@@ -3,6 +3,7 @@ export interface ServerToClientEvents {
   "user:status": (update: { userId: string; status: UserStatus }) => void;
   "dm:typing": (data: { userId: string; isTyping: boolean }) => void;
   "dm:unread": (counts: Record<string, number>) => void;
+  "dm:read-ack": (data: { readBy: string }) => void;
 }
 
 export interface ClientToServerEvents {

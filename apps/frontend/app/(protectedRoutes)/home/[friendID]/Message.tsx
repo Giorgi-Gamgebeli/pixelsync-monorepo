@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import UserAvatar from "@/app/_components/UserAvatar";
+import LinkPreview, { URL_REGEX } from "./LinkPreview";
 
 type MessageProps = {
   text: string;
@@ -10,6 +11,7 @@ type MessageProps = {
   grouped?: boolean;
   senderId: string;
   avatarConfig?: string | null;
+  isRead?: boolean;
 };
 
 const formatTime = (date: Date) =>
@@ -35,6 +37,29 @@ const formatFullDate = (date: Date) => {
   }
 };
 
+function renderTextWithLinks(text: string) {
+  const parts = text.split(URL_REGEX);
+  const urls = text.match(URL_REGEX) || [];
+
+  return parts.reduce<React.ReactNode[]>((acc, part, i) => {
+    acc.push(part);
+    if (urls[i]) {
+      acc.push(
+        <a
+          key={i}
+          href={urls[i]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:opacity-80"
+        >
+          {urls[i]}
+        </a>,
+      );
+    }
+    return acc;
+  }, []);
+}
+
 function Message({
   text,
   isOwn,
@@ -44,6 +69,7 @@ function Message({
   grouped,
   senderId,
   avatarConfig,
+  isRead,
 }: MessageProps) {
   const [formattedDate, setFormattedDate] = useState("");
   const [formattedTime, setFormattedTime] = useState("");
@@ -64,14 +90,26 @@ function Message({
         {/* Spacer matching avatar width */}
         <div className="w-8 shrink-0" />
 
-        <div
-          className={`relative max-w-[75%] rounded-2xl px-4 py-1.5 wrap-break-word shadow-sm ${
-            isOwn
-              ? "bg-brand-500 text-white selection:bg-white/30"
-              : "bg-surface border border-white/5 text-gray-200 selection:bg-brand-500/30"
-          }`}
-        >
-          <p className="text-[13.5px] leading-relaxed">{text}</p>
+        <div>
+          <div
+            className={`relative max-w-[75%] rounded-2xl px-4 py-1.5 wrap-break-word shadow-sm ${
+              isOwn
+                ? "bg-brand-500 text-white selection:bg-white/30"
+                : "bg-surface border border-white/5 text-gray-200 selection:bg-brand-500/30"
+            }`}
+          >
+            <p className="text-[13.5px] leading-relaxed">
+              {renderTextWithLinks(text)}
+              {isOwn && (
+                <span
+                  className={`ml-1.5 inline-block align-middle text-[10px] leading-none ${isRead ? "text-white" : "text-white/40"}`}
+                >
+                  {isRead ? "✓✓" : "✓"}
+                </span>
+              )}
+            </p>
+          </div>
+          <LinkPreview text={text} />
         </div>
 
         <span
@@ -113,18 +151,30 @@ function Message({
           </span>
         </div>
 
-        <div
-          className={`relative mt-1 max-w-[75%] rounded-2xl px-4 py-2 wrap-break-word shadow-sm ${
-            isOwn
-              ? "bg-brand-500 rounded-tr-none text-white selection:bg-white/30"
-              : "bg-surface rounded-tl-none border border-white/5 text-gray-200 selection:bg-brand-500/30"
-          }`}
-        >
-          <p className="text-[13.5px] leading-relaxed">{text}</p>
+        <div>
+          <div
+            className={`relative mt-1 max-w-[75%] rounded-2xl px-4 py-2 wrap-break-word shadow-sm ${
+              isOwn
+                ? "bg-brand-500 rounded-tr-none text-white selection:bg-white/30"
+                : "bg-surface rounded-tl-none border border-white/5 text-gray-200 selection:bg-brand-500/30"
+            }`}
+          >
+            <p className="text-[13.5px] leading-relaxed">
+              {renderTextWithLinks(text)}
+              {isOwn && (
+                <span
+                  className={`ml-1.5 inline-block align-middle text-[10px] leading-none ${isRead ? "text-white" : "text-white/40"}`}
+                >
+                  {isRead ? "✓✓" : "✓"}
+                </span>
+              )}
+            </p>
 
-          {isOwn && (
-            <div className="bg-brand-400 absolute inset-0 -z-10 rounded-2xl opacity-20 blur-md" />
-          )}
+            {isOwn && (
+              <div className="bg-brand-400 absolute inset-0 -z-10 rounded-2xl opacity-20 blur-md" />
+            )}
+          </div>
+          <LinkPreview text={text} />
         </div>
       </div>
     </div>

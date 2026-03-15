@@ -24,6 +24,7 @@ type SocketContextValue = {
   isConnected: boolean;
   statusMap: Record<string, UserStatus>;
   unreadMap: Record<string, number>;
+  readAckSet: Set<string>;
   sendMessage: (receiverId: string, content: string) => void;
   setTyping: (receiverId: string, isTyping: boolean) => void;
   markAsRead: (friendId: string) => void;
@@ -34,6 +35,7 @@ const SocketContext = createContext<SocketContextValue>({
   isConnected: false,
   statusMap: {},
   unreadMap: {},
+  readAckSet: new Set(),
   sendMessage: () => {},
   setTyping: () => {},
   markAsRead: () => {},
@@ -47,6 +49,7 @@ function SocketProvider({
   const [isConnected, setIsConnected] = useState(false);
   const [statusMap, setStatusMap] = useState<Record<string, UserStatus>>({});
   const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
+  const [readAckSet, setReadAckSet] = useState<Set<string>>(new Set());
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -96,6 +99,10 @@ function SocketProvider({
               ?.play()
               .catch(() => {});
           }
+        });
+
+        socket.on("dm:read-ack", ({ readBy }) => {
+          setReadAckSet((prev) => new Set(prev).add(readBy));
         });
 
         socketRef.current = socket;
@@ -148,6 +155,7 @@ function SocketProvider({
         isConnected,
         statusMap,
         unreadMap,
+        readAckSet,
         sendMessage,
         setTyping,
         markAsRead,
