@@ -67,6 +67,11 @@ export class DirectMessageGateway
       });
 
       void client.join(user.sub);
+
+      this.directMessageService
+        .getUnreadCounts(user.sub)
+        .then((counts) => client.emit('dm:unread', counts))
+        .catch(() => {});
     } catch {
       client.disconnect();
     }
@@ -107,9 +112,24 @@ export class DirectMessageGateway
     client.emit('dm:receive', payload);
 
     // Persist in background
-    this.directMessageService.create({ ...body, senderId: user.sub }).catch((err) => {
-      console.error('[DirectMessageGateway] Failed to persist message:', err);
-    });
+    this.directMessageService
+      .create({ ...body, senderId: user.sub })
+      .catch((err) => {
+        console.error('[DirectMessageGateway] Failed to persist message:', err);
+      });
+  }
+
+  @SubscribeMessage('dm:read')
+  handleRead(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() body: { senderId: string },
+  ) {
+    const user = client.data.user;
+    this.directMessageService
+      .markAsRead(body.senderId, user.sub)
+      .catch((err) => {
+        console.error('[DirectMessageGateway] Failed to mark as read:', err);
+      });
   }
 
   @SubscribeMessage('dm:typing')

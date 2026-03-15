@@ -13,8 +13,9 @@ type Friend = {
 };
 
 function FriendItem({ friend }: { friend: Friend }) {
-  const { statusMap } = useSocketContext();
+  const { statusMap, unreadMap } = useSocketContext();
   const status = statusMap[friend.id] ?? friend.status;
+  const unread = unreadMap[friend.id] ?? 0;
 
   return (
     <HomeNavLink href={`/home/${friend.id}`}>
@@ -32,6 +33,11 @@ function FriendItem({ friend }: { friend: Friend }) {
           {status === "ONLINE" ? "Online" : "Offline"}
         </p>
       </div>
+      {unread > 0 && (
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-500 px-1.5 text-xs font-bold text-white">
+          {unread > 99 ? "99+" : unread}
+        </span>
+      )}
     </HomeNavLink>
   );
 }

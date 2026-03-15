@@ -52,19 +52,23 @@ describe('DirectMessage Gateway (e2e)', () => {
   };
 
   const mockDirectMessageService = {
-    create: jest.fn().mockImplementation((body) => ({
-      id: 1,
-      content: body.content,
-      senderId: body.senderId,
-      receiverId: body.receiverId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      isRead: false,
-    })),
+    create: jest.fn().mockImplementation((body) =>
+      Promise.resolve({
+        id: 1,
+        content: body.content,
+        senderId: body.senderId,
+        receiverId: body.receiverId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isRead: false,
+      }),
+    ),
     findAll: jest.fn().mockResolvedValue([]),
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
+    getUnreadCounts: jest.fn().mockResolvedValue({}),
+    markAsRead: jest.fn().mockResolvedValue(undefined),
   };
 
   beforeAll(async () => {
@@ -230,5 +234,99 @@ describe('DirectMessage Gateway (e2e)', () => {
     expect(offline).toEqual({ userId: 'new-user', status: 'OFFLINE' });
 
     listener.close();
+  });
+
+  it('should send unread counts on connection', async () => {
+    mockDirectMessageService.getUnreadCounts.mockResolvedValueOnce({
+      'user-A': 3,
+      'user-B': 1,
+    });
+
+    const token = await createSessionToken({
+      sub: 'user-1',
+      email: 'user1@test.com',
+    });
+
+    const socket = io(`http://localhost:${port}`, {
+      transports: ['websocket'],
+      auth: { token, salt: SALT },
+    });
+
+    const unread = await new Promise<any>((resolve, reject) => {
+      socket.on('dm:unread', (counts) => resolve(counts));
+      socket.on('connect_error', (err) => reject(err));
+      setTimeout(() => reject(new Error('Timeout waiting for dm:unread')), 5000);
+    });
+
+    expect(unread).toEqual({ 'user-A': 3, 'user-B': 1 });
+    expect(mockDirectMessageService.getUnreadCounts).toHaveBeenCalledWith('user-1');
+
+    socket.close();
+  });
+
+  it('should mark messages as read via dm:read', async () => {
+    const token = await createSessionToken({
+      sub: 'user-1',
+      email: 'user1@test.com',
+    });
+
+    const socket = await connectAndWaitReady(port, token, 'user-1');
+
+    socket.emit('dm:read', { senderId: 'user-2' });
+
+    // Give the server a moment to process the event
+    await new Promise((r) => setTimeout(r, 100));
+
+    expect(mockDirectMessageService.markAsRead).toHaveBeenCalledWith(
+      'user-2',
+      'user-1',
+    );
+
+    socket.close();
+  });
+
+  it('should persist messages in background after emitting', async () => {
+    const token1 = await createSessionToken({
+      sub: 'user-1',
+      email: 'user1@test.com',
+    });
+    const token2 = await createSessionToken({
+      sub: 'user-2',
+      email: 'user2@test.com',
+    });
+
+    const sender = await connectAndWaitReady(port, token1, 'user-1');
+    const receiver = await connectAndWaitReady(port, token2, 'user-2');
+
+    const receivedMessage = new Promise<any>((resolve) => {
+      receiver.on('dm:receive', (msg) => resolve(msg));
+    });
+
+    sender.emit('dm:send', {
+      receiverId: 'user-2',
+      content: 'Persist test',
+      senderId: 'user-1',
+    });
+
+    const received = await receivedMessage;
+
+    // Message should arrive immediately with correct fields
+    expect(received.content).toBe('Persist test');
+    expect(received.senderId).toBe('user-1');
+    expect(received.isRead).toBe(false);
+    expect(received.createdAt).toBeDefined();
+
+    // Give background persist a moment
+    await new Promise((r) => setTimeout(r, 100));
+
+    // DB create should have been called in background
+    expect(mockDirectMessageService.create).toHaveBeenCalledWith({
+      receiverId: 'user-2',
+      content: 'Persist test',
+      senderId: 'user-1',
+    });
+
+    sender.close();
+    receiver.close();
   });
 });

@@ -45,6 +45,34 @@ export class DirectMessageService {
     }
   }
 
+  async getUnreadCounts(userId: string): Promise<Record<string, number>> {
+    const results = await db.directMessage.groupBy({
+      by: ['senderId'],
+      where: {
+        receiverId: userId,
+        isRead: false,
+      },
+      _count: true,
+    });
+
+    const counts: Record<string, number> = {};
+    for (const r of results) {
+      counts[r.senderId] = r._count;
+    }
+    return counts;
+  }
+
+  async markAsRead(senderId: string, receiverId: string) {
+    await db.directMessage.updateMany({
+      where: {
+        senderId,
+        receiverId,
+        isRead: false,
+      },
+      data: { isRead: true },
+    });
+  }
+
   findOne(id: string) {}
 
   update(id: string) {}

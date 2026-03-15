@@ -23,16 +23,20 @@ type SocketContextValue = {
   socket: TypedSocket | null;
   isConnected: boolean;
   statusMap: Record<string, UserStatus>;
+  unreadMap: Record<string, number>;
   sendMessage: (receiverId: string, content: string) => void;
   setTyping: (receiverId: string, isTyping: boolean) => void;
+  markAsRead: (friendId: string) => void;
 };
 
 const SocketContext = createContext<SocketContextValue>({
   socket: null,
   isConnected: false,
   statusMap: {},
+  unreadMap: {},
   sendMessage: () => {},
   setTyping: () => {},
+  markAsRead: () => {},
 });
 
 function SocketProvider({
@@ -42,6 +46,13 @@ function SocketProvider({
   const socketRef = useRef<TypedSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [statusMap, setStatusMap] = useState<Record<string, UserStatus>>({});
+  const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    notificationSound.current = new Audio("/sounds/notification.mp3");
+    notificationSound.current.volume = 0.5;
+  }, []);
 
   useEffect(() => {
     if (!userId) return;
@@ -69,6 +80,22 @@ function SocketProvider({
 
         socket.on("user:status", (update) => {
           setStatusMap((prev) => ({ ...prev, [update.userId]: update.status }));
+        });
+
+        socket.on("dm:unread", (counts) => {
+          setUnreadMap(counts);
+        });
+
+        socket.on("dm:receive", (message) => {
+          if (message.senderId !== userId) {
+            setUnreadMap((prev) => ({
+              ...prev,
+              [message.senderId]: (prev[message.senderId] ?? 0) + 1,
+            }));
+            notificationSound.current
+              ?.play()
+              .catch(() => {});
+          }
         });
 
         socketRef.current = socket;
@@ -104,14 +131,26 @@ function SocketProvider({
     socketRef.current?.emit("dm:typing", { receiverId, isTyping });
   }, []);
 
+  const markAsRead = useCallback((friendId: string) => {
+    setUnreadMap((prev) => {
+      if (!prev[friendId]) return prev;
+      const next = { ...prev };
+      delete next[friendId];
+      return next;
+    });
+    socketRef.current?.emit("dm:read", { senderId: friendId });
+  }, []);
+
   return (
     <SocketContext.Provider
       value={{
         socket: socketRef.current,
         isConnected,
         statusMap,
+        unreadMap,
         sendMessage,
         setTyping,
+        markAsRead,
       }}
     >
       {children}

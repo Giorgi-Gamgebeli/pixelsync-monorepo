@@ -18,7 +18,8 @@ type MessagesProps = {
 };
 
 function Messages({ messages, friend, session }: MessagesProps) {
-  const { socket, isConnected, sendMessage, setTyping } = useSocketContext();
+  const { socket, isConnected, sendMessage, setTyping, markAsRead } =
+    useSocketContext();
 
   const [localMessages, setLocalMessages] = useState<DirectMessage[]>(messages);
   const [inputValue, setInputValue] = useState("");
@@ -29,6 +30,10 @@ function Messages({ messages, friend, session }: MessagesProps) {
   useEffect(() => {
     setLocalMessages(messages || []);
   }, [messages]);
+
+  useEffect(() => {
+    markAsRead(friend.id);
+  }, [friend.id, markAsRead]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
