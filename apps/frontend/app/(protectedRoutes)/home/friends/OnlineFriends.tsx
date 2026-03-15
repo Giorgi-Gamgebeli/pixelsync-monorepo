@@ -3,21 +3,21 @@
 import { UserStatus } from "@repo/types";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import FriendRow from "./FriendRow";
-import { useSocket } from "@/app/_context/SocketContext";
+import { useSocketContext } from "@/app/_context/SocketContext";
 
 type OnlineFriendsProps = {
   friends:
-  | {
-    id: string;
-    userName: string | null;
-    status: UserStatus;
-    avatarConfig?: string | null;
-  }[]
-  | undefined;
+    | {
+        id: string;
+        userName: string | null;
+        status: UserStatus;
+        avatarConfig?: string | null;
+      }[]
+    | undefined;
 };
 
 function OnlineFriends({ friends: unsortedFriends }: OnlineFriendsProps) {
-  const { statusMap } = useSocket();
+  const { statusMap } = useSocketContext();
   const friends = unsortedFriends?.filter((f) => {
     const liveStatus = statusMap[f.id] ?? f.status;
     return liveStatus === "ONLINE";
@@ -26,7 +26,7 @@ function OnlineFriends({ friends: unsortedFriends }: OnlineFriendsProps) {
   if (!friends?.length) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface">
+        <div className="bg-surface mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
           <Icon icon="mdi:account-off" className="text-3xl text-gray-500" />
         </div>
         <p className="text-sm font-medium text-white">

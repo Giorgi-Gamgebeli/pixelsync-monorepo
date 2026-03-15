@@ -119,8 +119,12 @@ export function SocketProvider({
   );
 }
 
-export function useSocket() {
-  return useContext(SocketContext);
+export function useSocketContext() {
+  const context = useContext(SocketContext);
+  if (context === null)
+    throw new Error("SocketContext was used outside of SocketProvider");
+
+  return context;
 }
 
 export function useUserStatus(
