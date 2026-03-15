@@ -8,7 +8,9 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { createDirectMessageSchema, TokenPayloadSchema, z } from '@repo/zod';
-import { decode } from '@auth/core/jwt';
+import { TokenService } from 'src/auth/token.service';
+import { cookieNames } from 'src/constants/auth';
+import { parse } from 'cookie';
 import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/users/users.service';
 import { DirectMessageService } from './direct-message.service';
@@ -31,29 +33,38 @@ export class DirectMessageGateway
   constructor(
     private readonly directMessageService: DirectMessageService,
     private readonly userService: UsersService,
+    private readonly tokenService: TokenService,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
-      const { token, salt } = client.handshake.auth ?? {};
-
-      if (!token || !salt) {
+      const cookieHeader = client.handshake.headers.cookie;
+      if (!cookieHeader) {
         client.disconnect();
         return;
       }
 
-      const payload = await decode({
-        token,
-        secret: process.env.NEXTAUTH_SECRET!,
-        salt,
-      });
+      const cookies = parse(cookieHeader);
+      let tokenInfo: { token: string; salt: string } | undefined;
 
-      if (!payload) {
+      for (const name of cookieNames) {
+        const token = cookies[name];
+        if (typeof token === 'string' && token.length > 0) {
+          tokenInfo = { token, salt: name };
+          break;
+        }
+      }
+
+      if (!tokenInfo) {
         client.disconnect();
         return;
       }
 
-      const user = TokenPayloadSchema.parse(payload);
+      const user = await this.tokenService.verifyToken(
+        tokenInfo.token,
+        tokenInfo.salt,
+      );
+
       client.data.user = user;
 
       void client.join(user.sub);

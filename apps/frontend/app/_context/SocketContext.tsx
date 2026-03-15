@@ -15,7 +15,6 @@ import {
   ClientToServerEvents,
   UserStatus,
 } from "@repo/types";
-import { getWsToken } from "../_dataAccessLayer/userActions";
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -62,19 +61,15 @@ function SocketProvider({
 
     let cancelled = false;
 
-    async function connect() {
+    function connect() {
       try {
-        const res = await getWsToken();
-        if ("error" in res) return;
-        const { token, salt } = res;
-
         if (cancelled) return;
 
         const socket = io(
           process.env.NEXT_PUBLIC_SERVER_BASE_URL || "http://localhost:3000",
           {
             transports: ["websocket"],
-            auth: { token, salt },
+            withCredentials: true,
           },
         ) as TypedSocket;
 

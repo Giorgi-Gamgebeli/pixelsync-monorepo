@@ -24,7 +24,9 @@ async function connectAndWaitReady(
 ): Promise<Socket> {
   const socket = io(`http://localhost:${port}`, {
     transports: ['websocket'],
-    auth: { token: sessionToken, salt: SALT },
+    extraHeaders: {
+      Cookie: `authjs.session-token=${sessionToken}`,
+    },
   });
 
   await new Promise<void>((resolve, reject) => {
@@ -343,7 +345,9 @@ describe('DirectMessage Gateway (e2e)', () => {
 
     const socket = io(`http://localhost:${port}`, {
       transports: ['websocket'],
-      auth: { token, salt: SALT },
+      extraHeaders: {
+        Cookie: `authjs.session-token=${token}`,
+      },
     });
 
     const unread = await new Promise<any>((resolve, reject) => {
