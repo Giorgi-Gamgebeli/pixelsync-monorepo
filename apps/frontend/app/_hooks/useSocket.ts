@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { ServerToClientEvents, ClientToServerEvents } from "@repo/types";
+import { getWsToken } from "@/app/_dataAccessLayer/userActions";
 
 export function useSocket(userId: string) {
   const socketRef = useRef<Socket<
@@ -16,9 +17,9 @@ export function useSocket(userId: string) {
 
     async function connect() {
       try {
-        const res = await fetch("/api/auth/ws-token");
-        if (!res.ok) return;
-        const { token, salt } = await res.json();
+        const res = await getWsToken();
+        if ("error" in res) return;
+        const { token, salt } = res;
 
         if (cancelled) return;
 

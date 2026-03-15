@@ -14,6 +14,7 @@ import {
 import { z } from "zod";
 import { handleErrorsOnServer } from "../_utils/helpers";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { cache } from "react";
 
 export const getFriends = cache(async function getFriends() {
@@ -435,5 +436,27 @@ export async function updateAvatarConfig(
     return handleErrorsOnServer(error);
   } finally {
     revalidatePath("/", "layout"); // Revalidate entire app to update all avatars immediately
+  }
+}
+
+export async function getWsToken() {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Not authenticated!");
+
+    const cookieStore = await cookies();
+    // Auth.js uses different cookie names based on environment/SSL
+    const secureCookie = cookieStore.get("__Secure-authjs.session-token");
+    const regularCookie = cookieStore.get("authjs.session-token");
+    const cookie = secureCookie || regularCookie;
+
+    if (!cookie) throw new Error("No session token found");
+
+    return {
+      token: cookie.value,
+      salt: cookie.name,
+    };
+  } catch (error) {
+    return handleErrorsOnServer(error);
   }
 }
