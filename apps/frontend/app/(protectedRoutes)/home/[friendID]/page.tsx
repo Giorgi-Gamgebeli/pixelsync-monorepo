@@ -29,7 +29,7 @@ async function Page({ params }: Params) {
     );
   }
 
-  const { session, friend, messages } = result;
+  const { session, friend, messages, currentUserAvatarConfig } = result;
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
@@ -37,7 +37,7 @@ async function Page({ params }: Params) {
 
       {/* Messages */}
       <div className="flex-1 overflow-hidden">
-        <Messages friend={friend} session={session} messages={messages} />
+        <Messages friend={friend} session={session} messages={messages} currentUserAvatarConfig={currentUserAvatarConfig} />
       </div>
     </div>
   );

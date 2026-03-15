@@ -57,7 +57,7 @@ function Message({
   if (grouped) {
     return (
       <div
-        className={`group flex w-full items-center gap-2 ${
+        className={`group relative flex w-full items-center gap-2 ${
           isOwn ? "flex-row-reverse" : "flex-row"
         } ${pending ? "opacity-50" : "opacity-100"}`}
       >
@@ -74,7 +74,11 @@ function Message({
           <p className="text-[13.5px] leading-relaxed">{text}</p>
         </div>
 
-        <span className="text-[10px] whitespace-nowrap text-gray-500 opacity-0 transition-opacity group-hover:opacity-100">
+        <span
+          className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-[10px] whitespace-nowrap text-gray-500 opacity-0 transition-opacity group-hover:opacity-100 ${
+            isOwn ? "left-2" : "right-2"
+          }`}
+        >
           {formattedTime}
         </span>
       </div>
@@ -90,7 +94,7 @@ function Message({
       <UserAvatar
         userName={senderName === "You" ? null : senderName}
         id={senderId}
-        avatarConfig={isOwn ? undefined : avatarConfig}
+        avatarConfig={avatarConfig}
         size={32}
         className="mt-0.5 shrink-0"
       />

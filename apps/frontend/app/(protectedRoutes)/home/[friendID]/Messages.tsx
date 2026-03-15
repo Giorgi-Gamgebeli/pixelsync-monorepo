@@ -31,9 +31,10 @@ type MessagesProps = {
     userName: string | null;
     avatarConfig?: string | null;
   };
+  currentUserAvatarConfig?: string | null;
 };
 
-function Messages({ messages, friend, session }: MessagesProps) {
+function Messages({ messages, friend, session, currentUserAvatarConfig }: MessagesProps) {
   const { socket, isConnected, sendMessage, setTyping, markAsRead } =
     useSocketContext();
 
@@ -146,7 +147,7 @@ function Messages({ messages, friend, session }: MessagesProps) {
               avatarConfig={
                 m.senderId !== session.user.id
                   ? friend?.avatarConfig
-                  : undefined
+                  : currentUserAvatarConfig
               }
             />
           ))
