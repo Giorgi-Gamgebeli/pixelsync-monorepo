@@ -150,22 +150,39 @@ export async function getDirectMessages(
 
     if (!isFriend) throw new Error("You are not friends with this user!");
 
-    const messages = await db.directMessage.findMany({
-      where: {
-        OR: [
-          { receiverId: id, senderId: session.user.id },
-          { receiverId: session.user.id, senderId: id },
-        ],
-      },
-      orderBy: {
-        createdAt: "asc",
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore
+      .getAll()
+      .map((c) => `${c.name}=${c.value}`)
+      .join("; ");
+
+    const url = `${process.env.NEXT_PUBLIC_SERVER_BASE_URL || "http://localhost:3000"}/direct-message`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        cookie: cookieHeader,
       },
     });
 
-    return messages.map((m) => ({
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("Backend fetch failed:", response.status, text);
+      throw new Error(`Backend returned ${response.status}: ${text}`);
+    }
+
+    const allMessages = await response.json();
+
+    // Filter to just the conversation with this friend
+    const friendMessages = allMessages.filter(
+      (m: any) =>
+        (m.receiverId === id && m.senderId === session.user.id) ||
+        (m.receiverId === session.user.id && m.senderId === id),
+    );
+
+    return friendMessages.map((m: any) => ({
       ...m,
-      createdAt: m.createdAt.toISOString(),
-      updatedAt: m.updatedAt.toISOString(),
+      createdAt: new Date(m.createdAt).toISOString(),
+      updatedAt: new Date(m.updatedAt).toISOString(),
     }));
   } catch (error) {
     return handleErrorsOnServer(error);

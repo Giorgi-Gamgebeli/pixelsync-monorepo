@@ -56,8 +56,46 @@ function Messages({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setLocalMessages(messages || []);
-  }, [messages]);
+    // We are forcing a client-side fetch to the Render backend here
+    // to prove that the browser blocks the cookie cross-domain.
+    const url = `${process.env.NEXT_PUBLIC_SERVER_BASE_URL || "http://localhost:3000"}/direct-message`;
+
+    fetch(url, {
+      method: "GET",
+      // This tells the browser to include cookies, but in production
+      // Chrome/Safari will block it because Vercel and Render are different domains.
+      credentials: "include",
+    })
+      .then((res) => {
+        if (!res.ok)
+          throw new Error("Backend fetch failed with status: " + res.status);
+        return res.json();
+      })
+      .then((allMessages) => {
+        // Filter to just the conversation with this friend
+        const friendMessages = allMessages.filter(
+          (m: any) =>
+            (m.receiverId === friend.id && m.senderId === session.user.id) ||
+            (m.receiverId === session.user.id && m.senderId === friend.id),
+        );
+
+        const formatted = friendMessages.map((m: any) => ({
+          ...m,
+          createdAt: new Date(m.createdAt).toISOString(),
+          updatedAt: new Date(m.updatedAt).toISOString(),
+        }));
+        console.log("it worked");
+
+        setLocalMessages(formatted);
+      })
+      .catch((err) => {
+        console.error(
+          "Client-side direct fetch to Render failed (likely restricted by CORS/Cookies):",
+          err,
+        );
+        setLocalMessages(messages || []); // fallback to server-side messages if network fails
+      });
+  }, [friend.id, session.user.id, messages]);
 
   useEffect(() => {
     markAsRead(friend.id);
