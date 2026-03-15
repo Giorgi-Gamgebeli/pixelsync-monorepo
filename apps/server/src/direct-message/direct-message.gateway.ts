@@ -39,6 +39,11 @@ export class DirectMessageGateway
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
+    const transport = client.conn.transport.name;
+    console.log(
+      `[DirectMessageGateway] Handshake attempt via ${transport}. ID: ${client.id}`,
+    );
+
     try {
       const cookieHeader = client.handshake.headers.cookie;
 
@@ -59,26 +64,42 @@ export class DirectMessageGateway
         const token = cookies[name];
         if (typeof token === 'string' && token.length > 0) {
           tokenInfo = { token, salt: name };
+          console.log(`[DirectMessageGateway] Found token cookie: ${name}`);
           break;
         }
       }
 
       if (!tokenInfo) {
         console.warn(
-          '[DirectMessageGateway] Connection rejected: No session cookie found',
+          '[DirectMessageGateway] Rejecting: No session cookie found in headers',
+        );
+        console.log(
+          '[DirectMessageGateway] Available cookies:',
+          Object.keys(cookies).join(', ') || 'none',
         );
         client.disconnect();
         return;
       }
 
-      const user = await this.tokenService.verifyToken(
-        tokenInfo.token,
-        tokenInfo.salt,
-      );
+      let user: z.infer<typeof TokenPayloadSchema>;
+      try {
+        user = await this.tokenService.verifyToken(
+          tokenInfo.token,
+          tokenInfo.salt,
+        );
 
-      client.data.user = user;
-
-      console.log('[DirectMessageGateway] Token verified for user:', user.sub);
+        client.data.user = user;
+        console.log(
+          `[DirectMessageGateway] Auth successful. User: ${user.sub}`,
+        );
+      } catch (err) {
+        console.error(
+          '[DirectMessageGateway] Token verification failed:',
+          err instanceof Error ? err.message : err,
+        );
+        client.disconnect();
+        return;
+      }
 
       void client.join(user.sub);
 

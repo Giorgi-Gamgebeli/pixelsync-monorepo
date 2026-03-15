@@ -20,6 +20,8 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(process.env.SERVER_PORT ?? 3000);
+  const port = process.env.PORT || process.env.SERVER_PORT || 3000;
+  await app.listen(port);
+  console.log(`[Main] Server is listening on port ${port}`);
 }
 void bootstrap();
