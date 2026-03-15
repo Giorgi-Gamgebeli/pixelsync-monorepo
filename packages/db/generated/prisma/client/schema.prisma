@@ -33,6 +33,9 @@ model User {
   friends          User[]           @relation("UserFriends")
   friendOf         User[]           @relation("UserFriends")
   Projects         Projects[]       @relation("UserToProjects")
+  ownedGroupChats  GroupChat[]      @relation("GroupChatOwner")
+  groupChats       GroupChat[]      @relation("GroupChatMembers")
+  groupMessages    GroupMessage[]
 }
 
 model Account {
@@ -160,6 +163,34 @@ model Whiteboard {
   workspace   Projects @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
+}
+
+model GroupChat {
+  id        Int            @id @unique @default(autoincrement())
+  name      String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  ownerId   String
+  owner     User           @relation("GroupChatOwner", fields: [ownerId], references: [id])
+  members   User[]         @relation("GroupChatMembers")
+  messages  GroupMessage[]
+
+  @@index([ownerId])
+}
+
+model GroupMessage {
+  id        Int       @id @unique @default(autoincrement())
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isEdited  Boolean   @default(false)
+  groupId   Int
+  senderId  String
+  group     GroupChat @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  sender    User      @relation(fields: [senderId], references: [id])
+
+  @@index([groupId])
+  @@index([senderId])
 }
 
 enum UserStatus {

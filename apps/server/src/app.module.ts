@@ -7,10 +7,12 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { UsersModule } from './users/users.module';
+import { GroupChatModule } from './group-chat/group-chat.module';
 
 @Module({
   imports: [
     DirectMessageModule,
+    GroupChatModule,
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,

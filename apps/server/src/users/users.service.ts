@@ -43,6 +43,14 @@ export class UsersService {
     return [...friendIds];
   }
 
+  async getGroupIds(userId: string): Promise<number[]> {
+    const groups = await db.groupChat.findMany({
+      where: { members: { some: { id: userId } } },
+      select: { id: true },
+    });
+    return groups.map((g) => g.id);
+  }
+
   async areFriends(userA: string, userB: string): Promise<boolean> {
     const count = await db.user.count({
       where: {

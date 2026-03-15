@@ -82,6 +82,16 @@ export class DirectMessageGateway
         .getUnreadCounts(user.sub)
         .then((counts) => client.emit('dm:unread', counts))
         .catch(() => {});
+
+      // Join all group chat rooms
+      this.userService
+        .getGroupIds(user.sub)
+        .then((groupIds) => {
+          for (const gid of groupIds) {
+            void client.join(`group:${gid}`);
+          }
+        })
+        .catch(() => {});
     } catch {
       client.disconnect();
     }

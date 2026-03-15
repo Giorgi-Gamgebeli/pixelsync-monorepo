@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import FriendsList from "./FriendsList";
+import GroupList from "./GroupList";
 import FriendsListSkeleton from "@/app/_components/skeletons/FriendsListSkeleton";
 import HomeNavLink from "./HomeNavLink";
 import ClientIcon from "@/app/_components/ClientIcon";
+import CreateGroupButton from "./CreateGroupButton";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -35,9 +37,24 @@ function Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* DM list */}
-        <div className="scrollbar-thin flex-1 overflow-y-auto px-3 py-1">
+        <div className="scrollbar-thin overflow-y-auto px-3 py-1">
           <Suspense fallback={<FriendsListSkeleton />}>
             <FriendsList />
+          </Suspense>
+        </div>
+
+        <div className="mx-3 my-2 border-t border-border/60" />
+
+        {/* Group chats header */}
+        <div className="flex items-center justify-between px-4 pb-1">
+          <p className="text-xs font-medium text-gray-500">Group Chats</p>
+          <CreateGroupButton />
+        </div>
+
+        {/* Group list */}
+        <div className="scrollbar-thin flex-1 overflow-y-auto px-3 py-1">
+          <Suspense fallback={<FriendsListSkeleton />}>
+            <GroupList />
           </Suspense>
         </div>
 

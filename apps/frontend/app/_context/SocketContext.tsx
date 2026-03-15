@@ -15,6 +15,7 @@ import {
   ClientToServerEvents,
   ProfileUpdate,
   UserStatus,
+  GroupMessage,
 } from "@repo/types";
 import { getWsToken } from "../_dataAccessLayer/userActions";
 
@@ -31,6 +32,9 @@ type SocketContextValue = {
   setTyping: (receiverId: string, isTyping: boolean) => void;
   markAsRead: (friendId: string) => void;
   broadcastProfileUpdate: (data: Omit<ProfileUpdate, "userId">) => void;
+  sendGroupMessage: (groupId: number, content: string) => void;
+  setGroupTyping: (groupId: number, isTyping: boolean) => void;
+  joinGroup: (groupId: number) => void;
 };
 
 const SocketContext = createContext<SocketContextValue>({
@@ -44,6 +48,9 @@ const SocketContext = createContext<SocketContextValue>({
   setTyping: () => {},
   markAsRead: () => {},
   broadcastProfileUpdate: () => {},
+  sendGroupMessage: () => {},
+  setGroupTyping: () => {},
+  joinGroup: () => {},
 });
 
 function SocketProvider({
@@ -166,6 +173,24 @@ function SocketProvider({
     [],
   );
 
+  const sendGroupMessage = useCallback(
+    (groupId: number, content: string) => {
+      socketRef.current?.emit("group:send", { groupId, content });
+    },
+    [],
+  );
+
+  const setGroupTyping = useCallback(
+    (groupId: number, isTyping: boolean) => {
+      socketRef.current?.emit("group:typing", { groupId, isTyping });
+    },
+    [],
+  );
+
+  const joinGroup = useCallback((groupId: number) => {
+    socketRef.current?.emit("group:join", { groupId });
+  }, []);
+
   return (
     <SocketContext.Provider
       value={{
@@ -179,6 +204,9 @@ function SocketProvider({
         setTyping,
         markAsRead,
         broadcastProfileUpdate,
+        sendGroupMessage,
+        setGroupTyping,
+        joinGroup,
       }}
     >
       {children}

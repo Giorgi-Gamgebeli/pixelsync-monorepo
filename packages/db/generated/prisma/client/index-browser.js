@@ -228,6 +228,24 @@ exports.Prisma.WhiteboardScalarFieldEnum = {
   workspaceId: 'workspaceId'
 };
 
+exports.Prisma.GroupChatScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  ownerId: 'ownerId'
+};
+
+exports.Prisma.GroupMessageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  isEdited: 'isEdited',
+  groupId: 'groupId',
+  senderId: 'senderId'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -271,7 +289,9 @@ exports.Prisma.ModelName = {
   Channel: 'Channel',
   ChannelMessage: 'ChannelMessage',
   Projects: 'Projects',
-  Whiteboard: 'Whiteboard'
+  Whiteboard: 'Whiteboard',
+  GroupChat: 'GroupChat',
+  GroupMessage: 'GroupMessage'
 };
 
 /**
