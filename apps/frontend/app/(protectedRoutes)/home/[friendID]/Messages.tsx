@@ -46,25 +46,20 @@ function Messages({ messages, friend, session }: MessagesProps) {
     if (!socket || !isConnected) return;
 
     const onReceive = (message: DirectMessage) => {
-      if (message.senderId === friend.id || message.receiverId === friend.id) {
-        setLocalMessages((prev) => {
-          // If it's our own message, replace the optimistic one with the real one
-          if (message.senderId === session.user.id) {
-            const pendingIndex = prev.findIndex(
-              (m) =>
-                typeof m.id === "string" &&
-                (m.id as unknown as string).startsWith("pending-") &&
-                m.content === message.content,
-            );
-            if (pendingIndex !== -1) {
-              const updated = [...prev];
-              updated[pendingIndex] = message;
-              return updated;
-            }
+      setLocalMessages((prev) => {
+        // If it's our own message, find and replace the pending one
+        if (message.senderId === session.user.id) {
+          const pendingIndex = prev.findIndex(
+            (m) => m.id < 0 && m.content === message.content,
+          );
+          if (pendingIndex !== -1) {
+            const updated = [...prev];
+            updated[pendingIndex] = message;
+            return updated;
           }
-          return [...prev, message];
-        });
-      }
+        }
+        return [...prev, message];
+      });
     };
 
     const onTyping = (data: { userId: string; isTyping: boolean }) => {
@@ -78,18 +73,18 @@ function Messages({ messages, friend, session }: MessagesProps) {
       socket.off("dm:receive", onReceive);
       socket.off("dm:typing", onTyping);
     };
-  }, [isConnected, socket, friend.id]);
+  }, [isConnected, socket, friend.id, session.user.id]);
 
   const handleSend = () => {
     const text = inputValue.trim();
     if (!text) return;
 
-    const optimisticId = `pending-${Date.now()}`;
+    const optimisticId = -Date.now();
 
     setLocalMessages((prev) => [
       ...prev,
       {
-        id: optimisticId as unknown as number,
+        id: optimisticId,
         content: text,
         senderId: session.user.id,
         receiverId: friend.id,
@@ -115,7 +110,7 @@ function Messages({ messages, friend, session }: MessagesProps) {
         {localMessages && localMessages.length > 0 ? (
           localMessages.map((m, i) => (
             <Message
-              key={m.id}
+              key={`${m.id}-${i}`}
               text={m.content}
               isOwn={m.senderId === session.user.id}
               senderName={
@@ -124,7 +119,7 @@ function Messages({ messages, friend, session }: MessagesProps) {
                   : friend?.userName || "Friend"
               }
               createdAt={m.createdAt}
-              pending={String(m.id).startsWith("pending-")}
+              pending={m.id < 0}
             />
           ))
         ) : (
