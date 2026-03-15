@@ -35,7 +35,7 @@ const SocketContext = createContext<SocketContextValue>({
   setTyping: () => {},
 });
 
-export function SocketProvider({
+function SocketProvider({
   userId,
   children,
 }: PropsWithChildren<{ userId: string }>) {
@@ -119,7 +119,7 @@ export function SocketProvider({
   );
 }
 
-export function useSocketContext() {
+function useSocketContext() {
   const context = useContext(SocketContext);
   if (context === null)
     throw new Error("SocketContext was used outside of SocketProvider");
@@ -127,10 +127,4 @@ export function useSocketContext() {
   return context;
 }
 
-export function useUserStatus(
-  userId: string,
-  serverStatus?: UserStatus,
-): UserStatus {
-  const { statusMap } = useContext(SocketContext);
-  return statusMap[userId] ?? serverStatus ?? "OFFLINE";
-}
+export { SocketProvider, useSocketContext };

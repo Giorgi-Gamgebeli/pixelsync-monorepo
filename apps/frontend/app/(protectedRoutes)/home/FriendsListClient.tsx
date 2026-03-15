@@ -3,7 +3,7 @@
 import { UserStatus } from "@repo/types";
 import UserAvatar from "@/app/_components/UserAvatar";
 import HomeNavLink from "./HomeNavLink";
-import { useUserStatus } from "@/app/_context/SocketContext";
+import { useSocketContext } from "@/app/_context/SocketContext";
 
 type Friend = {
   id: string;
@@ -13,7 +13,8 @@ type Friend = {
 };
 
 function FriendItem({ friend }: { friend: Friend }) {
-  const status = useUserStatus(friend.id, friend.status);
+  const { statusMap } = useSocketContext();
+  const status = statusMap[friend.id] ?? friend.status;
 
   return (
     <HomeNavLink href={`/home/${friend.id}`}>

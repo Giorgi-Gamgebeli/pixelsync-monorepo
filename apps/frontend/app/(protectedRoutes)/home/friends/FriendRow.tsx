@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { UserStatus } from "@repo/types";
 import UserAvatar from "@/app/_components/UserAvatar";
-import { useUserStatus } from "@/app/_context/SocketContext";
+import { useSocketContext } from "@/app/_context/SocketContext";
 
 type FriendRowProps = {
   id: string;
@@ -15,7 +15,8 @@ type FriendRowProps = {
 };
 
 function FriendRow({ id, userName, status: serverStatus, avatarConfig, actions }: FriendRowProps) {
-  const status = useUserStatus(id, serverStatus);
+  const { statusMap } = useSocketContext();
+  const status = statusMap[id] ?? serverStatus;
   const isOnline = status === "ONLINE";
 
   return (

@@ -3,7 +3,7 @@
 import { UserStatus } from "@repo/types";
 import UserAvatar from "@/app/_components/UserAvatar";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { useUserStatus } from "@/app/_context/SocketContext";
+import { useSocketContext } from "@/app/_context/SocketContext";
 
 type ChatHeaderProps = {
   friend: {
@@ -15,7 +15,8 @@ type ChatHeaderProps = {
 };
 
 function ChatHeader({ friend }: ChatHeaderProps) {
-  const status = useUserStatus(friend.id, friend.status);
+  const { statusMap } = useSocketContext();
+  const status = statusMap[friend.id] ?? friend.status;
   const isOnline = status === "ONLINE";
 
   return (
