@@ -105,9 +105,11 @@ function CallProvider({ children }: PropsWithChildren) {
       };
 
       pc.ontrack = (event) => {
+        const stream = event.streams[0];
+        if (!stream) return;
         setRemoteStreams((prev) => {
           const next = new Map(prev);
-          next.set(remoteUserId, event.streams[0]);
+          next.set(remoteUserId, stream);
           return next;
         });
       };
