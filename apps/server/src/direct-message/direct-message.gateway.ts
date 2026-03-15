@@ -81,6 +81,11 @@ export class DirectMessageGateway
         userId: user.sub,
         status: 'OFFLINE',
       });
+
+      this.server.emit('user:status', {
+        userId: user.sub,
+        status: 'OFFLINE',
+      });
     }
   }
 

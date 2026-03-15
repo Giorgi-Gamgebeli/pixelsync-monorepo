@@ -18,7 +18,9 @@ type MessagesProps = {
 };
 
 function Messages({ messages, friend, session }: MessagesProps) {
-  const { socket, sendMessage, setTyping } = useSocket(session.user.id);
+  const { socket, isConnected, sendMessage, setTyping } = useSocket(
+    session.user.id,
+  );
 
   const [localMessages, setLocalMessages] = useState<DirectMessage[]>(messages);
   const [inputValue, setInputValue] = useState("");
@@ -38,7 +40,7 @@ function Messages({ messages, friend, session }: MessagesProps) {
   }, [localMessages, isFriendTyping]);
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !isConnected) return;
 
     const onReceive = (message: DirectMessage) => {
       // Only append if the message is part of THIS conversation
@@ -58,7 +60,7 @@ function Messages({ messages, friend, session }: MessagesProps) {
       socket.off("dm:receive", onReceive);
       socket.off("dm:typing", onTyping);
     };
-  }, [socket, friend.id]);
+  }, [isConnected, socket, friend.id]);
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
