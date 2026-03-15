@@ -48,6 +48,8 @@ type CallContextValue = {
   remoteStreams: Map<string, MediaStream>;
   audioEnabled: boolean;
   videoEnabled: boolean;
+  /** Remote participants' media state (userId -> { audioEnabled, videoEnabled }). Updated via call:media-state. */
+  remoteMediaState: Map<string, { audioEnabled: boolean; videoEnabled: boolean }>;
   groupParticipants: Map<string, string>;
   initiateCall: (receiverId: string, callType: CallType) => void;
   acceptCall: () => void;
@@ -77,6 +79,7 @@ const CallContext = createContext<CallContextValue>({
   remoteStreams: new Map(),
   audioEnabled: true,
   videoEnabled: true,
+  remoteMediaState: new Map(),
   groupParticipants: new Map(),
   initiateCall: noopAsync,
   acceptCall: noopAsync,
@@ -107,6 +110,9 @@ function CallProvider({ children }: PropsWithChildren) {
   );
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
+  const [remoteMediaState, setRemoteMediaState] = useState<
+    Map<string, { audioEnabled: boolean; videoEnabled: boolean }>
+  >(new Map());
   const [groupParticipants, setGroupParticipants] = useState<
     Map<string, string>
   >(new Map());
@@ -258,6 +264,7 @@ function CallProvider({ children }: PropsWithChildren) {
     setCallType(null);
     setCallId(null);
     setIncomingCall(null);
+    setRemoteMediaState(new Map());
     setGroupParticipants(new Map());
     setActiveGroupId(null);
     setAudioEnabled(true);
@@ -540,6 +547,21 @@ function CallProvider({ children }: PropsWithChildren) {
       cleanupAll();
     };
 
+    const onMediaState = (data: {
+      userId: string;
+      audioEnabled: boolean;
+      videoEnabled: boolean;
+    }) => {
+      setRemoteMediaState((prev) => {
+        const next = new Map(prev);
+        next.set(data.userId, {
+          audioEnabled: data.audioEnabled,
+          videoEnabled: data.videoEnabled,
+        });
+        return next;
+      });
+    };
+
     socket.on("call:ringing", onRinging);
     socket.on("call:incoming", onIncoming);
     socket.on("call:accepted", onAccepted);
@@ -554,6 +576,7 @@ function CallProvider({ children }: PropsWithChildren) {
     socket.on("call:group-left", onGroupLeft);
     socket.on("call:group-call-ended", onGroupCallEnded);
     socket.on("call:error", onError);
+    socket.on("call:media-state", onMediaState);
 
     return () => {
       socket.off("call:ringing", onRinging);
@@ -570,6 +593,7 @@ function CallProvider({ children }: PropsWithChildren) {
       socket.off("call:group-left", onGroupLeft);
       socket.off("call:group-call-ended", onGroupCallEnded);
       socket.off("call:error", onError);
+      socket.off("call:media-state", onMediaState);
     };
   }, [socket, getMedia, createPeerConnection, flushIceCandidates, cleanupAll]);
 
@@ -697,6 +721,7 @@ function CallProvider({ children }: PropsWithChildren) {
         remoteStreams,
         audioEnabled,
         videoEnabled,
+        remoteMediaState,
         groupParticipants,
         initiateCall,
         acceptCall,
