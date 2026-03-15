@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { decode } from '@auth/core/jwt';
 import { TokenPayloadSchema, z } from '@repo/zod';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class TokenService {
@@ -29,6 +30,15 @@ export class TokenService {
       return TokenPayloadSchema.parse(payload);
     } catch {
       throw new UnauthorizedException('Invalid or expired session token');
+    }
+  }
+
+  async verifyTicket(ticket: string): Promise<z.infer<typeof TokenPayloadSchema>> {
+    try {
+      const payload = jwt.verify(ticket, this.secret);
+      return TokenPayloadSchema.parse(payload);
+    } catch (error) {
+       throw new UnauthorizedException('Invalid or expired WebSocket ticket');
     }
   }
 }

@@ -45,37 +45,11 @@ export class DirectMessageGateway
     );
 
     try {
-      const cookieHeader = client.handshake.headers.cookie;
+      const ticket = client.handshake.auth?.ticket;
 
-      // Manual parse of cookie header string
-      const cookies: Record<string, string> = {};
-      if (cookieHeader) {
-        cookieHeader.split(';').forEach((c) => {
-          const [key, ...v] = c.split('=');
-          if (key && v.length > 0) {
-            cookies[key.trim()] = v.join('=');
-          }
-        });
-      }
-
-      let tokenInfo: { token: string; salt: string } | undefined;
-
-      for (const name of cookieNames) {
-        const token = cookies[name];
-        if (typeof token === 'string' && token.length > 0) {
-          tokenInfo = { token, salt: name };
-          console.log(`[DirectMessageGateway] Found token cookie: ${name}`);
-          break;
-        }
-      }
-
-      if (!tokenInfo) {
+      if (!ticket || typeof ticket !== 'string') {
         console.warn(
-          '[DirectMessageGateway] Rejecting: No session cookie found in headers',
-        );
-        console.log(
-          '[DirectMessageGateway] Available cookies:',
-          Object.keys(cookies).join(', ') || 'none',
+          '[DirectMessageGateway] Rejecting: No WebSocket ticket found in auth payload',
         );
         client.disconnect();
         return;
@@ -83,10 +57,7 @@ export class DirectMessageGateway
 
       let user: z.infer<typeof TokenPayloadSchema>;
       try {
-        user = await this.tokenService.verifyToken(
-          tokenInfo.token,
-          tokenInfo.salt,
-        );
+        user = await this.tokenService.verifyTicket(ticket);
 
         client.data.user = user;
         console.log(

@@ -61,15 +61,30 @@ function SocketProvider({
 
     let cancelled = false;
 
-    function connect() {
+    async function connect() {
       try {
         if (cancelled) return;
 
+        // Fetch a short-lived ticket from our secure Vercel backend
+        const ticketRef = await import("../_dataAccessLayer/socketActions").then(m => m.getWebSocketTicket());
+        
+        if (cancelled) return;
+        
+        if (typeof ticketRef !== "string") {
+          console.error("Failed to get WebSocket ticket:", ticketRef?.error);
+          return;
+        }
+
         const socket = io(
-          process.env.NEXT_PUBLIC_SERVER_BASE_URL || "http://localhost:3000",
+          process.env.NEXT_PUBLIC_SERVER_BASE_URL ||
+            "http://localhost:3000",
           {
             transports: ["websocket"],
+            // We still keep withCredentials just in case, but rely primarily on the ticket
             withCredentials: true,
+            auth: {
+              ticket: ticketRef,
+            }
           },
         ) as TypedSocket;
 
