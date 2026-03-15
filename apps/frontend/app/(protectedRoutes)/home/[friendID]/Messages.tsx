@@ -5,7 +5,7 @@ import { Session } from "next-auth";
 import Message from "./Message";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useSocketContext } from "@/app/_context/SocketContext";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const GROUPING_WINDOW_MS = 5 * 60 * 1000;
 
@@ -47,17 +47,23 @@ function Messages({
     setTyping,
     markAsRead,
     readAckSet,
+    messagesMap,
+    syncMessages,
+    pushMessage,
   } = useSocketContext();
 
-  const [localMessages, setLocalMessages] = useState<DirectMessage[]>(messages);
+  const currentMessages = useMemo(
+    () => messagesMap[friend.id] || [],
+    [friend.id, messagesMap],
+  );
   const [inputValue, setInputValue] = useState("");
   const [isFriendTyping, setIsFriendTyping] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setLocalMessages(messages || []);
-  }, [messages]);
+    syncMessages(friend.id, messages || []);
+  }, [friend.id, messages, syncMessages]);
 
   useEffect(() => {
     markAsRead(friend.id);
@@ -68,59 +74,37 @@ function Messages({
       top: scrollRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [localMessages, isFriendTyping]);
+  }, [currentMessages, isFriendTyping]);
 
   useEffect(() => {
     if (!socket || !isConnected) return;
-
-    const onReceive = (message: DirectMessage) => {
-      setLocalMessages((prev) => {
-        // If it's our own message, find and replace the pending one
-        if (message.senderId === session.user.id) {
-          const pendingIndex = prev.findIndex(
-            (m) => m.id < 0 && m.content === message.content,
-          );
-          if (pendingIndex !== -1) {
-            const updated = [...prev];
-            updated[pendingIndex] = message;
-            return updated;
-          }
-        }
-        return [...prev, message];
-      });
-    };
 
     const onTyping = (data: { userId: string; isTyping: boolean }) => {
       if (data.userId === friend.id) {
         setIsFriendTyping(data.isTyping);
       }
     };
-    socket.on("dm:receive", onReceive);
     socket.on("dm:typing", onTyping);
     return () => {
-      socket.off("dm:receive", onReceive);
       socket.off("dm:typing", onTyping);
     };
-  }, [isConnected, socket, friend.id, session.user.id]);
+  }, [isConnected, socket, friend.id]);
 
   const handleSend = () => {
     const text = inputValue.trim();
     if (!text) return;
 
-    const optimisticId = -Date.now();
+    const optimisticId = -Date.now() - Math.random();
 
-    setLocalMessages((prev) => [
-      ...prev,
-      {
-        id: optimisticId,
-        content: text,
-        senderId: session.user.id,
-        receiverId: friend.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isRead: false,
-      },
-    ]);
+    pushMessage(friend.id, {
+      id: optimisticId,
+      content: text,
+      senderId: session.user.id,
+      receiverId: friend.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isRead: false,
+    });
 
     sendMessage(friend.id, text);
     setInputValue("");
@@ -135,8 +119,8 @@ function Messages({
         className="scrollbar-custom flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-6 py-4"
       >
         <div className="flex-1" /> {/* Spacer to push messages to bottom */}
-        {localMessages && localMessages.length > 0 ? (
-          localMessages.map((m, i) => (
+        {currentMessages && currentMessages.length > 0 ? (
+          currentMessages.map((m, i) => (
             <Message
               key={`${m.id}-${i}`}
               text={m.content}
@@ -148,7 +132,7 @@ function Messages({
               }
               createdAt={m.createdAt}
               pending={m.id < 0}
-              grouped={shouldGroupMessage(m, localMessages[i - 1])}
+              grouped={shouldGroupMessage(m, currentMessages[i - 1])}
               senderId={m.senderId}
               avatarConfig={
                 m.senderId !== session.user.id
