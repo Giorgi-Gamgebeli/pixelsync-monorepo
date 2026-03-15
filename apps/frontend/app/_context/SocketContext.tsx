@@ -14,7 +14,6 @@ import {
   ServerToClientEvents,
   ClientToServerEvents,
   UserStatus,
-  DirectMessage,
 } from "@repo/types";
 import { getWsToken } from "../_dataAccessLayer/userActions";
 
@@ -26,12 +25,9 @@ type SocketContextValue = {
   statusMap: Record<string, UserStatus>;
   unreadMap: Record<string, number>;
   readAckSet: Set<string>;
-  messagesMap: Record<string, DirectMessage[]>;
   sendMessage: (receiverId: string, content: string) => void;
   setTyping: (receiverId: string, isTyping: boolean) => void;
   markAsRead: (friendId: string) => void;
-  syncMessages: (friendId: string, messages: DirectMessage[]) => void;
-  pushMessage: (friendId: string, message: DirectMessage) => void;
 };
 
 const SocketContext = createContext<SocketContextValue>({
@@ -40,12 +36,9 @@ const SocketContext = createContext<SocketContextValue>({
   statusMap: {},
   unreadMap: {},
   readAckSet: new Set(),
-  messagesMap: {},
   sendMessage: () => {},
   setTyping: () => {},
   markAsRead: () => {},
-  syncMessages: () => {},
-  pushMessage: () => {},
 });
 
 function SocketProvider({
@@ -57,9 +50,6 @@ function SocketProvider({
   const [statusMap, setStatusMap] = useState<Record<string, UserStatus>>({});
   const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
   const [readAckSet, setReadAckSet] = useState<Set<string>>(new Set());
-  const [messagesMap, setMessagesMap] = useState<Record<string, DirectMessage[]>>(
-    {},
-  );
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -100,29 +90,6 @@ function SocketProvider({
         });
 
         socket.on("dm:receive", (message) => {
-          const friendId =
-            message.senderId === userId ? message.receiverId : message.senderId;
-
-          setMessagesMap((prev) => {
-            const current = prev[friendId] || [];
-
-            // If it's our message, replace the pending one
-            if (message.senderId === userId) {
-              const pendingIndex = current.findIndex(
-                (m) => m.id < 0 && m.content === message.content,
-              );
-              if (pendingIndex !== -1) {
-                const updated = [...current];
-                updated[pendingIndex] = message;
-                return { ...prev, [friendId]: updated };
-              }
-            }
-
-            // Otherwise deduplicate and add
-            if (current.some((m) => m.id === message.id)) return prev;
-            return { ...prev, [friendId]: [...current, message] };
-          });
-
           if (message.senderId !== userId) {
             setUnreadMap((prev) => ({
               ...prev,
@@ -179,53 +146,6 @@ function SocketProvider({
     socketRef.current?.emit("dm:read", { senderId: friendId });
   }, []);
 
-  const syncMessages = useCallback(
-    (friendId: string, messages: DirectMessage[]) => {
-      setMessagesMap((prev) => {
-        const current = prev[friendId] || [];
-        const serverIds = new Set(messages.map((m) => m.id));
-
-        // 1. Keep any fresh messages from socket that aren't in props yet
-        const freshSocketItems = current.filter(
-          (m) => m.id > 0 && !serverIds.has(m.id),
-        );
-
-        // 2. Keep any pending messages that aren't matched by content
-        const matchedPendingIds = new Set<number>();
-        messages.forEach((sm) => {
-          const match = current.find(
-            (pm) =>
-              pm.id < 0 &&
-              pm.content === sm.content &&
-              !matchedPendingIds.has(pm.id),
-          );
-          if (match) matchedPendingIds.add(match.id);
-        });
-
-        const remainingPending = current.filter(
-          (m) => m.id < 0 && !matchedPendingIds.has(m.id),
-        );
-
-        const merged = [...messages, ...freshSocketItems, ...remainingPending];
-        // Sort to be safe
-        merged.sort(
-          (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-        );
-
-        return { ...prev, [friendId]: merged };
-      });
-    },
-    [],
-  );
-
-  const pushMessage = useCallback((friendId: string, message: DirectMessage) => {
-    setMessagesMap((prev) => {
-      const current = prev[friendId] || [];
-      return { ...prev, [friendId]: [...current, message] };
-    });
-  }, []);
-
   return (
     <SocketContext.Provider
       value={{
@@ -234,12 +154,9 @@ function SocketProvider({
         statusMap,
         unreadMap,
         readAckSet,
-        messagesMap,
         sendMessage,
         setTyping,
         markAsRead,
-        syncMessages,
-        pushMessage,
       }}
     >
       {children}

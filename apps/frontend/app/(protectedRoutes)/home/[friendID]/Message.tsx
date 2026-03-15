@@ -137,7 +137,7 @@ function Message({
       />
 
       <div
-        className={`flex min-w-0 max-w-[75%] flex-col ${isOwn ? "items-end" : "items-start"}`}
+        className={`flex max-w-[75%] min-w-0 flex-col ${isOwn ? "items-end" : "items-start"}`}
       >
         <div
           className={`flex items-center gap-2 px-1 text-xs ${
