@@ -8,9 +8,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { createDirectMessageSchema, TokenPayloadSchema, z } from '@repo/zod';
+import { getToken } from 'next-auth/jwt';
 import { Server, Socket } from 'socket.io';
-import { TokenService } from 'src/auth/token.service';
-import { cookieNames } from 'src/constants/auth';
 import { UsersService } from 'src/users/users.service';
 import { DirectMessageService } from './direct-message.service';
 
@@ -21,7 +20,6 @@ interface AuthenticatedSocket extends Socket {
 }
 
 @WebSocketGateway({
-  // namespace: 'direct-messages',
   cors: { origin: process.env.NEXT_PUBLIC_BASE_URL, credentials: true },
 })
 export class DirectMessageGateway
@@ -32,46 +30,39 @@ export class DirectMessageGateway
 
   constructor(
     private readonly directMessageService: DirectMessageService,
-    private readonly tokenService: TokenService,
     private readonly userService: UsersService,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
-    const rawCookie = client.handshake.headers.cookie ?? '';
+    try {
+      const token = await getToken({
+        req: client.handshake as any,
+        secret: process.env.NEXTAUTH_SECRET!,
+        secureCookie: client.handshake.secure,
+      });
 
-    const cookies = Object.fromEntries(
-      rawCookie.split(';').map((c) => {
-        const [key, ...rest] = c.trim().split('=');
-        return [key?.trim() ?? '', decodeURIComponent(rest.join('='))];
-      }),
-    );
-
-    for (const name of cookieNames) {
-      const token = cookies[name];
-      if (typeof token === 'string' && token.length > 0) {
-        try {
-          const user = await this.tokenService.verifyToken(token, name);
-          client.data.user = user;
-
-          await this.userService.updateStatus({
-            userId: user.sub,
-            status: 'ONLINE',
-          });
-
-          this.server.emit('user:status', {
-            userId: user.sub,
-            status: 'ONLINE',
-          });
-
-          void client.join(user.sub);
-          return;
-        } catch {
-          continue;
-        }
+      if (!token) {
+        client.disconnect();
+        return;
       }
-    }
 
-    client.disconnect();
+      const user = TokenPayloadSchema.parse(token);
+      client.data.user = user;
+
+      await this.userService.updateStatus({
+        userId: user.sub,
+        status: 'ONLINE',
+      });
+
+      this.server.emit('user:status', {
+        userId: user.sub,
+        status: 'ONLINE',
+      });
+
+      void client.join(user.sub);
+    } catch {
+      client.disconnect();
+    }
   }
 
   async handleDisconnect(client: AuthenticatedSocket) {
