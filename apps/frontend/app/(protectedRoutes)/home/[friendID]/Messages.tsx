@@ -41,9 +41,24 @@ function Messages({ messages, friend, session }: MessagesProps) {
     if (!socket || !isConnected) return;
 
     const onReceive = (message: DirectMessage) => {
-      // Only append if the message is part of THIS conversation
       if (message.senderId === friend.id || message.receiverId === friend.id) {
-        setLocalMessages((prev) => [...prev, message]);
+        setLocalMessages((prev) => {
+          // If it's our own message, replace the optimistic one with the real one
+          if (message.senderId === session.user.id) {
+            const pendingIndex = prev.findIndex(
+              (m) =>
+                typeof m.id === "string" &&
+                (m.id as unknown as string).startsWith("pending-") &&
+                m.content === message.content,
+            );
+            if (pendingIndex !== -1) {
+              const updated = [...prev];
+              updated[pendingIndex] = message;
+              return updated;
+            }
+          }
+          return [...prev, message];
+        });
       }
     };
 
@@ -61,11 +76,27 @@ function Messages({ messages, friend, session }: MessagesProps) {
   }, [isConnected, socket, friend.id]);
 
   const handleSend = () => {
-    if (!inputValue.trim()) return;
+    const text = inputValue.trim();
+    if (!text) return;
 
-    sendMessage(friend.id, inputValue.trim());
+    const optimisticId = `pending-${Date.now()}`;
+
+    setLocalMessages((prev) => [
+      ...prev,
+      {
+        id: optimisticId as unknown as number,
+        content: text,
+        senderId: session.user.id,
+        receiverId: friend.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isRead: false,
+      },
+    ]);
+
+    sendMessage(friend.id, text);
     setInputValue("");
-    setTyping(friend.id, false); // Stop typing indicator after sending
+    setTyping(friend.id, false);
   };
 
   return (
@@ -79,7 +110,7 @@ function Messages({ messages, friend, session }: MessagesProps) {
         {localMessages && localMessages.length > 0 ? (
           localMessages.map((m, i) => (
             <Message
-              key={i}
+              key={m.id}
               text={m.content}
               isOwn={m.senderId === session.user.id}
               senderName={
@@ -88,6 +119,7 @@ function Messages({ messages, friend, session }: MessagesProps) {
                   : friend?.userName || "Friend"
               }
               createdAt={m.createdAt}
+              pending={String(m.id).startsWith("pending-")}
             />
           ))
         ) : (

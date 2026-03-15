@@ -88,20 +88,28 @@ export class DirectMessageGateway
   }
 
   @SubscribeMessage('dm:send')
-  async sendMessage(
+  sendMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() body: z.infer<typeof createDirectMessageSchema>,
   ) {
     const user = client.data.user;
 
-    const message = await this.directMessageService.create({
+    const payload = {
       ...body,
       senderId: user.sub,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isRead: false,
+    };
+
+    // Don't wait for DB
+    this.server.to(body.receiverId).emit('dm:receive', payload);
+    client.emit('dm:receive', payload);
+
+    // Persist in background
+    this.directMessageService.create({ ...body, senderId: user.sub }).catch((err) => {
+      console.error('[DirectMessageGateway] Failed to persist message:', err);
     });
-
-    this.server.to(body.receiverId).emit('dm:receive', message);
-
-    client.emit('dm:receive', message);
   }
 
   @SubscribeMessage('dm:typing')

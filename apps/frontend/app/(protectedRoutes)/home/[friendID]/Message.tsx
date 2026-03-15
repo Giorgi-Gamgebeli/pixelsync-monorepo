@@ -5,6 +5,7 @@ type MessageProps = {
   isOwn: boolean;
   senderName: string;
   createdAt: string;
+  pending?: boolean;
 };
 
 const formatDiscordDate = (date: Date) => {
@@ -30,7 +31,7 @@ const formatDiscordDate = (date: Date) => {
   }
 };
 
-function Message({ text, isOwn, senderName, createdAt }: MessageProps) {
+function Message({ text, isOwn, senderName, createdAt, pending }: MessageProps) {
   const [formattedDate, setFormattedDate] = useState("");
 
   useEffect(() => {
@@ -39,9 +40,9 @@ function Message({ text, isOwn, senderName, createdAt }: MessageProps) {
 
   return (
     <div
-      className={`group flex w-full flex-col py-1 transition-colors duration-200 ${
+      className={`group flex w-full flex-col py-1 transition-all duration-200 ${
         isOwn ? "items-end" : "items-start"
-      }`}
+      } ${pending ? "opacity-50" : "opacity-100"}`}
     >
       <div
         className={`flex items-center gap-2 px-2 text-xs ${
