@@ -3,7 +3,9 @@
 import { useState, useTransition, useEffect } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useSession, signOut } from "next-auth/react";
+import type { UserStatus } from "@repo/types";
 import UserAvatar from "./UserAvatar";
+import StatusSelector from "./StatusSelector";
 import {
   updateUserName,
   updateDisplayName,
@@ -108,6 +110,8 @@ function ProfileSettingsPanel({
                 id={session?.user?.id}
                 avatarConfig={session?.user?.avatarConfig}
                 size={96}
+                showStatus
+                status={session?.user?.status ?? undefined}
               />
               <button
                 onClick={() => {
@@ -119,6 +123,16 @@ function ProfileSettingsPanel({
                 Change Avatar
               </button>
             </div>
+
+            {/* Status */}
+            {session?.user?.id && (
+              <div className="mt-4 flex justify-center">
+                <StatusSelector
+                  currentStatus={(session?.user?.status as UserStatus) || "ONLINE"}
+                  userId={session?.user?.id}
+                />
+              </div>
+            )}
 
             {/* Display Name */}
             <div className="mt-8">

@@ -48,7 +48,28 @@ type CallContextValue = {
   leaveGroupCall: () => void;
 };
 
-const CallContext = createContext<CallContextValue | null>(null);
+const noop = () => {};
+const noopAsync = async () => {};
+
+const CallContext = createContext<CallContextValue>({
+  callState: "idle",
+  callType: null,
+  callId: null,
+  incomingCall: null,
+  localStream: null,
+  remoteStreams: new Map(),
+  audioEnabled: true,
+  videoEnabled: true,
+  groupParticipants: new Map(),
+  initiateCall: noopAsync,
+  acceptCall: noopAsync,
+  declineCall: noop,
+  hangup: noop,
+  toggleMute: noop,
+  toggleCamera: noop,
+  joinGroupCall: noopAsync,
+  leaveGroupCall: noop,
+});
 
 function CallProvider({ children }: PropsWithChildren) {
   const { socket } = useSocketContext();

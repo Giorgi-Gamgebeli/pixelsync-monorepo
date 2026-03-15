@@ -10,6 +10,13 @@ import HomeNavLink from "./HomeNavLink";
 import { useSocketContext } from "@/app/_context/SocketContext";
 import { unfriend } from "@/app/_dataAccessLayer/userActions";
 
+const STATUS_LABELS: Record<UserStatus, string> = {
+  ONLINE: "Online",
+  IDLE: "Idle",
+  DO_NOT_DISTURB: "Do Not Disturb",
+  OFFLINE: "Offline",
+};
+
 type Friend = {
   id: string;
   userName: string | null;
@@ -40,9 +47,13 @@ function FriendItem({ friend }: { friend: Friend }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
+  const handleMouseLeave = () => {
+    setMenuOpen(false);
+  };
+
   return (
     <>
-      <div className="group relative">
+      <div className="group relative" onMouseLeave={handleMouseLeave}>
         <HomeNavLink href={`/home/${friend.id}`}>
           <UserAvatar
             userName={displayUserName}
@@ -56,31 +67,34 @@ function FriendItem({ friend }: { friend: Friend }) {
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm text-gray-300">{displayUserName}</p>
             <p className="truncate text-xs text-gray-500">
-              {status === "ONLINE" ? "Online" : "Offline"}
+              {STATUS_LABELS[status]}
             </p>
           </div>
           {unread > 0 && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-500 px-1.5 text-xs font-bold text-white">
+            <span className="bg-brand-500 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold text-white">
               {unread > 99 ? "99+" : unread}
             </span>
           )}
         </HomeNavLink>
 
         {/* Three-dot menu */}
-        <div ref={menuRef} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100">
+        <div
+          ref={menuRef}
+          className="absolute top-1/2 right-2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100"
+        >
           <button
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               setMenuOpen(!menuOpen);
             }}
-            className="flex h-6 w-6 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-surface hover:text-white"
+            className="hover:bg-surface flex h-6 w-6 items-center justify-center rounded-full text-gray-500 transition-colors hover:text-white"
           >
             <Icon icon="mdi:dots-vertical" className="text-sm" />
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 top-full z-50 mt-1 w-44 rounded-xl border border-border bg-secondary p-1.5 shadow-xl">
+            <div className="border-border bg-secondary absolute top-full right-0 z-50 mt-1 w-44 rounded-xl border p-1.5 shadow-xl">
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -88,12 +102,12 @@ function FriendItem({ friend }: { friend: Friend }) {
                   setMenuOpen(false);
                   markAsRead(friend.id);
                 }}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-surface hover:text-white"
+                className="hover:bg-surface flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:text-white"
               >
                 <Icon icon="mdi:email-check" className="text-base" />
                 Mark as Read
               </button>
-              <div className="my-1 border-t border-border" />
+              <div className="border-border my-1 border-t" />
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -101,7 +115,7 @@ function FriendItem({ friend }: { friend: Friend }) {
                   setMenuOpen(false);
                   setConfirmOpen(true);
                 }}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-400 transition-colors hover:bg-surface hover:text-red-300"
+                className="hover:bg-surface flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-400 transition-colors hover:text-red-300"
               >
                 <Icon icon="mdi:account-remove" className="text-base" />
                 Remove Friend

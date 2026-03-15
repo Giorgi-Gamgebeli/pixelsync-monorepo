@@ -12,6 +12,7 @@ import {
   UnfriendSchema,
   UpdateAvatarConfigSchema,
   UpdateUserNameSchema,
+  updateStatusSchema,
 } from "@repo/zod";
 import { z } from "zod";
 import { handleErrorsOnServer } from "../_utils/helpers";
@@ -451,7 +452,8 @@ export async function updateUserName(
 ) {
   try {
     const result = UpdateUserNameSchema.safeParse(values);
-    if (result.error) throw new Error(result.error.issues[0]?.message || "Validation failed!");
+    if (result.error)
+      throw new Error(result.error.issues[0]?.message || "Validation failed!");
     const { userName } = result.data;
 
     const session = await auth();
@@ -542,5 +544,26 @@ export async function getWsToken() {
     };
   } catch (error) {
     return handleErrorsOnServer(error);
+  }
+}
+
+export async function updateStatus(values: z.infer<typeof updateStatusSchema>) {
+  try {
+    const result = updateStatusSchema.safeParse(values);
+    if (result.error) throw new Error("Validation failed on server!");
+    const { userId, status } = result.data;
+
+    const session = await auth();
+    if (!session) throw new Error("Not authenticated!");
+    if (session.user.id !== userId) throw new Error("Not authorized!");
+
+    await db.user.update({
+      where: { id: userId },
+      data: { status },
+    });
+  } catch (error) {
+    return handleErrorsOnServer(error);
+  } finally {
+    revalidatePath("/", "layout");
   }
 }

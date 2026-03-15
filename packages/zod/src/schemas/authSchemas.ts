@@ -82,6 +82,7 @@ export const UserPayloadSchema = z.object({
   userName: z.string().optional().nullable(),
   avatarConfig: z.string().optional().nullable(),
   image: z.string().optional().nullable(),
+  status: z.string().optional().nullable(),
   exp: z.number().optional(),
 });
 
@@ -92,6 +93,7 @@ export const TokenPayloadSchema = z.object({
   userName: z.string().optional().nullable(),
   avatarConfig: z.string().optional().nullable(),
   image: z.string().optional().nullable(),
+  status: z.string().optional().nullable(),
   exp: z.number().optional(),
   iat: z.number().optional(),
   jti: z.string().optional(),

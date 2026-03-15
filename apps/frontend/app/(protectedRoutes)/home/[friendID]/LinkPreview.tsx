@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 type OgData = {
@@ -50,12 +51,15 @@ function LinkPreview({ text }: { text: string }) {
       className="mt-1.5 block max-w-xs overflow-hidden rounded-lg border border-white/10 bg-white/5 transition-colors hover:bg-white/10"
     >
       {ogData.image && (
-        <img
-          src={ogData.image}
-          alt=""
-          className="h-32 w-full object-cover"
-          loading="lazy"
-        />
+        <div className="relative h-32 w-full">
+          <Image
+            src={ogData.image}
+            alt=""
+            fill
+            className="object-cover"
+            loading="lazy"
+          />
+        </div>
       )}
       <div className="px-3 py-2">
         <p className="text-[10px] text-gray-500">{ogData.siteName}</p>

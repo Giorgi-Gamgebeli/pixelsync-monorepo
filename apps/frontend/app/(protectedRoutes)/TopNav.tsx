@@ -13,13 +13,34 @@ import ProfileSettingsPanel from "@/app/_components/ProfileSettingsPanel";
 import { updateAvatarConfig } from "@/app/_dataAccessLayer/userActions";
 import { useSocketContext } from "@/app/_context/SocketContext";
 
+function NotificationBell() {
+  const { unreadMap } = useSocketContext();
+  const totalUnread = Object.values(unreadMap).reduce((a, b) => a + b, 0);
+  const hasUnread = totalUnread > 0;
+
+  if (!hasUnread) return null;
+
+  return (
+    <div className="hover:bg-surface relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-gray-200">
+      <Icon icon="mdi:bell" className="text-brand-400 text-lg" />
+      {totalUnread > 0 && (
+        <div className="bg-brand-500 absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1">
+          <span className="text-[10px] font-bold text-white">
+            {totalUnread > 99 ? "99+" : totalUnread}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 type TopNavProps = {
   projects:
-  | {
-    id: number;
-    name: string;
-  }[]
-  | undefined;
+    | {
+        id: number;
+        name: string;
+      }[]
+    | undefined;
 };
 
 function TopNav({ projects }: TopNavProps) {
@@ -58,7 +79,7 @@ function TopNav({ projects }: TopNavProps) {
   }, []);
 
   return (
-    <nav className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-secondary px-5">
+    <nav className="border-border bg-secondary flex h-14 shrink-0 items-center justify-between border-b px-5">
       {/* Left section */}
       <div className="flex items-center gap-6">
         {/* Logo */}
@@ -68,16 +89,17 @@ function TopNav({ projects }: TopNavProps) {
         </Link>
 
         {/* Divider */}
-        <div className="h-5 w-px bg-border" />
+        <div className="bg-border h-5 w-px" />
 
         {/* Nav links */}
         <div className="flex items-center gap-1">
           <Link
             href="/home/friends"
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${isHome
-              ? "bg-surface text-white"
-              : "text-gray-400 hover:bg-surface/50 hover:text-gray-200"
-              }`}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              isHome
+                ? "bg-surface text-white"
+                : "hover:bg-surface/50 text-gray-400 hover:text-gray-200"
+            }`}
           >
             Home
           </Link>
@@ -86,10 +108,11 @@ function TopNav({ projects }: TopNavProps) {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setProjectsOpen(!projectsOpen)}
-              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${activeProject
-                ? "bg-surface text-white"
-                : "text-gray-400 hover:bg-surface/50 hover:text-gray-200"
-                }`}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                activeProject
+                  ? "bg-surface text-white"
+                  : "hover:bg-surface/50 text-gray-400 hover:text-gray-200"
+              }`}
             >
               {activeProject ? activeProject.name : "Projects"}
               <Icon
@@ -99,7 +122,7 @@ function TopNav({ projects }: TopNavProps) {
             </button>
 
             {projectsOpen && (
-              <div className="absolute top-full left-0 z-50 mt-1.5 w-56 rounded-xl border border-border bg-secondary p-1.5 shadow-xl">
+              <div className="border-border bg-secondary absolute top-full left-0 z-50 mt-1.5 w-56 rounded-xl border p-1.5 shadow-xl">
                 {projects && projects.length > 0 ? (
                   <>
                     {projects.map((project) => (
@@ -107,26 +130,27 @@ function TopNav({ projects }: TopNavProps) {
                         key={project.id}
                         href={`/project/${project.id}`}
                         onClick={() => setProjectsOpen(false)}
-                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${pathname.startsWith(`/project/${project.id}`)
-                          ? "bg-brand-500/10 text-brand-400"
-                          : "text-gray-300 hover:bg-surface"
-                          }`}
+                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+                          pathname.startsWith(`/project/${project.id}`)
+                            ? "bg-brand-500/10 text-brand-400"
+                            : "hover:bg-surface text-gray-300"
+                        }`}
                       >
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface text-xs font-semibold text-gray-400">
+                        <div className="bg-surface flex h-7 w-7 items-center justify-center rounded-lg text-xs font-semibold text-gray-400">
                           {project.name.slice(0, 2).toUpperCase()}
                         </div>
                         {project.name}
                       </Link>
                     ))}
-                    <div className="my-1 border-t border-border" />
+                    <div className="border-border my-1 border-t" />
                   </>
                 ) : null}
                 <Link
                   href="/project/create"
                   onClick={() => setProjectsOpen(false)}
-                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-400 transition-colors hover:bg-surface hover:text-gray-200"
+                  className="hover:bg-surface flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-400 transition-colors hover:text-gray-200"
                 >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-dashed border-border">
+                  <div className="border-border flex h-7 w-7 items-center justify-center rounded-lg border border-dashed">
                     <Icon icon="mdi:plus" className="text-base" />
                   </div>
                   New Project
@@ -141,20 +165,15 @@ function TopNav({ projects }: TopNavProps) {
       <div className="flex items-center gap-2">
         <Link
           href="/home/friends"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-surface hover:text-gray-200"
+          className="hover:bg-surface flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-gray-200"
           title="Friends"
         >
           <Icon icon="mdi:account-group" className="text-lg" />
         </Link>
-        <Link
-          href="/home/friends"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-surface hover:text-gray-200"
-          title="Messages"
-        >
-          <Icon icon="mdi:chat" className="text-lg" />
-        </Link>
 
-        <div className="ml-1 h-5 w-px bg-border" />
+        <NotificationBell />
+
+        <div className="bg-border ml-1 h-5 w-px" />
 
         {/* User profile dropdown */}
         <div className="relative" ref={profileDropdownRef}>
@@ -171,7 +190,7 @@ function TopNav({ projects }: TopNavProps) {
           </button>
 
           {profileOpen && (
-            <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-border bg-secondary p-1.5 shadow-xl z-50">
+            <div className="border-border bg-secondary absolute top-full right-0 z-50 mt-2 w-52 rounded-xl border p-1.5 shadow-xl">
               <div className="flex items-center gap-2.5 px-3 py-2">
                 <UserAvatar
                   userName={session?.user?.userName ?? null}
@@ -188,13 +207,13 @@ function TopNav({ projects }: TopNavProps) {
                   </p>
                 </div>
               </div>
-              <div className="my-1 border-t border-border" />
+              <div className="border-border my-1 border-t" />
               <button
                 onClick={() => {
                   setProfileOpen(false);
                   setSettingsOpen(true);
                 }}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-surface hover:text-white"
+                className="hover:bg-surface flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:text-white"
               >
                 <Icon icon="mdi:cog" className="text-base" />
                 Profile Settings
@@ -204,15 +223,15 @@ function TopNav({ projects }: TopNavProps) {
                   setProfileOpen(false);
                   setBuilderOpen(true);
                 }}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-surface hover:text-white"
+                className="hover:bg-surface flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:text-white"
               >
                 <Icon icon="mdi:pencil" className="text-base" />
                 Customize Avatar
               </button>
-              <div className="my-1 border-t border-border" />
+              <div className="border-border my-1 border-t" />
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-400 transition-colors hover:bg-surface hover:text-red-300"
+                className="hover:bg-surface flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-400 transition-colors hover:text-red-300"
               >
                 <Icon icon="mdi:logout" className="text-base" />
                 Sign Out

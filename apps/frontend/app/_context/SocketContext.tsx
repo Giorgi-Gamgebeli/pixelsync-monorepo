@@ -35,6 +35,7 @@ type SocketContextValue = {
   sendGroupMessage: (groupId: number, content: string) => void;
   setGroupTyping: (groupId: number, isTyping: boolean) => void;
   joinGroup: (groupId: number) => void;
+  setStatus: (status: UserStatus) => void;
 };
 
 const SocketContext = createContext<SocketContextValue>({
@@ -51,6 +52,7 @@ const SocketContext = createContext<SocketContextValue>({
   sendGroupMessage: () => {},
   setGroupTyping: () => {},
   joinGroup: () => {},
+  setStatus: () => {},
 });
 
 function SocketProvider({
@@ -62,7 +64,9 @@ function SocketProvider({
   const [statusMap, setStatusMap] = useState<Record<string, UserStatus>>({});
   const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
   const [readAckSet, setReadAckSet] = useState<Set<string>>(new Set());
-  const [profileMap, setProfileMap] = useState<Record<string, Partial<ProfileUpdate>>>({});
+  const [profileMap, setProfileMap] = useState<
+    Record<string, Partial<ProfileUpdate>>
+  >({});
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -173,22 +177,20 @@ function SocketProvider({
     [],
   );
 
-  const sendGroupMessage = useCallback(
-    (groupId: number, content: string) => {
-      socketRef.current?.emit("group:send", { groupId, content });
-    },
-    [],
-  );
+  const sendGroupMessage = useCallback((groupId: number, content: string) => {
+    socketRef.current?.emit("group:send", { groupId, content });
+  }, []);
 
-  const setGroupTyping = useCallback(
-    (groupId: number, isTyping: boolean) => {
-      socketRef.current?.emit("group:typing", { groupId, isTyping });
-    },
-    [],
-  );
+  const setGroupTyping = useCallback((groupId: number, isTyping: boolean) => {
+    socketRef.current?.emit("group:typing", { groupId, isTyping });
+  }, []);
 
   const joinGroup = useCallback((groupId: number) => {
     socketRef.current?.emit("group:join", { groupId });
+  }, []);
+
+  const setStatus = useCallback((status: UserStatus) => {
+    socketRef.current?.emit("user:set-status", { status });
   }, []);
 
   return (
@@ -207,6 +209,7 @@ function SocketProvider({
         sendGroupMessage,
         setGroupTyping,
         joinGroup,
+        setStatus,
       }}
     >
       {children}

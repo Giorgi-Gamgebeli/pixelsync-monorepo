@@ -2,7 +2,7 @@ import z from "zod";
 
 export const updateStatusSchema = z.object({
   userId: z.string(),
-  status: z.enum(["ONLINE", "OFFLINE"]),
+  status: z.enum(["ONLINE", "OFFLINE", "IDLE", "DO_NOT_DISTURB"]),
 });
 
 export const UpdateAvatarConfigSchema = z.object({

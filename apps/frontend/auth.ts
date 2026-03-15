@@ -94,6 +94,7 @@ const nextAuth = NextAuth({
           avatarConfig: true,
           name: true,
           userName: true,
+          status: true,
         },
       });
 
@@ -105,6 +106,7 @@ const nextAuth = NextAuth({
         avatarConfig: existingUser.avatarConfig,
         name: existingUser.name,
         userName: existingUser.userName,
+        status: existingUser.status,
         email: token.email,
         exp: token.exp,
 
@@ -121,6 +123,7 @@ const nextAuth = NextAuth({
         session.user.avatarConfig = token.avatarConfig;
         session.user.image = token.image;
         session.user.userName = token.userName;
+        session.user.status = token.status;
       }
 
       return session;

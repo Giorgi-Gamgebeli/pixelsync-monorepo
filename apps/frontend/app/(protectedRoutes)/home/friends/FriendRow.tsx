@@ -10,6 +10,13 @@ import ConfirmDialog from "@/app/_components/ConfirmDialog";
 import { useSocketContext } from "@/app/_context/SocketContext";
 import { unfriend } from "@/app/_dataAccessLayer/userActions";
 
+const STATUS_LABELS: Record<UserStatus, string> = {
+  ONLINE: "Online",
+  IDLE: "Idle",
+  DO_NOT_DISTURB: "Do Not Disturb",
+  OFFLINE: "Offline",
+};
+
 type FriendRowProps = {
   id: string;
   userName: string | null;
@@ -18,7 +25,13 @@ type FriendRowProps = {
   actions?: React.ReactNode;
 };
 
-function FriendRow({ id, userName, status: serverStatus, avatarConfig, actions }: FriendRowProps) {
+function FriendRow({
+  id,
+  userName,
+  status: serverStatus,
+  avatarConfig,
+  actions,
+}: FriendRowProps) {
   const { statusMap, profileMap, markAsRead } = useSocketContext();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -29,7 +42,6 @@ function FriendRow({ id, userName, status: serverStatus, avatarConfig, actions }
   const displayUserName = profile?.userName ?? userName;
   const displayAvatarConfig = profile?.avatarConfig ?? avatarConfig;
   const status = statusMap[id] ?? serverStatus;
-  const isOnline = status === "ONLINE";
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -41,10 +53,20 @@ function FriendRow({ id, userName, status: serverStatus, avatarConfig, actions }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
+  const handleMouseLeave = () => {
+    setMenuOpen(false);
+  };
+
   return (
     <>
-      <div className="group relative flex items-center rounded-lg transition-colors hover:bg-surface">
-        <Link href={`/home/${id}`} className="flex flex-1 items-center gap-3 px-3 py-2">
+      <div
+        className="group hover:bg-surface relative flex items-center rounded-lg transition-colors"
+        onMouseLeave={handleMouseLeave}
+      >
+        <Link
+          href={`/home/${id}`}
+          className="flex flex-1 items-center gap-3 px-3 py-2"
+        >
           <UserAvatar
             userName={displayUserName}
             id={id}
@@ -54,10 +76,10 @@ function FriendRow({ id, userName, status: serverStatus, avatarConfig, actions }
             status={status}
           />
           <div>
-            <p className="text-sm font-medium text-gray-200">{displayUserName}</p>
-            <p className="text-xs text-gray-500">
-              {isOnline ? "Online" : "Offline"}
+            <p className="text-sm font-medium text-gray-200">
+              {displayUserName}
             </p>
+            <p className="text-xs text-gray-500">{STATUS_LABELS[status]}</p>
           </div>
         </Link>
 
@@ -66,37 +88,37 @@ function FriendRow({ id, userName, status: serverStatus, avatarConfig, actions }
             <>
               <Link
                 href={`/home/${id}`}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-gray-400 transition-colors hover:bg-border hover:text-white"
+                className="bg-surface hover:bg-border flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:text-white"
               >
                 <Icon icon="mdi:message" className="text-lg" />
               </Link>
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface text-gray-400 transition-colors hover:bg-border hover:text-white"
+                  className="bg-surface hover:bg-border flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-gray-400 transition-colors hover:text-white"
                 >
                   <Icon icon="mdi:dots-vertical" className="text-lg" />
                 </button>
 
                 {menuOpen && (
-                  <div className="absolute right-0 top-full z-50 mt-1 w-44 rounded-xl border border-border bg-secondary p-1.5 shadow-xl">
+                  <div className="border-border bg-secondary absolute top-full right-0 z-50 mt-1 w-44 rounded-xl border p-1.5 shadow-xl">
                     <button
                       onClick={() => {
                         setMenuOpen(false);
                         markAsRead(id);
                       }}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-surface hover:text-white"
+                      className="hover:bg-surface flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:text-white"
                     >
                       <Icon icon="mdi:email-check" className="text-base" />
                       Mark as Read
                     </button>
-                    <div className="my-1 border-t border-border" />
+                    <div className="border-border my-1 border-t" />
                     <button
                       onClick={() => {
                         setMenuOpen(false);
                         setConfirmOpen(true);
                       }}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-400 transition-colors hover:bg-surface hover:text-red-300"
+                      className="hover:bg-surface flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-400 transition-colors hover:text-red-300"
                     >
                       <Icon icon="mdi:account-remove" className="text-base" />
                       Remove Friend

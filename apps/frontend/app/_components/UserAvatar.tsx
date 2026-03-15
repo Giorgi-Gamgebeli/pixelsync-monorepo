@@ -1,6 +1,14 @@
 import { useMemo } from "react";
 import { createAvatar } from "@dicebear/core";
 import { adventurer } from "@dicebear/collection";
+import { UserStatus } from "@repo/types";
+
+const STATUS_COLORS: Record<UserStatus, string> = {
+  ONLINE: "bg-green-500",
+  IDLE: "bg-yellow-500",
+  DO_NOT_DISTURB: "bg-red-500",
+  OFFLINE: "bg-gray-500",
+};
 
 function djb2Hash(str: string): number {
   let hash = 5381;
@@ -93,9 +101,9 @@ function UserAvatar({
         </span>
       )}
 
-      {showStatus && status === "ONLINE" && (
+      {showStatus && status && (
         <div
-          className={`absolute -right-0.5 -bottom-0.5 rounded-full border-2 bg-green-500 ${statusBorderColor}`}
+          className={`absolute -right-0.5 -bottom-0.5 rounded-full border-2 ${STATUS_COLORS[status as UserStatus]} ${statusBorderColor}`}
           style={{ width: dotSize, height: dotSize }}
         />
       )}

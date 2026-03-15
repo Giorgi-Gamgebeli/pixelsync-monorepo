@@ -29,23 +29,19 @@ function Input<T extends FieldValues>({
           ? register(id, { valueAsNumber: type === "number" })
           : { onBlur: onBlur, name: id })}
         {...rest}
-        className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-brand-300 focus:ring-1 focus:ring-brand-200 disabled:cursor-not-allowed disabled:bg-gray-100"
+        className="border-border bg-surface focus:border-brand-500 focus:ring-brand-500/20 disabled:bg-surface/50 w-full rounded-lg border px-3.5 py-2.5 text-sm text-white transition-colors outline-none placeholder:text-gray-500 focus:ring-1 disabled:cursor-not-allowed"
       />
 
       {type === "password" && (
-        <>
-          <Icon
-            icon="qlementine-icons:eye-crossed-16"
-            className={`absolute top-1/2 right-3.5 -translate-y-1/2 cursor-pointer text-lg text-gray-400 ${showPassword ? "z-10" : "-z-10"}`}
-            onClick={() => setShowPassword(!showPassword)}
-          />
-
-          <Icon
-            icon="qlementine-icons:eye-16"
-            className={`absolute top-1/2 right-3.5 -translate-y-1/2 cursor-pointer text-lg text-gray-400 ${showPassword ? "-z-10" : "z-10"}`}
-            onClick={() => setShowPassword(!showPassword)}
-          />
-        </>
+        <Icon
+          icon={
+            showPassword
+              ? "qlementine-icons:eye-crossed-16"
+              : "qlementine-icons:eye-16"
+          }
+          className="absolute top-1/2 right-3.5 -translate-y-1/2 cursor-pointer text-lg text-gray-500 hover:text-gray-300"
+          onClick={() => setShowPassword(!showPassword)}
+        />
       )}
     </div>
   );

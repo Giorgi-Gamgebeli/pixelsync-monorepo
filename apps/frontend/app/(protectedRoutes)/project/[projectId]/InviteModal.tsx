@@ -39,8 +39,8 @@ function InviteModal({ projectId, projectName, onClose }: InviteModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs">
-      <div className="w-full max-w-md rounded-xl border border-border bg-secondary p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="border-border bg-secondary w-full max-w-md rounded-xl border p-6 shadow-xl">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-white">
             Invite to {projectName}
@@ -48,7 +48,7 @@ function InviteModal({ projectId, projectName, onClose }: InviteModalProps) {
           <button
             onClick={onClose}
             aria-label="Close"
-            className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-gray-500 hover:bg-surface hover:text-gray-300"
+            className="hover:bg-surface flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-gray-500 hover:text-gray-300"
           >
             <Icon icon="mdi:close" className="text-lg" />
           </button>
@@ -65,7 +65,7 @@ function InviteModal({ projectId, projectName, onClose }: InviteModalProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search friends by username"
-            className="w-full rounded-lg border border-border bg-surface py-2.5 pr-3.5 pl-9 text-sm text-white outline-none placeholder:text-gray-500 focus:border-brand-500"
+            className="border-border bg-surface focus:border-brand-500 w-full rounded-lg border py-2.5 pr-3.5 pl-9 text-sm text-white outline-none placeholder:text-gray-500"
             autoFocus
           />
         </div>
@@ -79,16 +79,16 @@ function InviteModal({ projectId, projectName, onClose }: InviteModalProps) {
 
         {/* Divider */}
         <div className="my-4 flex items-center gap-3">
-          <div className="flex-1 border-b border-border" />
+          <div className="border-border flex-1 border-b" />
           <span className="text-xs text-gray-500">or</span>
-          <div className="flex-1 border-b border-border" />
+          <div className="border-border flex-1 border-b" />
         </div>
 
         {/* Copy invite link */}
         <button
           onClick={handleCopyLink}
           disabled={isLoading}
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
+          className="border-border hover:bg-surface flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Icon
             icon={copied ? "mdi:check" : "mdi:link-variant"}

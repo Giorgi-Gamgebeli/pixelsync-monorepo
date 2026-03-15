@@ -88,13 +88,13 @@ function Window({ children, name }: WindowProps) {
 
   return createPortal(
     // used to avoid parent css overflow:hidden
-    <div className="fixed top-0 left-0 z-[1000] h-[100vh] w-full backdrop-blur-xs transition-all duration-500">
+    <div className="fixed top-0 left-0 z-[1000] h-[100vh] w-full backdrop-blur-sm transition-all duration-500">
       <div
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform overflow-y-auto rounded-lg border border-border bg-secondary py-[3.2rem] shadow-[0_2.4rem_3.2rem_rgba(0,0,0,0.4)] transition-all duration-500"
+        className="border-border bg-secondary fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform overflow-y-auto rounded-lg border py-[3.2rem] shadow-[0_2.4rem_3.2rem_rgba(0,0,0,0.4)] transition-all duration-500"
         ref={ref as React.RefObject<HTMLDivElement>}
       >
         <button
-          className="absolute top-[1.2rem] right-[1.9rem] translate-x-[0.8rem] transform rounded-md border-none bg-none p-[0.4rem] text-[2.4rem] text-gray-500 transition-all duration-200 hover:bg-surface hover:text-gray-300"
+          className="hover:bg-surface absolute top-[1.2rem] right-[1.9rem] translate-x-[0.8rem] transform rounded-md border-none bg-none p-[0.4rem] text-[2.4rem] text-gray-500 transition-all duration-200 hover:text-gray-300"
           onClick={close}
           aria-label="Icon"
         >
