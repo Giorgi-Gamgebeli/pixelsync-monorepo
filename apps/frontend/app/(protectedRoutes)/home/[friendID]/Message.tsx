@@ -105,7 +105,7 @@ function Message({
 
         <div className="max-w-[75%]">
           <div
-            className={`inline-flex items-end gap-1 rounded-2xl px-3 py-1 break-words ${bubbleClasses}`}
+            className={`inline-flex max-w-full items-end gap-1 break-all rounded-2xl px-3 py-1 ${bubbleClasses}`}
           >
             <span className="text-[13.5px] leading-relaxed">
               {renderTextWithLinks(text)}
@@ -152,7 +152,7 @@ function Message({
 
         <div>
           <div
-            className={`mt-1 inline-flex items-end gap-1 rounded-2xl px-3 py-1.5 break-words ${bubbleClasses}`}
+            className={`mt-1 inline-flex max-w-full items-end gap-1 break-all rounded-2xl px-3 py-1.5 ${bubbleClasses}`}
           >
             <span className="text-[13.5px] leading-relaxed">
               {renderTextWithLinks(text)}
