@@ -3,6 +3,7 @@
 import { UserStatus } from "@repo/types";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import FriendRow from "./FriendRow";
+import { useSocket } from "@/app/_context/SocketContext";
 
 type AllFriendsProps = {
   friends:
@@ -15,7 +16,12 @@ type AllFriendsProps = {
   | undefined;
 };
 
-function AllFriends({ friends }: AllFriendsProps) {
+function AllFriends({ friends: rawFriends }: AllFriendsProps) {
+  const { statusMap } = useSocket();
+  const friends = rawFriends?.map((f) => ({
+    ...f,
+    status: (statusMap[f.id] ?? f.status) as UserStatus,
+  }));
   if (!friends?.length) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
