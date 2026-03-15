@@ -13,7 +13,7 @@ function UserPanel() {
   return (
     <div className="flex items-center gap-2 border-t border-border bg-secondary/80 px-3 py-2">
       <UserAvatar
-        userName={session.user.name}
+        userName={session.user.name ?? null}
         id={session.user.id}
         size={32}
         showStatus

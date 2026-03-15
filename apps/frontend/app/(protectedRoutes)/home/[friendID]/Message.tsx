@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import UserAvatar from "@/app/_components/UserAvatar";
 import LinkPreview, { URL_REGEX } from "./LinkPreview";
 
