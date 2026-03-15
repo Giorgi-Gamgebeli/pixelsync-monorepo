@@ -8,7 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { createDirectMessageSchema, TokenPayloadSchema, z } from '@repo/zod';
-import { getToken } from 'next-auth/jwt';
+import { decode } from '@auth/core/jwt';
 import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/users/users.service';
 import { DirectMessageService } from './direct-message.service';
@@ -35,18 +35,25 @@ export class DirectMessageGateway
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
-      const token = await getToken({
-        req: client.handshake as any,
-        secret: process.env.NEXTAUTH_SECRET!,
-        secureCookie: client.handshake.secure,
-      });
+      const { token, salt } = client.handshake.auth ?? {};
 
-      if (!token) {
+      if (!token || !salt) {
         client.disconnect();
         return;
       }
 
-      const user = TokenPayloadSchema.parse(token);
+      const payload = await decode({
+        token,
+        secret: process.env.NEXTAUTH_SECRET!,
+        salt,
+      });
+
+      if (!payload) {
+        client.disconnect();
+        return;
+      }
+
+      const user = TokenPayloadSchema.parse(payload);
       client.data.user = user;
 
       await this.userService.updateStatus({

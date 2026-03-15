@@ -24,7 +24,7 @@ async function connectAndWaitReady(
 ): Promise<Socket> {
   const socket = io(`http://localhost:${port}`, {
     transports: ['websocket'],
-    extraHeaders: { cookie: `${SALT}=${sessionToken}` },
+    auth: { token: sessionToken, salt: SALT },
   });
 
   await new Promise<void>((resolve, reject) => {

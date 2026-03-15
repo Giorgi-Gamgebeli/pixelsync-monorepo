@@ -12,25 +12,38 @@ export function useSocket(userId: string) {
   useEffect(() => {
     if (!userId) return;
 
-    try {
-      const socket = io(
-        process.env.NEXT_PUBLIC_SERVER_BASE_URL || "http://localhost:3000",
-        {
-          withCredentials: true,
-          transports: ["websocket"],
-        },
-      );
+    let cancelled = false;
 
-      socket.on("connect", () => setIsConnected(true));
-      socket.on("disconnect", () => setIsConnected(false));
+    async function connect() {
+      try {
+        const res = await fetch("/api/auth/ws-token");
+        if (!res.ok) return;
+        const { token, salt } = await res.json();
 
-      socketRef.current = socket;
-      setIsConnected(socket.connected);
-    } catch (error) {
-      console.error("Socket initialization error:", error);
+        if (cancelled) return;
+
+        const socket = io(
+          process.env.NEXT_PUBLIC_SERVER_BASE_URL || "http://localhost:3000",
+          {
+            transports: ["websocket"],
+            auth: { token, salt },
+          },
+        );
+
+        socket.on("connect", () => setIsConnected(true));
+        socket.on("disconnect", () => setIsConnected(false));
+
+        socketRef.current = socket;
+        setIsConnected(socket.connected);
+      } catch (error) {
+        console.error("Socket initialization error:", error);
+      }
     }
 
+    connect();
+
     return () => {
+      cancelled = true;
       socketRef.current?.off();
       socketRef.current?.disconnect();
       socketRef.current = null;
