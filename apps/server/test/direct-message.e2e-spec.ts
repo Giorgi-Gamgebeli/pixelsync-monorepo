@@ -42,8 +42,18 @@ describe('DirectMessage Gateway (e2e)', () => {
   let app: INestApplication;
   let port: number;
 
+  // Default: all users are friends with each other
+  const friendships: Record<string, string[]> = {};
+
   const mockUsersService = {
     updateStatus: jest.fn().mockResolvedValue({}),
+    getFriendIds: jest.fn().mockImplementation((userId: string) => {
+      return Promise.resolve(friendships[userId] || []);
+    }),
+    areFriends: jest.fn().mockImplementation((userA: string, userB: string) => {
+      const friends = friendships[userA] || [];
+      return Promise.resolve(friends.includes(userB));
+    }),
     create: jest.fn(),
     findAll: jest.fn(),
     findOne: jest.fn(),
@@ -71,6 +81,12 @@ describe('DirectMessage Gateway (e2e)', () => {
     markAsRead: jest.fn().mockResolvedValue(undefined),
   };
 
+  function makeFriends(...userIds: string[]) {
+    for (const id of userIds) {
+      friendships[id] = userIds.filter((u) => u !== id);
+    }
+  }
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -94,6 +110,10 @@ describe('DirectMessage Gateway (e2e)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Clear friendships
+    for (const key of Object.keys(friendships)) {
+      delete friendships[key];
+    }
   });
 
   it('should reject unauthenticated connections', async () => {
@@ -126,7 +146,9 @@ describe('DirectMessage Gateway (e2e)', () => {
     socket.close();
   });
 
-  it('should send and receive messages between two users', async () => {
+  it('should send and receive messages between friends', async () => {
+    makeFriends('user-1', 'user-2');
+
     const token1 = await createSessionToken({
       sub: 'user-1',
       email: 'user1@test.com',
@@ -173,6 +195,42 @@ describe('DirectMessage Gateway (e2e)', () => {
     receiver.close();
   });
 
+  it('should reject messages between non-friends', async () => {
+    // No friendship setup — users are strangers
+
+    const token1 = await createSessionToken({
+      sub: 'user-1',
+      email: 'user1@test.com',
+    });
+    const token2 = await createSessionToken({
+      sub: 'user-2',
+      email: 'user2@test.com',
+    });
+
+    const sender = await connectAndWaitReady(port, token1, 'user-1');
+    const receiver = await connectAndWaitReady(port, token2, 'user-2');
+
+    let receiverGotMessage = false;
+    receiver.on('dm:receive', () => {
+      receiverGotMessage = true;
+    });
+
+    sender.emit('dm:send', {
+      receiverId: 'user-2',
+      content: 'Should not arrive',
+      senderId: 'user-1',
+    });
+
+    // Wait a bit to confirm nothing arrives
+    await new Promise((r) => setTimeout(r, 300));
+
+    expect(receiverGotMessage).toBe(false);
+    expect(mockDirectMessageService.create).not.toHaveBeenCalled();
+
+    sender.close();
+    receiver.close();
+  });
+
   it('should broadcast typing indicators', async () => {
     const token1 = await createSessionToken({
       sub: 'user-1',
@@ -200,7 +258,9 @@ describe('DirectMessage Gateway (e2e)', () => {
     receiver.close();
   });
 
-  it('should emit online/offline status events', async () => {
+  it('should emit status events only to friends', async () => {
+    makeFriends('listener', 'new-user');
+
     const listenerToken = await createSessionToken({
       sub: 'listener',
       email: 'listener@test.com',
@@ -236,6 +296,40 @@ describe('DirectMessage Gateway (e2e)', () => {
     listener.close();
   });
 
+  it('should NOT emit status events to strangers', async () => {
+    // No friendship — listener should NOT see new-user's status
+    const listenerToken = await createSessionToken({
+      sub: 'listener',
+      email: 'listener@test.com',
+    });
+    const listener = await connectAndWaitReady(
+      port,
+      listenerToken,
+      'listener',
+    );
+
+    let sawStranger = false;
+    listener.on('user:status', (data) => {
+      if (data.userId === 'stranger') sawStranger = true;
+    });
+
+    const strangerToken = await createSessionToken({
+      sub: 'stranger',
+      email: 'stranger@test.com',
+    });
+    const stranger = await connectAndWaitReady(
+      port,
+      strangerToken,
+      'stranger',
+    );
+
+    await new Promise((r) => setTimeout(r, 300));
+    expect(sawStranger).toBe(false);
+
+    stranger.close();
+    listener.close();
+  });
+
   it('should send unread counts on connection', async () => {
     mockDirectMessageService.getUnreadCounts.mockResolvedValueOnce({
       'user-A': 3,
@@ -255,11 +349,16 @@ describe('DirectMessage Gateway (e2e)', () => {
     const unread = await new Promise<any>((resolve, reject) => {
       socket.on('dm:unread', (counts) => resolve(counts));
       socket.on('connect_error', (err) => reject(err));
-      setTimeout(() => reject(new Error('Timeout waiting for dm:unread')), 5000);
+      setTimeout(
+        () => reject(new Error('Timeout waiting for dm:unread')),
+        5000,
+      );
     });
 
     expect(unread).toEqual({ 'user-A': 3, 'user-B': 1 });
-    expect(mockDirectMessageService.getUnreadCounts).toHaveBeenCalledWith('user-1');
+    expect(mockDirectMessageService.getUnreadCounts).toHaveBeenCalledWith(
+      'user-1',
+    );
 
     socket.close();
   });
@@ -286,7 +385,6 @@ describe('DirectMessage Gateway (e2e)', () => {
     const ack = await readAck;
     expect(ack).toEqual({ readBy: 'user-2' });
 
-    // Give the server a moment to process the DB call
     await new Promise((r) => setTimeout(r, 100));
 
     expect(mockDirectMessageService.markAsRead).toHaveBeenCalledWith(
@@ -299,6 +397,8 @@ describe('DirectMessage Gateway (e2e)', () => {
   });
 
   it('should persist messages in background after emitting', async () => {
+    makeFriends('user-1', 'user-2');
+
     const token1 = await createSessionToken({
       sub: 'user-1',
       email: 'user1@test.com',
@@ -323,16 +423,13 @@ describe('DirectMessage Gateway (e2e)', () => {
 
     const received = await receivedMessage;
 
-    // Message should arrive immediately with correct fields
     expect(received.content).toBe('Persist test');
     expect(received.senderId).toBe('user-1');
     expect(received.isRead).toBe(false);
     expect(received.createdAt).toBeDefined();
 
-    // Give background persist a moment
     await new Promise((r) => setTimeout(r, 100));
 
-    // DB create should have been called in background
     expect(mockDirectMessageService.create).toHaveBeenCalledWith({
       receiverId: 'user-2',
       content: 'Persist test',
