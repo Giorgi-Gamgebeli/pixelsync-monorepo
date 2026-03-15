@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 type MessageProps = {
   text: string;
   isOwn: boolean;
@@ -29,7 +31,11 @@ const formatDiscordDate = (date: Date) => {
 };
 
 function Message({ text, isOwn, senderName, createdAt }: MessageProps) {
-  const formattedDate = formatDiscordDate(new Date(createdAt));
+  const [formattedDate, setFormattedDate] = useState("");
+
+  useEffect(() => {
+    setFormattedDate(formatDiscordDate(new Date(createdAt)));
+  }, [createdAt]);
 
   return (
     <div
