@@ -22,7 +22,10 @@ interface AuthenticatedSocket extends Socket {
 }
 
 @WebSocketGateway({
-  cors: { origin: process.env.NEXT_PUBLIC_BASE_URL, credentials: true },
+  cors: {
+    origin: process.env.NEXT_PUBLIC_BASE_URL_SECONDARY,
+    credentials: true,
+  },
 })
 export class DirectMessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -155,9 +158,7 @@ export class DirectMessageGateway
   ) {
     const user = client.data.user;
 
-    this.server
-      .to(body.senderId)
-      .emit('dm:read-ack', { readBy: user.sub });
+    this.server.to(body.senderId).emit('dm:read-ack', { readBy: user.sub });
 
     this.directMessageService
       .markAsRead(body.senderId, user.sub)
