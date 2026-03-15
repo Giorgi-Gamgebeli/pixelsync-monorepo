@@ -37,7 +37,7 @@ async function Page({ params }: Params) {
 
       {/* Messages */}
       <div className="flex-1 overflow-hidden">
-        <Messages friend={friend} session={session} messages={messages} currentUserAvatarConfig={currentUserAvatarConfig} />
+        <Messages mode="dm" friend={friend} session={session} messages={messages} currentUserAvatarConfig={currentUserAvatarConfig} />
       </div>
     </div>
   );
