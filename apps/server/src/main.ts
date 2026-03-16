@@ -9,6 +9,7 @@ import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
+import { corsConfig } from './config/cors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -16,10 +17,7 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  app.enableCors({
-    origin: process.env.NEXT_PUBLIC_BASE_URL,
-    credentials: true,
-  });
+  app.enableCors(corsConfig);
 
   await app.listen(process.env.SERVER_PORT ?? 3000);
 }

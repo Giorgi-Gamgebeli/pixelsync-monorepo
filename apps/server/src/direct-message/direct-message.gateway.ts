@@ -7,7 +7,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
+import { Logger, OnModuleDestroy } from '@nestjs/common';
 import {
   createDirectMessageSchema,
   TokenPayloadSchema,
@@ -31,6 +31,7 @@ import { UsersService } from 'src/users/users.service';
 import { DirectMessageService } from './direct-message.service';
 import { GroupChatService } from 'src/group-chat/group-chat.service';
 import { TokenService } from 'src/auth/token.service';
+import { corsConfig } from 'src/config/cors';
 import type { CallType } from '@repo/types';
 
 interface AuthenticatedSocket extends Socket {
@@ -56,11 +57,9 @@ interface GroupCall {
   participants: Map<string, { userName: string }>;
 }
 
-@WebSocketGateway({
-  cors: { origin: process.env.NEXT_PUBLIC_BASE_URL, credentials: true },
-})
+@WebSocketGateway({ cors: corsConfig })
 export class DirectMessageGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
+  implements OnGatewayConnection, OnGatewayDisconnect, OnModuleDestroy
 {
   private readonly logger = new Logger(DirectMessageGateway.name);
 
@@ -71,6 +70,9 @@ export class DirectMessageGateway
   private groupCalls = new Map<string, GroupCall>();
   private userActiveCalls = new Map<string, string>(); // userId -> callId
 
+  // Multi-tab: track how many connections each user has
+  private userConnections = new Map<string, number>();
+
   // Rate limiting: userId -> { count, resetTime }
   private messageLimits = new Map<
     string,
@@ -78,6 +80,9 @@ export class DirectMessageGateway
   >();
   private readonly MESSAGE_RATE_LIMIT = 10; // max messages per window
   private readonly MESSAGE_RATE_WINDOW = 5_000; // 5 seconds
+
+  // Periodic cleanup for stale rate limit entries
+  private rateLimitCleanupTimer: ReturnType<typeof setInterval>;
 
   private isRateLimited(userId: string): boolean {
     const now = Date.now();
@@ -100,7 +105,21 @@ export class DirectMessageGateway
     private readonly userService: UsersService,
     private readonly groupChatService: GroupChatService,
     private readonly tokenService: TokenService,
-  ) {}
+  ) {
+    // Clean up expired rate limit entries every 60 seconds
+    this.rateLimitCleanupTimer = setInterval(() => {
+      const now = Date.now();
+      for (const [userId, limit] of this.messageLimits) {
+        if (now > limit.resetTime) {
+          this.messageLimits.delete(userId);
+        }
+      }
+    }, 60_000);
+  }
+
+  onModuleDestroy() {
+    clearInterval(this.rateLimitCleanupTimer);
+  }
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
@@ -119,21 +138,27 @@ export class DirectMessageGateway
 
       void client.join(user.sub);
 
-      // Update status and notify only friends
-      await this.userService.updateStatus({
-        userId: user.sub,
-        status: 'ONLINE',
-      });
+      // Track connection count for multi-tab support
+      const prevCount = this.userConnections.get(user.sub) ?? 0;
+      this.userConnections.set(user.sub, prevCount + 1);
 
-      const friendIds = await this.userService.getFriendIds(user.sub);
-      for (const friendId of friendIds) {
-        this.server.to(friendId).emit('user:status', {
+      // Only go ONLINE on first connection (not additional tabs)
+      if (prevCount === 0) {
+        await this.userService.updateStatus({
           userId: user.sub,
           status: 'ONLINE',
         });
+
+        const friendIds = await this.userService.getFriendIds(user.sub);
+        for (const friendId of friendIds) {
+          this.server.to(friendId).emit('user:status', {
+            userId: user.sub,
+            status: 'ONLINE',
+          });
+        }
       }
 
-      // Also tell the connecting user about their own status
+      // Always tell the connecting client about their own status
       client.emit('user:status', {
         userId: user.sub,
         status: 'ONLINE',
@@ -163,19 +188,32 @@ export class DirectMessageGateway
     if (!user) return;
 
     this.cleanupUserCalls(user.sub);
-    this.messageLimits.delete(user.sub);
 
-    await this.userService.updateStatus({
-      userId: user.sub,
-      status: 'OFFLINE',
-    });
+    // Decrement connection count
+    const count = (this.userConnections.get(user.sub) ?? 1) - 1;
+    if (count <= 0) {
+      this.userConnections.delete(user.sub);
+      this.messageLimits.delete(user.sub);
 
-    const friendIds = await this.userService.getFriendIds(user.sub);
-    for (const friendId of friendIds) {
-      this.server.to(friendId).emit('user:status', {
-        userId: user.sub,
-        status: 'OFFLINE',
-      });
+      // Last tab closed — go OFFLINE
+      try {
+        await this.userService.updateStatus({
+          userId: user.sub,
+          status: 'OFFLINE',
+        });
+
+        const friendIds = await this.userService.getFriendIds(user.sub);
+        for (const friendId of friendIds) {
+          this.server.to(friendId).emit('user:status', {
+            userId: user.sub,
+            status: 'OFFLINE',
+          });
+        }
+      } catch (error) {
+        this.logger.error(error, 'Failed to update status on disconnect');
+      }
+    } else {
+      this.userConnections.set(user.sub, count);
     }
   }
 
@@ -232,11 +270,16 @@ export class DirectMessageGateway
 
     if (this.isRateLimited(user.sub)) return;
 
-    const friends = await this.userService.areFriends(
-      user.sub,
-      body.receiverId,
-    );
-    if (!friends) return;
+    try {
+      const friends = await this.userService.areFriends(
+        user.sub,
+        body.receiverId,
+      );
+      if (!friends) return;
+    } catch (error) {
+      this.logger.error(error, 'Failed to check friendship for DM');
+      return;
+    }
 
     const payload = {
       ...body,
@@ -299,10 +342,15 @@ export class DirectMessageGateway
     if (!result.success) return;
     const body = result.data;
     const user = client.data.user;
-    const friendIds = await this.userService.getFriendIds(user.sub);
-    const payload = { userId: user.sub, ...body };
-    for (const friendId of friendIds) {
-      this.server.to(friendId).emit('user:profile-update', payload);
+
+    try {
+      const friendIds = await this.userService.getFriendIds(user.sub);
+      const payload = { userId: user.sub, ...body };
+      for (const friendId of friendIds) {
+        this.server.to(friendId).emit('user:profile-update', payload);
+      }
+    } catch (error) {
+      this.logger.error(error, 'Failed to broadcast profile update');
     }
   }
 
@@ -320,11 +368,16 @@ export class DirectMessageGateway
 
     if (this.isRateLimited(user.sub)) return;
 
-    const isMember = await this.groupChatService.isMember(
-      body.groupId,
-      user.sub,
-    );
-    if (!isMember) return;
+    try {
+      const isMember = await this.groupChatService.isMember(
+        body.groupId,
+        user.sub,
+      );
+      if (!isMember) return;
+    } catch (error) {
+      this.logger.error(error, 'Failed to check group membership');
+      return;
+    }
 
     const payload = {
       content: body.content,
@@ -358,11 +411,16 @@ export class DirectMessageGateway
     const body = result.data;
     const user = client.data.user;
 
-    const isMember = await this.groupChatService.isMember(
-      body.groupId,
-      user.sub,
-    );
-    if (!isMember) return;
+    try {
+      const isMember = await this.groupChatService.isMember(
+        body.groupId,
+        user.sub,
+      );
+      if (!isMember) return;
+    } catch (error) {
+      this.logger.error(error, 'Failed to check group membership for typing');
+      return;
+    }
 
     client.to(`group:${body.groupId}`).emit('group:typing', {
       groupId: body.groupId,
@@ -381,11 +439,16 @@ export class DirectMessageGateway
     const body = result.data;
     const user = client.data.user;
 
-    const isMember = await this.groupChatService.isMember(
-      body.groupId,
-      user.sub,
-    );
-    if (!isMember) return;
+    try {
+      const isMember = await this.groupChatService.isMember(
+        body.groupId,
+        user.sub,
+      );
+      if (!isMember) return;
+    } catch (error) {
+      this.logger.error(error, 'Failed to check group membership for join');
+      return;
+    }
 
     void client.join(`group:${body.groupId}`);
   }
@@ -412,12 +475,18 @@ export class DirectMessageGateway
       return;
     }
 
-    const friends = await this.userService.areFriends(
-      user.sub,
-      body.receiverId,
-    );
-    if (!friends) {
-      client.emit('call:error', { message: 'Not friends' });
+    try {
+      const friends = await this.userService.areFriends(
+        user.sub,
+        body.receiverId,
+      );
+      if (!friends) {
+        client.emit('call:error', { message: 'Not friends' });
+        return;
+      }
+    } catch (error) {
+      this.logger.error(error, 'Failed to check friendship for call');
+      client.emit('call:error', { message: 'Server error' });
       return;
     }
 
@@ -495,7 +564,8 @@ export class DirectMessageGateway
     const body = result.data;
     const user = client.data.user;
     const call = this.dmCalls.get(body.callId);
-    if (!call || call.receiverId !== user.sub) return;
+    if (!call || call.receiverId !== user.sub || call.status !== 'ringing')
+      return;
 
     clearTimeout(call.timeout);
     this.server.to(call.callerId).emit('call:declined', {
@@ -646,12 +716,18 @@ export class DirectMessageGateway
       return;
     }
 
-    const isMember = await this.groupChatService.isMember(
-      body.groupId,
-      user.sub,
-    );
-    if (!isMember) {
-      client.emit('call:error', { message: 'Not a group member' });
+    try {
+      const isMember = await this.groupChatService.isMember(
+        body.groupId,
+        user.sub,
+      );
+      if (!isMember) {
+        client.emit('call:error', { message: 'Not a group member' });
+        return;
+      }
+    } catch (error) {
+      this.logger.error(error, 'Failed to check group membership for call');
+      client.emit('call:error', { message: 'Server error' });
       return;
     }
 

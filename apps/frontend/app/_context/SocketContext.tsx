@@ -23,6 +23,7 @@ type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 type SocketContextValue = {
   socket: TypedSocket | null;
   isConnected: boolean;
+  isReconnecting: boolean;
   statusMap: Record<string, UserStatus>;
   unreadMap: Record<string, number>;
   readAckSet: Set<string>;
@@ -40,6 +41,7 @@ type SocketContextValue = {
 const SocketContext = createContext<SocketContextValue>({
   socket: null,
   isConnected: false,
+  isReconnecting: false,
   statusMap: {},
   unreadMap: {},
   readAckSet: new Set(),
@@ -60,6 +62,7 @@ function SocketProvider({
 }: PropsWithChildren<{ userId: string }>) {
   const socketRef = useRef<TypedSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
   const [statusMap, setStatusMap] = useState<Record<string, UserStatus>>({});
   const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
   const [readAckSet, setReadAckSet] = useState<Set<string>>(new Set());
@@ -91,11 +94,25 @@ function SocketProvider({
           {
             transports: ["websocket"],
             auth: { token, salt },
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: 10,
           },
         ) as TypedSocket;
 
-        socket.on("connect", () => setIsConnected(true));
-        socket.on("disconnect", () => setIsConnected(false));
+        socket.on("connect", () => {
+          setIsConnected(true);
+          setIsReconnecting(false);
+        });
+        socket.on("disconnect", () => {
+          setIsConnected(false);
+          setIsReconnecting(true);
+        });
+
+        socket.io.on("reconnect_failed", () => {
+          setIsReconnecting(false);
+        });
 
         socket.on("user:status", (update) => {
           setStatusMap((prev) => ({ ...prev, [update.userId]: update.status }));
@@ -197,6 +214,7 @@ function SocketProvider({
       value={{
         socket: socketRef.current,
         isConnected,
+        isReconnecting,
         statusMap,
         unreadMap,
         readAckSet,
