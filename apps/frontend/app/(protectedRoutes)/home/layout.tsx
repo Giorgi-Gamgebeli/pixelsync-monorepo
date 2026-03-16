@@ -6,7 +6,7 @@ import HomeNavLink from "./HomeNavLink";
 import ClientIcon from "@/app/_components/ClientIcon";
 import CreateGroupButton from "./CreateGroupButton";
 import { ChatRouterProvider } from "./ChatRouterContext";
-import ChatPanel from "./ChatPanel";
+import ChatRouter from "./ChatRouter";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -62,7 +62,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Main content */}
         <main className="bg-primary flex min-w-0 flex-1 flex-col overflow-hidden">
-          <ChatPanel>{children}</ChatPanel>
+          <ChatRouter>{children}</ChatRouter>
         </main>
       </div>
     </ChatRouterProvider>

@@ -8,74 +8,74 @@ import {
   useState,
   type PropsWithChildren,
 } from "react";
-import { usePathname } from "next/navigation";
+import { fetchDM, fetchGroup } from "@/app/_lib/chatCache";
 
-type ActiveView =
+export type SelectedChat =
   | { type: "dm"; friendId: string }
   | { type: "group"; groupId: number }
   | null;
 
 type ChatRouterContextValue = {
-  activeView: ActiveView;
-  navigateToChat: (view: NonNullable<ActiveView>) => void;
+  selectedChat: SelectedChat;
+  selectChat: (chat: NonNullable<SelectedChat>) => void;
+  clearChat: () => void;
 };
 
 const ChatRouterContext = createContext<ChatRouterContextValue>({
-  activeView: null,
-  navigateToChat: () => {},
+  selectedChat: null,
+  selectChat: () => {},
+  clearChat: () => {},
 });
 
-export function parsePathToView(pathname: string): ActiveView {
-  const groupMatch = pathname.match(/^\/home\/group\/(\d+)/);
-  if (groupMatch) return { type: "group", groupId: Number(groupMatch[1]) };
+function chatFromParams(params: URLSearchParams): SelectedChat {
+  const dm = params.get("dm");
+  if (dm) return { type: "dm", friendId: dm };
 
-  const dmMatch = pathname.match(/^\/home\/([^/]+)/);
-  if (
-    dmMatch &&
-    dmMatch[1] &&
-    dmMatch[1] !== "friends" &&
-    dmMatch[1] !== "group"
-  ) {
-    return { type: "dm", friendId: dmMatch[1] };
-  }
+  const group = params.get("group");
+  if (group) return { type: "group", groupId: Number(group) };
 
   return null;
 }
 
+function buildChatUrl(chat: NonNullable<SelectedChat>): string {
+  if (chat.type === "dm") return `/home?dm=${chat.friendId}`;
+  return `/home?group=${chat.groupId}`;
+}
+
 export function ChatRouterProvider({ children }: PropsWithChildren) {
-  const pathname = usePathname();
-  const [activeView, setActiveView] = useState<ActiveView>(null);
+  const [selectedChat, setSelectedChat] = useState<SelectedChat>(null);
 
-  // When Next.js does a real navigation (pathname changes), clear activeView
-  // so ChatPanel falls through to server-rendered {children}
+  // Initialize from URL query params on mount
   useEffect(() => {
-    setActiveView(null);
-  }, [pathname]);
+    const initial = chatFromParams(new URLSearchParams(window.location.search));
+    if (initial) setSelectedChat(initial);
+  }, []);
 
-  // Handle browser back/forward between pushState chat URLs
+  // Handle browser back/forward
   useEffect(() => {
-    function onPopState(e: PopStateEvent) {
-      if (e.state?.chatRouter) {
-        setActiveView(parsePathToView(window.location.pathname));
-      } else {
-        setActiveView(null);
-      }
+    function onPopState() {
+      const chat = chatFromParams(new URLSearchParams(window.location.search));
+      setSelectedChat(chat);
+      if (chat?.type === "dm") fetchDM(chat.friendId);
+      else if (chat?.type === "group") fetchGroup(chat.groupId);
     }
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  const navigateToChat = useCallback((view: NonNullable<ActiveView>) => {
-    setActiveView(view);
-    const url =
-      view.type === "dm"
-        ? `/home/${view.friendId}`
-        : `/home/group/${view.groupId}`;
-    window.history.pushState({ chatRouter: true }, "", url);
+  const selectChat = useCallback((chat: NonNullable<SelectedChat>) => {
+    setSelectedChat(chat);
+    window.history.pushState({}, "", buildChatUrl(chat));
+    if (chat.type === "dm") fetchDM(chat.friendId);
+    else fetchGroup(chat.groupId);
+  }, []);
+
+  const clearChat = useCallback(() => {
+    setSelectedChat(null);
   }, []);
 
   return (
-    <ChatRouterContext.Provider value={{ activeView, navigateToChat }}>
+    <ChatRouterContext.Provider value={{ selectedChat, selectChat, clearChat }}>
       {children}
     </ChatRouterContext.Provider>
   );

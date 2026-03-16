@@ -54,7 +54,7 @@ function FriendItem({ friend }: { friend: Friend }) {
   return (
     <>
       <div className="group relative" onMouseLeave={handleMouseLeave}>
-        <HomeNavLink href={`/home/${friend.id}`}>
+        <HomeNavLink chatView={{ type: "dm", friendId: friend.id }}>
           <UserAvatar
             userName={displayUserName}
             id={friend.id}

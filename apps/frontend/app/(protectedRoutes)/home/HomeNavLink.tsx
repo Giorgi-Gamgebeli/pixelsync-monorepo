@@ -2,43 +2,60 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useChatRouter, parsePathToView } from "./ChatRouterContext";
+import { useChatRouter, type SelectedChat } from "./ChatRouterContext";
 
 type HomeNavLinkProps = {
-  href: string;
   children: React.ReactNode;
   className?: string;
+  chatView?: NonNullable<SelectedChat>;
+  href?: string;
 };
 
-function HomeNavLink({ children, href, className }: HomeNavLinkProps) {
+function HomeNavLink({
+  children,
+  className,
+  chatView,
+  href,
+}: HomeNavLinkProps) {
   const pathname = usePathname();
-  const { activeView, navigateToChat } = useChatRouter();
+  const { selectedChat, selectChat, clearChat } = useChatRouter();
 
-  // Determine the "current URL" for active highlighting
-  let currentUrl: string;
-  if (activeView) {
-    currentUrl =
-      activeView.type === "dm"
-        ? `/home/${activeView.friendId}`
-        : `/home/group/${activeView.groupId}`;
+  let isActive: boolean;
+
+  if (chatView) {
+    if (!selectedChat || selectedChat.type !== chatView.type) {
+      isActive = false;
+    } else if (chatView.type === "dm") {
+      isActive =
+        selectedChat.type === "dm" &&
+        selectedChat.friendId === chatView.friendId;
+    } else {
+      isActive =
+        selectedChat.type === "group" &&
+        selectedChat.groupId === chatView.groupId;
+    }
   } else {
-    currentUrl = pathname;
+    isActive =
+      !selectedChat &&
+      !!href &&
+      (pathname === href || pathname.startsWith(href + "/"));
   }
-
-  const isActive = currentUrl === href || currentUrl.startsWith(href + "/");
 
   const classes = `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${className ?? ""} ${isActive ? "bg-surface text-white" : "text-gray-400 hover:bg-surface/50 hover:text-gray-200"}`;
 
-  // If the link points to a chat, use client-side navigation
-  const targetView = parsePathToView(href);
-  if (targetView) {
+  if (chatView) {
+    const chatHref =
+      chatView.type === "dm"
+        ? `/home?dm=${chatView.friendId}`
+        : `/home?group=${chatView.groupId}`;
+
     return (
       <a
-        href={href}
+        href={chatHref}
         className={classes}
         onClick={(e) => {
           e.preventDefault();
-          navigateToChat(targetView);
+          selectChat(chatView);
         }}
       >
         {children}
@@ -46,9 +63,8 @@ function HomeNavLink({ children, href, className }: HomeNavLinkProps) {
     );
   }
 
-  // Non-chat links (e.g. Friends) use normal Next.js navigation
   return (
-    <Link href={href} className={classes}>
+    <Link href={href!} className={classes} onClick={() => clearChat()}>
       {children}
     </Link>
   );

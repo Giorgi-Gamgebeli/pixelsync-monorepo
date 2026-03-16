@@ -75,7 +75,29 @@ jobs:
       - name: Build all packages
         run: npx turbo run build
 
-  test:
+  test-frontend:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        working-directory: packages/db
+
+      - name: Run frontend tests
+        run: npx vitest run
+        working-directory: apps/frontend
+
+  test-server:
     name: Server E2E Tests
     runs-on: ubuntu-latest
     needs: lint-and-typecheck
