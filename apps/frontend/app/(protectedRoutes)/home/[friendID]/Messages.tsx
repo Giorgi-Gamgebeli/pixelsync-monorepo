@@ -6,6 +6,12 @@ import Message from "./Message";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useSocketContext } from "@/app/_context/SocketContext";
 import { useEffect, useRef, useState } from "react";
+import {
+  patchDMMessages,
+  patchGroupMessages,
+  type DMCacheEntry,
+  type GroupCacheEntry,
+} from "@/app/_lib/chatCache";
 
 const GROUPING_WINDOW_MS = 5 * 60 * 1000;
 
@@ -82,10 +88,29 @@ function Messages(props: MessagesProps) {
   const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef(localMessages);
+  messagesRef.current = localMessages;
 
   useEffect(() => {
     setLocalMessages(messages || []);
   }, [messages]);
+
+  // Save messages to cache on unmount so they survive navigation
+  useEffect(() => {
+    return () => {
+      if (friendId) {
+        patchDMMessages(
+          friendId,
+          messagesRef.current as DMCacheEntry["messages"],
+        );
+      } else if (groupId) {
+        patchGroupMessages(
+          groupId as number,
+          messagesRef.current as GroupCacheEntry["messages"],
+        );
+      }
+    };
+  }, [friendId, groupId]);
 
   useEffect(() => {
     if (friendId) markAsRead(friendId);
@@ -228,9 +253,15 @@ function Messages(props: MessagesProps) {
     if (friend) return friend.userName || "Friend";
     if (group) {
       const member = group.members.find((m) => m.id === senderId);
-      return member?.userName ?? (localMessages.find(
-        (m) => m.senderId === senderId && "sender" in m,
-      ) as GroupMessage | undefined)?.sender?.userName ?? "Unknown";
+      return (
+        member?.userName ??
+        (
+          localMessages.find(
+            (m) => m.senderId === senderId && "sender" in m,
+          ) as GroupMessage | undefined
+        )?.sender?.userName ??
+        "Unknown"
+      );
     }
     return "Unknown";
   };
@@ -240,7 +271,12 @@ function Messages(props: MessagesProps) {
     if (friend) return friend.avatarConfig;
     if (group) {
       const member = group.members.find((m) => m.id === msg.senderId);
-      return member?.avatarConfig ?? ("sender" in msg ? (msg as GroupMessage).sender?.avatarConfig : undefined);
+      return (
+        member?.avatarConfig ??
+        ("sender" in msg
+          ? (msg as GroupMessage).sender?.avatarConfig
+          : undefined)
+      );
     }
     return undefined;
   };
