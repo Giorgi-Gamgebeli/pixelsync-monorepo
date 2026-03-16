@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import type { CallType } from "@repo/types";
+import toast from "react-hot-toast";
 import { useSocketContext } from "./SocketContext";
 
 const ICE_SERVERS: RTCConfiguration = {
@@ -41,7 +42,10 @@ type CallContextValue = {
   callUiMode: CallUiMode;
   callConnectionState: CallConnectionState;
   /** Groups that have an active call right now (even if we're not in it). groupId -> { callId, participantCount } */
-  activeGroupCalls: Record<number, { callId: string; participantCount: number }>;
+  activeGroupCalls: Record<
+    number,
+    { callId: string; participantCount: number }
+  >;
   /** When we're in a group call, the group id */
   activeGroupId: number | null;
   localStream: MediaStream | null;
@@ -49,7 +53,10 @@ type CallContextValue = {
   audioEnabled: boolean;
   videoEnabled: boolean;
   /** Remote participants' media state (userId -> { audioEnabled, videoEnabled }). Updated via call:media-state. */
-  remoteMediaState: Map<string, { audioEnabled: boolean; videoEnabled: boolean }>;
+  remoteMediaState: Map<
+    string,
+    { audioEnabled: boolean; videoEnabled: boolean }
+  >;
   groupParticipants: Map<string, string>;
   initiateCall: (receiverId: string, callType: CallType) => void;
   acceptCall: () => void;
@@ -174,15 +181,60 @@ function CallProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  const getMedia = useCallback(async (type: CallType) => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: type === "video",
-    });
-    setLocalStream(stream);
-    localStreamRef.current = stream;
-    return stream;
-  }, []);
+  const cleanupAll = useCallback(() => {
+    for (const [, pc] of peerConnections.current) {
+      pc.close();
+    }
+    peerConnections.current.clear();
+    iceCandidateQueues.current.clear();
+    localStreamRef.current?.getTracks().forEach((t) => t.stop());
+    localStreamRef.current = null;
+    setLocalStream(null);
+    setRemoteStreams(new Map());
+    setCallState("idle");
+    setCallUiMode("idle");
+    setCallConnectionState("stable");
+    setCallStartedAt(null);
+    setCallType(null);
+    setCallId(null);
+    setIncomingCall(null);
+    setRemoteMediaState(new Map());
+    setGroupParticipants(new Map());
+    setActiveGroupId(null);
+    setAudioEnabled(true);
+    setVideoEnabled(true);
+    callIdRef.current = null;
+    callTypeRef.current = null;
+    incomingCallRef.current = null;
+    callStartedAtRef.current = null;
+
+    // Stop any playing sounds
+    incomingSoundRef.current?.pause();
+    outgoingSoundRef.current?.pause();
+    if (incomingSoundRef.current) incomingSoundRef.current.currentTime = 0;
+    if (outgoingSoundRef.current) outgoingSoundRef.current.currentTime = 0;
+  }, []); // No deps — uses only refs and setters (stable)
+
+  const getMedia = useCallback(
+    async (type: CallType) => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: type === "video",
+        });
+        setLocalStream(stream);
+        localStreamRef.current = stream;
+        return stream;
+      } catch {
+        toast.error(
+          "Could not access microphone/camera. Check your browser permissions.",
+        );
+        cleanupAll();
+        throw new Error("Media permission denied");
+      }
+    },
+    [cleanupAll],
+  );
 
   const createPeerConnection = useCallback(
     (remoteUserId: string, stream: MediaStream) => {
@@ -226,6 +278,11 @@ function CallProvider({ children }: PropsWithChildren) {
             next.delete(remoteUserId);
             return next;
           });
+          setGroupParticipants((prev) => {
+            const next = new Map(prev);
+            next.delete(remoteUserId);
+            return next;
+          });
         }
       };
 
@@ -247,40 +304,6 @@ function CallProvider({ children }: PropsWithChildren) {
     [],
   );
 
-  const cleanupAll = useCallback(() => {
-    for (const [, pc] of peerConnections.current) {
-      pc.close();
-    }
-    peerConnections.current.clear();
-    iceCandidateQueues.current.clear();
-    localStreamRef.current?.getTracks().forEach((t) => t.stop());
-    localStreamRef.current = null;
-    setLocalStream(null);
-    setRemoteStreams(new Map());
-    setCallState("idle");
-    setCallUiMode("idle");
-    setCallConnectionState("stable");
-    setCallStartedAt(null);
-    setCallType(null);
-    setCallId(null);
-    setIncomingCall(null);
-    setRemoteMediaState(new Map());
-    setGroupParticipants(new Map());
-    setActiveGroupId(null);
-    setAudioEnabled(true);
-    setVideoEnabled(true);
-    callIdRef.current = null;
-    callTypeRef.current = null;
-    incomingCallRef.current = null;
-    callStartedAtRef.current = null;
-
-    // Stop any playing sounds
-    incomingSoundRef.current?.pause();
-    outgoingSoundRef.current?.pause();
-    if (incomingSoundRef.current) incomingSoundRef.current.currentTime = 0;
-    if (outgoingSoundRef.current) outgoingSoundRef.current.currentTime = 0;
-  }, []); // No deps — uses only refs and setters (stable)
-
   // Drive call sounds from high-level call state
   useEffect(() => {
     const incoming = incomingSoundRef.current;
@@ -293,35 +316,28 @@ function CallProvider({ children }: PropsWithChildren) {
       // Incoming call ringtone
       outgoing.pause();
       outgoing.currentTime = 0;
-      incoming
-        .play()
-        .catch(() => {
-          // Autoplay might be blocked; ignore
-        });
+      incoming.play().catch(() => {
+        // Autoplay might be blocked; ignore
+      });
     } else if (callState === "ringing-outgoing") {
       // Outgoing call ringback
       incoming.pause();
       incoming.currentTime = 0;
-      outgoing
-        .play()
-        .catch(() => {
-          // Autoplay might be blocked; ignore
-        });
+      outgoing.play().catch(() => {
+        // Autoplay might be blocked; ignore
+      });
     } else {
       // Any other state: stop ringing
-      const wasRinging =
-        !incoming.paused || !outgoing.paused;
+      const wasRinging = !incoming.paused || !outgoing.paused;
       incoming.pause();
       outgoing.pause();
       incoming.currentTime = 0;
       outgoing.currentTime = 0;
       // Optional: play a short end sound when leaving a ringing state to idle
       if (callState === "idle" && wasRinging && end) {
-        end
-          .play()
-          .catch(() => {
-            // ignore
-          });
+        end.play().catch(() => {
+          // ignore
+        });
       }
     }
   }, [callState]);
@@ -426,8 +442,7 @@ function CallProvider({ children }: PropsWithChildren) {
       if (pc?.remoteDescription) {
         await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
       } else {
-        const queue =
-          iceCandidateQueues.current.get(data.fromUserId) ?? [];
+        const queue = iceCandidateQueues.current.get(data.fromUserId) ?? [];
         queue.push(data.candidate);
         iceCandidateQueues.current.set(data.fromUserId, queue);
       }
@@ -629,11 +644,11 @@ function CallProvider({ children }: PropsWithChildren) {
   const acceptCall = useCallback(async () => {
     if (!socket || !incomingCallRef.current) return;
     const info = incomingCallRef.current;
+    setCallConnectionState("stable");
+    await getMedia(info.callType);
     setCallState("active");
     setCallUiMode("full");
     setCallStartedAt(Date.now());
-    setCallConnectionState("stable");
-    await getMedia(info.callType);
     socket.emit("call:accept", { callId: info.callId });
   }, [socket, getMedia]);
 

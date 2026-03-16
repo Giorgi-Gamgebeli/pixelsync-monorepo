@@ -8,12 +8,29 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import { createDirectMessageSchema, TokenPayloadSchema, z } from '@repo/zod';
-import { decode } from '@auth/core/jwt';
+import {
+  createDirectMessageSchema,
+  TokenPayloadSchema,
+  z,
+  groupSendSchema,
+  groupTypingSchema,
+  groupJoinSchema,
+  callInitiateSchema,
+  callIdSchema,
+  callOfferSchema,
+  callAnswerSchema,
+  callIceCandidateSchema,
+  callMediaStateSchema,
+  callGroupJoinSchema,
+  dmReadSchema,
+  dmTypingSchema,
+  profileUpdateSchema,
+} from '@repo/zod';
 import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/users/users.service';
 import { DirectMessageService } from './direct-message.service';
 import { GroupChatService } from 'src/group-chat/group-chat.service';
+import { TokenService } from 'src/auth/token.service';
 import type { CallType } from '@repo/types';
 
 interface AuthenticatedSocket extends Socket {
@@ -58,6 +75,7 @@ export class DirectMessageGateway
     private readonly directMessageService: DirectMessageService,
     private readonly userService: UsersService,
     private readonly groupChatService: GroupChatService,
+    private readonly tokenService: TokenService,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
@@ -69,18 +87,10 @@ export class DirectMessageGateway
         return;
       }
 
-      const payload = await decode({
-        token,
-        secret: process.env.NEXTAUTH_SECRET!,
-        salt,
-      });
-
-      if (!payload) {
-        client.disconnect();
-        return;
-      }
-
-      const user = TokenPayloadSchema.parse(payload);
+      const user = await this.tokenService.verifyToken(
+        token as string,
+        salt as string,
+      );
       client.data.user = user;
 
       void client.join(user.sub);
@@ -188,8 +198,11 @@ export class DirectMessageGateway
   @SubscribeMessage('dm:send')
   async sendMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: z.infer<typeof createDirectMessageSchema>,
+    @MessageBody() raw: unknown,
   ) {
+    const result = createDirectMessageSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
 
     const friends = await this.userService.areFriends(
@@ -211,7 +224,7 @@ export class DirectMessageGateway
 
     this.directMessageService
       .create({ ...body, senderId: user.sub })
-      .catch((err) => {
+      .catch((err: unknown) => {
         this.logger.error(err, 'Failed to persist DM');
       });
   }
@@ -219,15 +232,18 @@ export class DirectMessageGateway
   @SubscribeMessage('dm:read')
   handleRead(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: { senderId: string },
+    @MessageBody() raw: unknown,
   ) {
+    const result = dmReadSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
 
     this.server.to(body.senderId).emit('dm:read-ack', { readBy: user.sub });
 
     this.directMessageService
       .markAsRead(body.senderId, user.sub)
-      .catch((err) => {
+      .catch((err: unknown) => {
         this.logger.error(err, 'Failed to mark as read');
       });
   }
@@ -235,8 +251,11 @@ export class DirectMessageGateway
   @SubscribeMessage('dm:typing')
   handleTyping(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: { receiverId: string; isTyping: boolean },
+    @MessageBody() raw: unknown,
   ) {
+    const result = dmTypingSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
     this.server.to(body.receiverId).emit('dm:typing', {
       userId: user.sub,
@@ -247,13 +266,11 @@ export class DirectMessageGateway
   @SubscribeMessage('user:profile-update')
   async handleProfileUpdate(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody()
-    body: {
-      userName?: string | null;
-      name?: string | null;
-      avatarConfig?: string | null;
-    },
+    @MessageBody() raw: unknown,
   ) {
+    const result = profileUpdateSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
     const friendIds = await this.userService.getFriendIds(user.sub);
     const payload = { userId: user.sub, ...body };
@@ -267,17 +284,12 @@ export class DirectMessageGateway
   @SubscribeMessage('group:send')
   async handleGroupSend(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: { groupId: number; content: string },
+    @MessageBody() raw: unknown,
   ) {
+    const result = groupSendSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
-
-    if (
-      !body.content ||
-      typeof body.content !== 'string' ||
-      !body.content.trim()
-    )
-      return;
-    if (!body.groupId || typeof body.groupId !== 'number') return;
 
     const isMember = await this.groupChatService.isMember(
       body.groupId,
@@ -302,7 +314,7 @@ export class DirectMessageGateway
 
     this.groupChatService
       .createMessage(body.groupId, user.sub, body.content)
-      .catch((err) => {
+      .catch((err: unknown) => {
         this.logger.error(err, 'Failed to persist group message');
       });
   }
@@ -310,11 +322,12 @@ export class DirectMessageGateway
   @SubscribeMessage('group:typing')
   async handleGroupTyping(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: { groupId: number; isTyping: boolean },
+    @MessageBody() raw: unknown,
   ) {
+    const result = groupTypingSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
-
-    if (!body.groupId || typeof body.groupId !== 'number') return;
 
     const isMember = await this.groupChatService.isMember(
       body.groupId,
@@ -332,11 +345,12 @@ export class DirectMessageGateway
   @SubscribeMessage('group:join')
   async handleGroupJoin(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: { groupId: number },
+    @MessageBody() raw: unknown,
   ) {
+    const result = groupJoinSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
-
-    if (!body.groupId || typeof body.groupId !== 'number') return;
 
     const isMember = await this.groupChatService.isMember(
       body.groupId,
@@ -352,8 +366,11 @@ export class DirectMessageGateway
   @SubscribeMessage('call:initiate')
   async handleCallInitiate(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: { receiverId: string; callType: CallType },
+    @MessageBody() raw: unknown,
   ) {
+    const result = callInitiateSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
 
     if (this.userActiveCalls.has(user.sub)) {
@@ -420,8 +437,11 @@ export class DirectMessageGateway
   @SubscribeMessage('call:accept')
   handleCallAccept(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: { callId: string },
+    @MessageBody() raw: unknown,
   ) {
+    const result = callIdSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
     const call = this.dmCalls.get(body.callId);
     if (!call || call.receiverId !== user.sub || call.status !== 'ringing')
@@ -439,8 +459,11 @@ export class DirectMessageGateway
   @SubscribeMessage('call:decline')
   handleCallDecline(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: { callId: string },
+    @MessageBody() raw: unknown,
   ) {
+    const result = callIdSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
     const call = this.dmCalls.get(body.callId);
     if (!call || call.receiverId !== user.sub) return;
@@ -458,8 +481,11 @@ export class DirectMessageGateway
   @SubscribeMessage('call:hangup')
   handleCallHangup(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: { callId: string },
+    @MessageBody() raw: unknown,
   ) {
+    const result = callIdSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
 
     const dmCall = this.dmCalls.get(body.callId);
@@ -493,13 +519,11 @@ export class DirectMessageGateway
   @SubscribeMessage('call:offer')
   handleCallOffer(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody()
-    body: {
-      callId: string;
-      toUserId: string;
-      offer: { type: string; sdp?: string };
-    },
+    @MessageBody() raw: unknown,
   ) {
+    const result = callOfferSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
     this.server.to(body.toUserId).emit('call:offer', {
       callId: body.callId,
@@ -511,13 +535,11 @@ export class DirectMessageGateway
   @SubscribeMessage('call:answer')
   handleCallAnswer(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody()
-    body: {
-      callId: string;
-      toUserId: string;
-      answer: { type: string; sdp?: string };
-    },
+    @MessageBody() raw: unknown,
   ) {
+    const result = callAnswerSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
     this.server.to(body.toUserId).emit('call:answer', {
       callId: body.callId,
@@ -529,17 +551,11 @@ export class DirectMessageGateway
   @SubscribeMessage('call:ice-candidate')
   handleCallIceCandidate(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody()
-    body: {
-      callId: string;
-      toUserId: string;
-      candidate: {
-        candidate?: string;
-        sdpMid?: string | null;
-        sdpMLineIndex?: number | null;
-      };
-    },
+    @MessageBody() raw: unknown,
   ) {
+    const result = callIceCandidateSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
     this.server.to(body.toUserId).emit('call:ice-candidate', {
       callId: body.callId,
@@ -551,9 +567,11 @@ export class DirectMessageGateway
   @SubscribeMessage('call:media-state')
   handleCallMediaState(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody()
-    body: { callId: string; audioEnabled: boolean; videoEnabled: boolean },
+    @MessageBody() raw: unknown,
   ) {
+    const result = callMediaStateSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
 
     const dmCall = this.dmCalls.get(body.callId);
@@ -587,8 +605,11 @@ export class DirectMessageGateway
   @SubscribeMessage('call:group-join')
   async handleGroupCallJoin(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: { groupId: number; callType: CallType },
+    @MessageBody() raw: unknown,
   ) {
+    const result = callGroupJoinSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
 
     if (this.userActiveCalls.has(user.sub)) {
@@ -663,8 +684,11 @@ export class DirectMessageGateway
   @SubscribeMessage('call:group-leave')
   handleGroupCallLeave(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() body: { callId: string },
+    @MessageBody() raw: unknown,
   ) {
+    const result = callIdSchema.safeParse(raw);
+    if (!result.success) return;
+    const body = result.data;
     const user = client.data.user;
     const groupCall = this.groupCalls.get(body.callId);
     if (!groupCall || !groupCall.participants.has(user.sub)) return;

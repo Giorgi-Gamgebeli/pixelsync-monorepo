@@ -9,7 +9,6 @@ export const UserStatusEnum = z.enum([
 ]);
 export const ThemeEnum = z.enum(["LIGHT", "DARK", "SYSTEM"]);
 export const ChannelTypeEnum = z.enum(["TEXT", "VOICE"]);
-export const RequestStatusEnum = z.enum(["PENDING", "ACCEPTED", "REJECTED"]);
 
 // User Schema
 export const UserSchemaDatabase = z.object({
@@ -45,9 +44,8 @@ export const UserSchemaDatabase = z.object({
       message: "This field is required",
     }),
 
-  firstName: z.string().nullable().optional(),
-  lastName: z.string().nullable().optional(),
-  avatar: z.string().nullable().optional(),
+  name: z.string().nullable().optional(),
+  avatarConfig: z.string().nullable().optional(),
 
   status: UserStatusEnum.default("OFFLINE"),
   statusMessage: z.string().nullable().optional(),
@@ -150,18 +148,6 @@ export const ChannelMessageSchemaDatabase = z.object({
   senderId: z.string(),
 });
 
-// FriendRequest Schema
-export const FriendRequestSchemaDatabase = z.object({
-  id: z.number().int().positive(),
-
-  createdAt: z.date().default(() => new Date()),
-
-  status: RequestStatusEnum.default("PENDING"),
-
-  senderId: z.string(),
-  receiverId: z.string(),
-});
-
 // Workspace Schema
 export const WorkspaceSchemaDatabase = z.object({
   id: z.number().int().positive(),
@@ -234,12 +220,6 @@ export const CreateChannelMessageInputSchema =
     updatedAt: true,
     isEdited: true,
   });
-
-export const CreateFriendRequestInputSchema = FriendRequestSchemaDatabase.omit({
-  id: true,
-  createdAt: true,
-  status: true,
-});
 
 export const CreateWorkspaceInputSchema = WorkspaceSchemaDatabase.omit({
   id: true,

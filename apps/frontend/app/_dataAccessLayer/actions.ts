@@ -137,6 +137,7 @@ export async function generateInviteLink(projectId: number) {
     });
 
     if (!project) throw new Error("Project not found!");
+    if (project.ownerId !== session.user.id) throw new Error("Not authorized!");
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const inviteUrl = `${baseUrl}/invite/${project.id}`;

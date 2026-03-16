@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
@@ -16,6 +17,8 @@ export type RequestWithAuth = Omit<Request, 'user' | 'cookies'> & {
 
 @Injectable()
 export class NextAuthGuard implements CanActivate {
+  private readonly logger = new Logger(NextAuthGuard.name);
+
   constructor(private readonly tokenService: TokenService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -24,7 +27,7 @@ export class NextAuthGuard implements CanActivate {
     const tokenInfo = this.extractToken(request);
 
     if (!tokenInfo) {
-      console.warn('[NextAuthGuard] No auth token found in cookies');
+      this.logger.warn('No auth token found in cookies');
       throw new UnauthorizedException('No auth token found');
     }
 

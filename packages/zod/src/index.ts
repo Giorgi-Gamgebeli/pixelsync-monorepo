@@ -4,4 +4,5 @@ export * from "./schemas/schemas";
 export * from "./schemas/directMessage";
 export * from "./schemas/usersSchemas";
 export * from "./schemas/groupChat";
+export * from "./schemas/socketSchemas";
 export { z } from "zod";

@@ -57,9 +57,13 @@ function VideoTile({
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
+    const el = videoRef.current;
+    if (el && stream) {
+      el.srcObject = stream;
     }
+    return () => {
+      if (el) el.srcObject = null;
+    };
   }, [stream]);
 
   return (

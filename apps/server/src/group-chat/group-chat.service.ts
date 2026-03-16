@@ -9,10 +9,7 @@ export class GroupChatService {
         name,
         ownerId,
         members: {
-          connect: [
-            { id: ownerId },
-            ...memberIds.map((id) => ({ id })),
-          ],
+          connect: [{ id: ownerId }, ...memberIds.map((id) => ({ id }))],
         },
       },
       include: {

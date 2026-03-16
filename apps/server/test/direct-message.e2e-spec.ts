@@ -303,11 +303,7 @@ describe('DirectMessage Gateway (e2e)', () => {
       sub: 'listener',
       email: 'listener@test.com',
     });
-    const listener = await connectAndWaitReady(
-      port,
-      listenerToken,
-      'listener',
-    );
+    const listener = await connectAndWaitReady(port, listenerToken, 'listener');
 
     let sawStranger = false;
     listener.on('user:status', (data) => {
@@ -318,11 +314,7 @@ describe('DirectMessage Gateway (e2e)', () => {
       sub: 'stranger',
       email: 'stranger@test.com',
     });
-    const stranger = await connectAndWaitReady(
-      port,
-      strangerToken,
-      'stranger',
-    );
+    const stranger = await connectAndWaitReady(port, strangerToken, 'stranger');
 
     await new Promise((r) => setTimeout(r, 300));
     expect(sawStranger).toBe(false);

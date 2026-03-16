@@ -1,30 +1,14 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { db } from '@repo/db';
 import { UpdateStatusDto } from './dto/update-status.dto';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
-  }
-
-  findAll() {
-    return `This action returns all users`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+  private readonly logger = new Logger(UsersService.name);
 
   async getFriendIds(userId: string): Promise<string[]> {
     const user = await db.user.findUnique({
@@ -56,6 +40,7 @@ export class UsersService {
       where: {
         id: userA,
         friends: { some: { id: userB } },
+        friendOf: { some: { id: userB } },
       },
     });
     return count > 0;
@@ -73,7 +58,7 @@ export class UsersService {
 
       return updatedUser;
     } catch (error) {
-      console.error('[UsersService] updateStatus unknown error:', error);
+      this.logger.error(error, 'updateStatus unknown error');
       throw new InternalServerErrorException('Failed to update user status');
     }
   }

@@ -176,7 +176,10 @@ describe('Call Signaling (e2e)', () => {
         callType: 'audio',
       });
 
-      const [ringingData, incomingData] = await Promise.all([ringing, incoming]);
+      const [ringingData, incomingData] = await Promise.all([
+        ringing,
+        incoming,
+      ]);
       expect(ringingData.callId).toBeDefined();
       expect(incomingData.callerId).toBe('caller');
       expect(incomingData.callerName).toBe('CallerName');

@@ -69,10 +69,12 @@ describe('GroupChat Gateway (e2e)', () => {
   };
 
   const mockGroupChatService = {
-    isMember: jest.fn().mockImplementation((groupId: number, userId: string) => {
-      const members = memberships[groupId] || [];
-      return Promise.resolve(members.includes(userId));
-    }),
+    isMember: jest
+      .fn()
+      .mockImplementation((groupId: number, userId: string) => {
+        const members = memberships[groupId] || [];
+        return Promise.resolve(members.includes(userId));
+      }),
     createMessage: jest.fn().mockResolvedValue({}),
     getMemberIds: jest.fn().mockImplementation((groupId: number) => {
       return Promise.resolve(memberships[groupId] || []);

@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { db } from '@repo/db';
 import { createDirectMessageSchema, TokenPayloadSchema, z } from '@repo/zod';
 
 @Injectable()
 export class DirectMessageService {
+  private readonly logger = new Logger(DirectMessageService.name);
+
   async create(body: z.infer<typeof createDirectMessageSchema>) {
     try {
       const message = await db.directMessage.create({
@@ -20,7 +22,7 @@ export class DirectMessageService {
 
       return message;
     } catch (error: unknown) {
-      console.error('[DirectMessageService] create error:', error);
+      this.logger.error(error, 'create error');
       throw error;
     }
   }
@@ -40,7 +42,7 @@ export class DirectMessageService {
 
       return messages;
     } catch (error: unknown) {
-      console.error('[DirectMessageService] findMany error:', error);
+      this.logger.error(error, 'findMany error');
       throw error;
     }
   }
@@ -72,10 +74,4 @@ export class DirectMessageService {
       data: { isRead: true },
     });
   }
-
-  findOne(id: string) {}
-
-  update(id: string) {}
-
-  remove(id: string) {}
 }

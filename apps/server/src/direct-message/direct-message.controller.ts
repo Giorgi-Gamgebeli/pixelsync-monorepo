@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import type { TokenPayloadSchema, z } from '@repo/zod';
 import { AuthenticatedUser } from 'src/auth/authenticated-user.decorator';
 import { NextAuthGuard } from 'src/auth/nextauth.guard';
@@ -28,20 +19,5 @@ export class DirectMessageController {
   @Get()
   findAll(@AuthenticatedUser() user: z.infer<typeof TokenPayloadSchema>) {
     return this.directMessageService.findAll(user);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.directMessageService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string) {
-    return this.directMessageService.update(id);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.directMessageService.remove(id);
   }
 }
