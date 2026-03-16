@@ -22,7 +22,12 @@
     "ACCESS_TOKEN_SECRET",
     "REFRESH_TOKEN_SECRET",
 
-    "SERVER_PORT"
+    "SERVER_PORT",
+
+    "NEXT_PUBLIC_SENTRY_DSN",
+    "SENTRY_DSN",
+    "SENTRY_AUTH_TOKEN",
+    "NODE_ENV"
   ],
   "tasks": {
     "build": {

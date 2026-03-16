@@ -7,6 +7,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { Logger } from '@nestjs/common';
 import { createDirectMessageSchema, TokenPayloadSchema, z } from '@repo/zod';
 import { decode } from '@auth/core/jwt';
 import { Server, Socket } from 'socket.io';
@@ -44,6 +45,8 @@ interface GroupCall {
 export class DirectMessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
+  private readonly logger = new Logger(DirectMessageGateway.name);
+
   @WebSocketServer()
   declare server: Server;
 
@@ -209,7 +212,7 @@ export class DirectMessageGateway
     this.directMessageService
       .create({ ...body, senderId: user.sub })
       .catch((err) => {
-        console.error('[Gateway] Failed to persist DM:', err);
+        this.logger.error(err, 'Failed to persist DM');
       });
   }
 
@@ -220,14 +223,12 @@ export class DirectMessageGateway
   ) {
     const user = client.data.user;
 
-    this.server
-      .to(body.senderId)
-      .emit('dm:read-ack', { readBy: user.sub });
+    this.server.to(body.senderId).emit('dm:read-ack', { readBy: user.sub });
 
     this.directMessageService
       .markAsRead(body.senderId, user.sub)
       .catch((err) => {
-        console.error('[Gateway] Failed to mark as read:', err);
+        this.logger.error(err, 'Failed to mark as read');
       });
   }
 
@@ -247,7 +248,11 @@ export class DirectMessageGateway
   async handleProfileUpdate(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody()
-    body: { userName?: string | null; name?: string | null; avatarConfig?: string | null },
+    body: {
+      userName?: string | null;
+      name?: string | null;
+      avatarConfig?: string | null;
+    },
   ) {
     const user = client.data.user;
     const friendIds = await this.userService.getFriendIds(user.sub);
@@ -266,7 +271,12 @@ export class DirectMessageGateway
   ) {
     const user = client.data.user;
 
-    if (!body.content || typeof body.content !== 'string' || !body.content.trim()) return;
+    if (
+      !body.content ||
+      typeof body.content !== 'string' ||
+      !body.content.trim()
+    )
+      return;
     if (!body.groupId || typeof body.groupId !== 'number') return;
 
     const isMember = await this.groupChatService.isMember(
@@ -293,7 +303,7 @@ export class DirectMessageGateway
     this.groupChatService
       .createMessage(body.groupId, user.sub, body.content)
       .catch((err) => {
-        console.error('[Gateway] Failed to persist group message:', err);
+        this.logger.error(err, 'Failed to persist group message');
       });
   }
 

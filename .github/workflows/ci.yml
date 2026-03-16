@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  # Dummy values for type-checking and builds (not real secrets)
+  DATABASE_URL: "postgresql://user:pass@localhost:5432/test"
+  NEXTAUTH_SECRET: "ci-secret-not-real"
+  NEXTAUTH_URL: "http://localhost:3005"
+  NEXT_PUBLIC_BASE_URL: "http://localhost:3005"
+  NEXT_PUBLIC_SERVER_BASE_URL: "http://localhost:3000"
+  AUTH_TRUST_HOST: "true"
+  ACCESS_TOKEN_SECRET: "ci-access-secret"
+  REFRESH_TOKEN_SECRET: "ci-refresh-secret"
+  SERVER_PORT: "3000"
+  GITHUB_CLIENT_ID: "ci"
+  GITHUB_CLIENT_SECRET: "ci"
+  GOOGLE_CLIENT_ID: "ci"
+  GOOGLE_CLIENT_SECRET: "ci"
+  MAIL_USER: "ci@test.com"
+  MAIL_PASSWORD: "ci"
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        working-directory: packages/db
+
+      - name: Lint (frontend)
+        run: npm run lint
+        working-directory: apps/frontend
+
+      - name: Type check (frontend)
+        run: npx tsc --noEmit
+        working-directory: apps/frontend
+
+      - name: Type check (server)
+        run: npx tsc --noEmit
+        working-directory: apps/server
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        working-directory: packages/db
+
+      - name: Build all packages
+        run: npx turbo run build
+
+  test:
+    name: Server E2E Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        working-directory: packages/db
+
+      - name: Run e2e tests
+        run: npx jest --config test/jest-e2e.json --runInBand --forceExit
+        working-directory: apps/server
