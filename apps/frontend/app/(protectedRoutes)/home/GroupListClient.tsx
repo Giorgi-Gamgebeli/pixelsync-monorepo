@@ -1,7 +1,6 @@
 "use client";
 
 import HomeNavLink from "./HomeNavLink";
-import ClientIcon from "@/app/_components/ClientIcon";
 import { useCallContext } from "@/app/_context/CallContext";
 
 type Group = {
@@ -25,11 +24,11 @@ function GroupListClient({ groups }: { groups: Group[] }) {
         const liveCall = activeGroupCalls[group.id];
         return (
           <HomeNavLink key={group.id} href={`/home/group/${group.id}`}>
-            <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface text-xs font-semibold text-gray-400">
+            <div className="bg-surface relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-semibold text-gray-400">
               {group.name.slice(0, 2).toUpperCase()}
               {liveCall && (
                 <span
-                  className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-green-500"
+                  className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500"
                   title={`${liveCall.participantCount} in call`}
                 />
               )}
@@ -37,7 +36,8 @@ function GroupListClient({ groups }: { groups: Group[] }) {
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm text-gray-300">{group.name}</p>
               <p className="truncate text-xs text-gray-500">
-                {group._count.members} member{group._count.members !== 1 ? "s" : ""}
+                {group._count.members} member
+                {group._count.members !== 1 ? "s" : ""}
                 {liveCall && (
                   <span className="text-green-400">
                     {" "}

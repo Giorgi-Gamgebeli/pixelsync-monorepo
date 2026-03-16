@@ -15,7 +15,6 @@ import {
   ClientToServerEvents,
   ProfileUpdate,
   UserStatus,
-  GroupMessage,
 } from "@repo/types";
 import { getWsToken } from "../_dataAccessLayer/userActions";
 

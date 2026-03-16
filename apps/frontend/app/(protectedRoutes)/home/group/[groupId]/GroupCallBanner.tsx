@@ -16,10 +16,12 @@ function GroupCallBanner({ groupId, groupName }: GroupCallBannerProps) {
   if (!liveCall || weAreInThisCall) return null;
 
   return (
-    <div className="border-border bg-green-500/10 flex items-center justify-center gap-2 border-b px-4 py-2">
+    <div className="border-border flex items-center justify-center gap-2 border-b bg-green-500/10 px-4 py-2">
       <span className="h-2 w-2 rounded-full bg-green-500" />
       <span className="text-sm text-gray-200">
-        {liveCall.participantCount} {liveCall.participantCount === 1 ? "person" : "people"} in a call
+        {liveCall.participantCount}{" "}
+        {liveCall.participantCount === 1 ? "person" : "people"} in a call in{" "}
+        {groupName}
       </span>
       <button
         type="button"

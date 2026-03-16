@@ -103,23 +103,6 @@ function CallOverlay() {
   const isGroup = groupParticipants.size > 0;
   const isRinging = callState === "ringing-outgoing";
   const isActive = callState === "active";
-
-  if (!isRinging && !isActive) return null;
-  if (callUiMode === "idle" || callUiMode === "mini") return null;
-
-  const remoteEntries = Array.from(remoteStreams.entries());
-  const isVideoCall = callType === "video";
-
-  function shouldShowAvatar(userId: string, stream: MediaStream): boolean {
-    if (!isVideoCall) return true;
-    const remoteVideo = remoteMediaState.get(userId)?.videoEnabled;
-    if (remoteVideo === false) return true;
-    const videoTracks = stream.getVideoTracks();
-    if (videoTracks.length === 0) return true;
-    if (!videoTracks[0]?.enabled) return true;
-    return false;
-  }
-
   const isFull = callUiMode === "full";
 
   const [panelPosition, setPanelPosition] = useState<{
@@ -177,6 +160,22 @@ function CallOverlay() {
       window.removeEventListener("touchend", onEnd);
     };
   }, [isFull]);
+
+  if (!isRinging && !isActive) return null;
+  if (callUiMode === "idle" || callUiMode === "mini") return null;
+
+  const remoteEntries = Array.from(remoteStreams.entries());
+  const isVideoCall = callType === "video";
+
+  function shouldShowAvatar(userId: string, stream: MediaStream): boolean {
+    if (!isVideoCall) return true;
+    const remoteVideo = remoteMediaState.get(userId)?.videoEnabled;
+    if (remoteVideo === false) return true;
+    const videoTracks = stream.getVideoTracks();
+    if (videoTracks.length === 0) return true;
+    if (!videoTracks[0]?.enabled) return true;
+    return false;
+  }
 
   const panelStyle =
     !isFull && panelPosition

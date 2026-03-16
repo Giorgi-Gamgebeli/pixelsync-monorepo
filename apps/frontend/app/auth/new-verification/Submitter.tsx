@@ -10,23 +10,22 @@ function Submitter() {
   const router = useRouter();
   const token = searchParams.get("token");
 
-  async function onSubmit() {
-    if (!token)
-      return router.replace(
-        `/auth/signin?verificationError=${"Missing token!"}`,
-      );
-
-    const res = await newVerification(token);
-
-    if ("success" in res)
-      router.replace(`/auth/signin?verificationSuccess=${res.success}`);
-    if ("error" in res)
-      router.replace(`/auth/signin?verificationError=${res.error}`);
-  }
-
   useEffect(() => {
-    onSubmit();
-  }, []);
+    async function verify() {
+      if (!token)
+        return router.replace(
+          `/auth/signin?verificationError=${"Missing token!"}`,
+        );
+
+      const res = await newVerification(token);
+
+      if ("success" in res)
+        router.replace(`/auth/signin?verificationSuccess=${res.success}`);
+      if ("error" in res)
+        router.replace(`/auth/signin?verificationError=${res.error}`);
+    }
+    verify();
+  }, [token, router]);
 
   return null;
 }

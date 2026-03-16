@@ -26,7 +26,7 @@ function SignInForm() {
     } else if (searchParams.get("verificationSuccess")) {
       toast.success(searchParams.get("verificationSuccess"));
     }
-  }, []);
+  }, [searchParams]);
 
   const {
     handleSubmit,

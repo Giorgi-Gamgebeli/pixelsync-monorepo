@@ -3,7 +3,8 @@ import AddServer from "./AddProject";
 import Server from "./Project";
 
 async function Projects() {
-  const servers = await getProjects();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- TODO: render project list from this data
+  const projects = await getProjects();
 
   return (
     <div className="flex w-26 justify-center">

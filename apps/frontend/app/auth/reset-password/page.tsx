@@ -11,7 +11,8 @@ function page() {
         <h1 className="text-[2.5rem]">Reset Your Password</h1>
 
         <h3 className="mb-12 text-lg text-gray-700">
-          Type in your email and we'll send you a link to reset your password
+          Type in your email and we&apos;ll send you a link to reset your
+          password
         </h3>
 
         <ResetPasswordForm />
