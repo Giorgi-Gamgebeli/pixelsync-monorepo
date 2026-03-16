@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { handleErrorsOnServer } from "../_utils/helpers";
+import { handleErrorsOnServer, OperationalError } from "../_utils/helpers";
 import { db } from "@repo/db";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
@@ -19,7 +19,7 @@ export const getProjects = cache(async function getProjects() {
 export async function getProject(projectId: number) {
   try {
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const project = await db.projects.findUnique({
       where: { id: projectId },
@@ -53,7 +53,7 @@ export async function getProject(projectId: number) {
     const isOwner = project.ownerId === session.user.id;
     const isMember = project.users.some((u) => u.id === session.user.id);
 
-    if (!isOwner && !isMember) throw new Error("Not authorized!");
+    if (!isOwner && !isMember) throw new OperationalError("Not authorized!");
 
     return project;
   } catch (error) {
@@ -64,7 +64,7 @@ export async function getProject(projectId: number) {
 export async function getProjectRooms(projectId: number) {
   try {
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const whiteboards = await db.whiteboard.findMany({
       where: { workspaceId: projectId },
@@ -84,7 +84,7 @@ export async function getProjectRooms(projectId: number) {
 export async function getRoom(roomId: number) {
   try {
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const room = await db.whiteboard.findUnique({
       where: { id: roomId },
@@ -106,9 +106,9 @@ export async function getRoom(roomId: number) {
 export async function createRoom(projectId: number, name: string) {
   try {
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
-    if (!name.trim()) throw new Error("Room name is required!");
+    if (!name.trim()) throw new OperationalError("Room name is required!");
 
     await db.whiteboard.create({
       data: {
@@ -129,15 +129,16 @@ export async function createRoom(projectId: number, name: string) {
 export async function generateInviteLink(projectId: number) {
   try {
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const project = await db.projects.findUnique({
       where: { id: projectId },
       select: { id: true, ownerId: true },
     });
 
-    if (!project) throw new Error("Project not found!");
-    if (project.ownerId !== session.user.id) throw new Error("Not authorized!");
+    if (!project) throw new OperationalError("Project not found!");
+    if (project.ownerId !== session.user.id)
+      throw new OperationalError("Not authorized!");
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const inviteUrl = `${baseUrl}/invite/${project.id}`;

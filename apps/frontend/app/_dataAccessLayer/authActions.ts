@@ -16,21 +16,21 @@ import {
   generateVerificationToken,
 } from "./tokens";
 import { sendResetPasswordEmail, sendVerificationEmail } from "../_lib/mail";
-import { handleErrorsOnServer } from "../_utils/helpers";
+import { handleErrorsOnServer, OperationalError } from "../_utils/helpers";
 import { getVerificationTokenByToken } from "./verificationToken";
 
 export async function signin(values: z.infer<typeof SigninSchema>): Promise<
   | {
-    error: string;
-  }
+      error: string;
+    }
   | {
-    success: string;
-  }
+      success: string;
+    }
 > {
   const result = SigninSchema.safeParse(values);
 
   try {
-    if (!result.success) throw new Error("Invalid credentials!");
+    if (!result.success) throw new OperationalError("Invalid credentials!");
 
     const { email, password } = result.data;
 
@@ -46,10 +46,12 @@ export async function signin(values: z.infer<typeof SigninSchema>): Promise<
       },
     });
 
-    if (!existingUser) throw new Error("Email does not exist!");
+    if (!existingUser) throw new OperationalError("Email does not exist!");
 
     if (!existingUser.password)
-      throw new Error("Email already in use with different provider!");
+      throw new OperationalError(
+        "Email already in use with different provider!",
+      );
 
     if (!existingUser.emailVerified) {
       const verificationToken = await generateVerificationToken(
@@ -79,16 +81,17 @@ export async function signin(values: z.infer<typeof SigninSchema>): Promise<
 
 export async function signup(values: z.infer<typeof SignupSchema>): Promise<
   | {
-    error: string;
-  }
+      error: string;
+    }
   | {
-    success: string;
-  }
+      success: string;
+    }
 > {
   const result = SignupSchema.safeParse(values);
 
   try {
-    if (!result.success) throw new Error("Validation failed on server");
+    if (!result.success)
+      throw new OperationalError("Validation failed on server");
 
     const { email, password, userName } = result.data;
 
@@ -139,11 +142,11 @@ export async function newVerification(token: string) {
   try {
     const existingToken = await getVerificationTokenByToken(token);
 
-    if (!existingToken) throw new Error("Token does not exist!");
+    if (!existingToken) throw new OperationalError("Token does not exist!");
 
     const hasExpired = new Date(existingToken.expires) < new Date();
 
-    if (hasExpired) throw new Error("Token has expired!");
+    if (hasExpired) throw new OperationalError("Token has expired!");
 
     const existingUser = await db.user.findUnique({
       where: {
@@ -151,7 +154,7 @@ export async function newVerification(token: string) {
       },
     });
 
-    if (!existingUser) throw new Error("Email does not exist!");
+    if (!existingUser) throw new OperationalError("Email does not exist!");
 
     await db.user.update({
       where: {
@@ -179,16 +182,17 @@ export async function resetPassword(
   values: z.infer<typeof ResetPasswordSchema>,
 ): Promise<
   | {
-    error: string;
-  }
+      error: string;
+    }
   | {
-    success: string;
-  }
+      success: string;
+    }
 > {
   const result = ResetPasswordSchema.safeParse(values);
 
   try {
-    if (!result.success) throw new Error("Validation failed on server!");
+    if (!result.success)
+      throw new OperationalError("Validation failed on server!");
 
     const { email } = result.data;
 
@@ -202,7 +206,7 @@ export async function resetPassword(
       },
     });
 
-    if (!existingUser) throw new Error("Email not found!");
+    if (!existingUser) throw new OperationalError("Email not found!");
 
     const resetPasswordToken = await generateResetPasswordToken(email);
 
@@ -222,16 +226,17 @@ export async function newPassword(
   values: z.infer<typeof NewPasswordSchema>,
 ): Promise<
   | {
-    error: string;
-  }
+      error: string;
+    }
   | {
-    success: string;
-  }
+      success: string;
+    }
 > {
   const result = NewPasswordSchema.safeParse(values);
 
   try {
-    if (!result.success) throw new Error("Validation failed on server!");
+    if (!result.success)
+      throw new OperationalError("Validation failed on server!");
 
     const { password, token } = result.data;
 
@@ -246,11 +251,11 @@ export async function newPassword(
       },
     });
 
-    if (!existingToken) throw new Error("Invalid token!");
+    if (!existingToken) throw new OperationalError("Invalid token!");
 
     const hasExpired = new Date(existingToken.expires) < new Date();
 
-    if (hasExpired) throw new Error("Token has expired!");
+    if (hasExpired) throw new OperationalError("Token has expired!");
 
     const existingUser = await db.user.findUnique({
       where: {
@@ -261,7 +266,7 @@ export async function newPassword(
       },
     });
 
-    if (!existingUser) throw new Error("Email does not exist!");
+    if (!existingUser) throw new OperationalError("Email does not exist!");
 
     const hashedPassword = await hash(password, 12);
 

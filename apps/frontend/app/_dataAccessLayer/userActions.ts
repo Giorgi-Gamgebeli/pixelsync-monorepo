@@ -15,7 +15,7 @@ import {
   updateStatusSchema,
 } from "@repo/zod";
 import { z } from "zod";
-import { handleErrorsOnServer } from "../_utils/helpers";
+import { handleErrorsOnServer, OperationalError } from "../_utils/helpers";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { cache } from "react";
@@ -24,7 +24,7 @@ export const getFriends = cache(async function getFriends() {
   try {
     const session = await auth();
     // ... [Original getFriends body omitted as it will be preserved by StartLine trick]
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const userWithFriends = await db.user.findUnique({
       where: { id: session.user.id },
@@ -64,11 +64,11 @@ export const getFriends = cache(async function getFriends() {
 export async function getFriend(values: z.infer<typeof GetFriendSchema>) {
   try {
     const res = GetFriendSchema.safeParse(values);
-    if (res.error) throw new Error("Validation failed on server!");
+    if (res.error) throw new OperationalError("Validation failed on server!");
     const { id } = res.data;
 
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const friend = await db.user.findUnique({
       where: {
@@ -94,14 +94,15 @@ export async function getFriend(values: z.infer<typeof GetFriendSchema>) {
     });
 
     if (id === session.user.id) {
-      throw new Error("You cannot perform this action on yourself.");
+      throw new OperationalError("You cannot perform this action on yourself.");
     }
 
-    if (!friend) throw new Error("Friend was not found!");
+    if (!friend) throw new OperationalError("Friend was not found!");
 
     const isFriend = friend.friends.length > 0 && friend.friendOf.length > 0;
 
-    if (!isFriend) throw new Error("You are not friends with this user!");
+    if (!isFriend)
+      throw new OperationalError("You are not friends with this user!");
 
     return {
       id: friend.id,
@@ -119,11 +120,11 @@ export async function getDirectMessages(
 ) {
   try {
     const res = GetDirectMessagesSchema.safeParse(values);
-    if (res.error) throw new Error("Validation failed on server!");
+    if (res.error) throw new OperationalError("Validation failed on server!");
     const { id } = res.data;
 
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const friend = await db.user.findUnique({
       where: {
@@ -144,14 +145,15 @@ export async function getDirectMessages(
     });
 
     if (id === session.user.id) {
-      throw new Error("You cannot perform this action on yourself.");
+      throw new OperationalError("You cannot perform this action on yourself.");
     }
 
-    if (!friend) throw new Error("Friend was not found!");
+    if (!friend) throw new OperationalError("Friend was not found!");
 
     const isFriend = friend.friends.length > 0 && friend.friendOf.length > 0;
 
-    if (!isFriend) throw new Error("You are not friends with this user!");
+    if (!isFriend)
+      throw new OperationalError("You are not friends with this user!");
 
     const messages = await db.directMessage.findMany({
       where: {
@@ -161,11 +163,12 @@ export async function getDirectMessages(
         ],
       },
       orderBy: {
-        createdAt: "asc",
+        createdAt: "desc",
       },
+      take: 50,
     });
 
-    return messages.map((m) => ({
+    return messages.reverse().map((m) => ({
       ...m,
       createdAt: m.createdAt.toISOString(),
       updatedAt: m.updatedAt.toISOString(),
@@ -178,10 +181,10 @@ export async function getDirectMessages(
 export async function getChatPageData(friendId: string) {
   try {
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     if (friendId === session.user.id) {
-      throw new Error("You cannot perform this action on yourself.");
+      throw new OperationalError("You cannot perform this action on yourself.");
     }
 
     const [friend, currentUser, messages] = await Promise.all([
@@ -207,14 +210,16 @@ export async function getChatPageData(friendId: string) {
             { receiverId: session.user.id, senderId: friendId },
           ],
         },
-        orderBy: { createdAt: "asc" },
+        orderBy: { createdAt: "desc" },
+        take: 50,
       }),
     ]);
 
-    if (!friend) throw new Error("Friend was not found!");
+    if (!friend) throw new OperationalError("Friend was not found!");
 
     const isFriend = friend.friends.length > 0 && friend.friendOf.length > 0;
-    if (!isFriend) throw new Error("You are not friends with this user!");
+    if (!isFriend)
+      throw new OperationalError("You are not friends with this user!");
 
     return {
       session,
@@ -225,7 +230,7 @@ export async function getChatPageData(friendId: string) {
         avatarConfig: friend.avatarConfig,
       },
       currentUserAvatarConfig: currentUser?.avatarConfig ?? null,
-      messages: messages.map((m) => ({
+      messages: messages.reverse().map((m) => ({
         ...m,
         createdAt: m.createdAt.toISOString(),
         updatedAt: m.updatedAt.toISOString(),
@@ -239,7 +244,7 @@ export async function getChatPageData(friendId: string) {
 export async function getPendingFriendRequests() {
   try {
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const currentUserFriends = await db.user.findUnique({
       where: { id: session.user.id },
@@ -281,11 +286,12 @@ export async function getPendingFriendRequests() {
 export async function addFriend(values: z.infer<typeof AddFriendSchema>) {
   try {
     const result = AddFriendSchema.safeParse(values);
-    if (result.error) throw new Error("Validation failed on server!");
+    if (result.error)
+      throw new OperationalError("Validation failed on server!");
     const { userName } = result.data;
 
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const currentUserId = session.user.id;
 
@@ -295,9 +301,10 @@ export async function addFriend(values: z.infer<typeof AddFriendSchema>) {
       },
     });
 
-    if (!existingFriend) throw new Error("That account doesn't exist!");
+    if (!existingFriend)
+      throw new OperationalError("That account doesn't exist!");
     if (currentUserId === existingFriend.id)
-      throw new Error("You can't add yourself!");
+      throw new OperationalError("You can't add yourself!");
 
     const alreadyFriend = await db.user.findUnique({
       where: {
@@ -310,7 +317,8 @@ export async function addFriend(values: z.infer<typeof AddFriendSchema>) {
       },
     });
 
-    if (alreadyFriend) throw new Error("This person is already your friend!");
+    if (alreadyFriend)
+      throw new OperationalError("This person is already your friend!");
 
     await db.user.update({
       where: {
@@ -336,11 +344,12 @@ export async function cancelFriendRequest(
 ) {
   try {
     const result = CancelFriendRequestSchema.safeParse(values);
-    if (result.error) throw new Error("Validation failed on server!");
+    if (result.error)
+      throw new OperationalError("Validation failed on server!");
     const { id } = result.data;
 
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     await db.user.update({
       where: {
@@ -366,11 +375,12 @@ export async function declineFriendRequest(
 ) {
   try {
     const result = DeclineFriendRequestSchema.safeParse(values);
-    if (result.error) throw new Error("Validation failed on server!");
+    if (result.error)
+      throw new OperationalError("Validation failed on server!");
     const { id } = result.data;
 
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     await db.user.update({
       where: {
@@ -396,11 +406,12 @@ export async function acceptFriendRequest(
 ) {
   try {
     const result = AcceptFriendRequestSchema.safeParse(values);
-    if (result.error) throw new Error("Validation failed on server!");
+    if (result.error)
+      throw new OperationalError("Validation failed on server!");
     const { id } = result.data;
 
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     await db.user.update({
       where: {
@@ -426,11 +437,12 @@ export async function updateAvatarConfig(
 ) {
   try {
     const result = UpdateAvatarConfigSchema.safeParse(values);
-    if (result.error) throw new Error("Validation failed on server!");
+    if (result.error)
+      throw new OperationalError("Validation failed on server!");
     const { avatarConfig } = result.data;
 
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     await db.user.update({
       where: {
@@ -453,11 +465,13 @@ export async function updateUserName(
   try {
     const result = UpdateUserNameSchema.safeParse(values);
     if (result.error)
-      throw new Error(result.error.issues[0]?.message || "Validation failed!");
+      throw new OperationalError(
+        result.error.issues[0]?.message || "Validation failed!",
+      );
     const { userName } = result.data;
 
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const existing = await db.user.findUnique({
       where: { userName },
@@ -465,7 +479,7 @@ export async function updateUserName(
     });
 
     if (existing && existing.id !== session.user.id) {
-      throw new Error("Username already taken!");
+      throw new OperationalError("Username already taken!");
     }
 
     await db.user.update({
@@ -482,7 +496,7 @@ export async function updateUserName(
 export async function updateDisplayName(name: string) {
   try {
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     await db.user.update({
       where: { id: session.user.id },
@@ -498,14 +512,15 @@ export async function updateDisplayName(name: string) {
 export async function unfriend(values: z.infer<typeof UnfriendSchema>) {
   try {
     const result = UnfriendSchema.safeParse(values);
-    if (result.error) throw new Error("Validation failed on server!");
+    if (result.error)
+      throw new OperationalError("Validation failed on server!");
     const { id } = result.data;
 
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     if (id === session.user.id) {
-      throw new Error("You cannot unfriend yourself.");
+      throw new OperationalError("You cannot unfriend yourself.");
     }
 
     await db.$transaction([
@@ -528,7 +543,7 @@ export async function unfriend(values: z.infer<typeof UnfriendSchema>) {
 export async function getWsToken() {
   try {
     const session = await auth();
-    if (!session?.user?.id) throw new Error("Not authenticated!");
+    if (!session?.user?.id) throw new OperationalError("Not authenticated!");
 
     const cookieStore = await cookies();
     // Auth.js uses different cookie names based on environment/SSL
@@ -536,7 +551,7 @@ export async function getWsToken() {
     const regularCookie = cookieStore.get("authjs.session-token");
     const cookie = secureCookie || regularCookie;
 
-    if (!cookie) throw new Error("No session token found");
+    if (!cookie) throw new OperationalError("No session token found");
 
     return {
       token: cookie.value,
@@ -550,12 +565,14 @@ export async function getWsToken() {
 export async function updateStatus(values: z.infer<typeof updateStatusSchema>) {
   try {
     const result = updateStatusSchema.safeParse(values);
-    if (result.error) throw new Error("Validation failed on server!");
+    if (result.error)
+      throw new OperationalError("Validation failed on server!");
     const { userId, status } = result.data;
 
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
-    if (session.user.id !== userId) throw new Error("Not authorized!");
+    if (!session) throw new OperationalError("Not authenticated!");
+    if (session.user.id !== userId)
+      throw new OperationalError("Not authorized!");
 
     await db.user.update({
       where: { id: userId },

@@ -71,6 +71,30 @@ export class DirectMessageGateway
   private groupCalls = new Map<string, GroupCall>();
   private userActiveCalls = new Map<string, string>(); // userId -> callId
 
+  // Rate limiting: userId -> { count, resetTime }
+  private messageLimits = new Map<
+    string,
+    { count: number; resetTime: number }
+  >();
+  private readonly MESSAGE_RATE_LIMIT = 10; // max messages per window
+  private readonly MESSAGE_RATE_WINDOW = 5_000; // 5 seconds
+
+  private isRateLimited(userId: string): boolean {
+    const now = Date.now();
+    const limit = this.messageLimits.get(userId);
+
+    if (!limit || now > limit.resetTime) {
+      this.messageLimits.set(userId, {
+        count: 1,
+        resetTime: now + this.MESSAGE_RATE_WINDOW,
+      });
+      return false;
+    }
+
+    limit.count++;
+    return limit.count > this.MESSAGE_RATE_LIMIT;
+  }
+
   constructor(
     private readonly directMessageService: DirectMessageService,
     private readonly userService: UsersService,
@@ -139,6 +163,7 @@ export class DirectMessageGateway
     if (!user) return;
 
     this.cleanupUserCalls(user.sub);
+    this.messageLimits.delete(user.sub);
 
     await this.userService.updateStatus({
       userId: user.sub,
@@ -204,6 +229,8 @@ export class DirectMessageGateway
     if (!result.success) return;
     const body = result.data;
     const user = client.data.user;
+
+    if (this.isRateLimited(user.sub)) return;
 
     const friends = await this.userService.areFriends(
       user.sub,
@@ -290,6 +317,8 @@ export class DirectMessageGateway
     if (!result.success) return;
     const body = result.data;
     const user = client.data.user;
+
+    if (this.isRateLimited(user.sub)) return;
 
     const isMember = await this.groupChatService.isMember(
       body.groupId,

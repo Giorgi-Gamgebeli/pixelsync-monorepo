@@ -7,6 +7,9 @@ export const createDirectMessageSchema = z.object({
     })
     .min(1, {
       message: "This field is required",
+    })
+    .max(4000, {
+      message: "Message is too long",
     }),
 
   senderId: z

@@ -4,14 +4,14 @@ import { auth } from "@/auth";
 import { db } from "@repo/db";
 import { CreateGroupChatSchema } from "@repo/zod";
 import { z } from "zod";
-import { handleErrorsOnServer } from "../_utils/helpers";
+import { handleErrorsOnServer, OperationalError } from "../_utils/helpers";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 
 export const getGroupChats = cache(async function getGroupChats() {
   try {
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const groups = await db.groupChat.findMany({
       where: { members: { some: { id: session.user.id } } },
@@ -32,7 +32,7 @@ export const getGroupChats = cache(async function getGroupChats() {
 export async function getGroupChatPageData(groupId: number) {
   try {
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const group = await db.groupChat.findUnique({
       where: { id: groupId },
@@ -51,14 +51,16 @@ export async function getGroupChatPageData(groupId: number) {
       },
     });
 
-    if (!group) throw new Error("Group not found!");
+    if (!group) throw new OperationalError("Group not found!");
 
     const isMember = group.members.some((m) => m.id === session.user.id);
-    if (!isMember) throw new Error("You are not a member of this group!");
+    if (!isMember)
+      throw new OperationalError("You are not a member of this group!");
 
     const messages = await db.groupMessage.findMany({
       where: { groupId },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
+      take: 50,
       include: {
         sender: { select: { userName: true, avatarConfig: true } },
       },
@@ -73,7 +75,7 @@ export async function getGroupChatPageData(groupId: number) {
       session,
       group,
       currentUserAvatarConfig: currentUser?.avatarConfig ?? null,
-      messages: messages.map((m) => ({
+      messages: messages.reverse().map((m) => ({
         id: m.id,
         content: m.content,
         createdAt: m.createdAt.toISOString(),
@@ -94,11 +96,12 @@ export async function createGroupChat(
 ) {
   try {
     const result = CreateGroupChatSchema.safeParse(values);
-    if (result.error) throw new Error("Validation failed on server!");
+    if (result.error)
+      throw new OperationalError("Validation failed on server!");
     const { name, memberIds } = result.data;
 
     const session = await auth();
-    if (!session) throw new Error("Not authenticated!");
+    if (!session) throw new OperationalError("Not authenticated!");
 
     const group = await db.groupChat.create({
       data: {

@@ -1,26 +1,41 @@
 import { AuthError } from "next-auth";
+import * as Sentry from "@sentry/nextjs";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 
+/**
+ * Marks an error as intentional / user-facing.
+ * Its message is safe to show in the UI.
+ */
+export class OperationalError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OperationalError";
+  }
+}
+
+/**
+ * Central error handler for server actions.
+ *
+ * - Operational errors (thrown intentionally): message returned to user as-is.
+ * - Auth credential errors: mapped to "Invalid credentials".
+ * - Everything else: reported to Sentry, user sees generic message.
+ */
 export function handleErrorsOnServer(error: unknown) {
-  console.error(error);
-
-  let message: string;
-
   if (isRedirectError(error)) {
     throw error;
-  } else if (error instanceof AuthError && error.type === "CredentialsSignin") {
-    message = "Invalid credentials";
-  } else if (error instanceof Error) {
-    message = error.message;
-  } else if (error && typeof error === "object" && "message" in error) {
-    message = String(error.message);
-  } else if (typeof error === "string") {
-    message = error;
-  } else {
-    message = "Something went wrong!";
   }
 
-  return { error: message };
+  if (error instanceof OperationalError) {
+    return { error: error.message };
+  }
+
+  if (error instanceof AuthError && error.type === "CredentialsSignin") {
+    return { error: "Invalid credentials" };
+  }
+
+  // Unexpected error — hide details from user
+  Sentry.captureException(error);
+  return { error: "Something went wrong!" };
 }
 
 export function generateUsername() {
