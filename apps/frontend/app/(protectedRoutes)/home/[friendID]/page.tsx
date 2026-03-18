@@ -1,4 +1,4 @@
-import DMChatView from "./DMChatView";
+import { redirect } from "next/navigation";
 
 type Params = {
   params: Promise<{
@@ -8,7 +8,7 @@ type Params = {
 
 async function Page({ params }: Params) {
   const { friendID } = await params;
-  return <DMChatView friendId={friendID} />;
+  redirect(`/home?dm=${friendID}`);
 }
 
 export default Page;

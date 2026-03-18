@@ -23,7 +23,10 @@ function GroupListClient({ groups }: { groups: Group[] }) {
       {groups.map((group) => {
         const liveCall = activeGroupCalls[group.id];
         return (
-          <HomeNavLink key={group.id} href={`/home/group/${group.id}`}>
+          <HomeNavLink
+            key={group.id}
+            chatView={{ type: "group", groupId: group.id }}
+          >
             <div className="bg-surface relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-semibold text-gray-400">
               {group.name.slice(0, 2).toUpperCase()}
               {liveCall && (

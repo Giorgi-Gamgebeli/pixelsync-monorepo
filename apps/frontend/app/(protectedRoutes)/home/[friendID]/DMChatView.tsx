@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getChatPageData } from "@/app/_dataAccessLayer/userActions";
-import {
-  getDMCache,
-  setDMCache,
-  type DMCacheEntry,
-} from "@/app/_lib/chatCache";
+import { getDMCache, fetchDM, type DMCacheEntry } from "@/app/_lib/chatCache";
 import ChatHeader from "./ChatHeader";
 import Messages from "./Messages";
 import ChatSkeleton from "./ChatSkeleton";
@@ -21,20 +16,16 @@ function DMChatView({ friendId }: { friendId: string }) {
   useEffect(() => {
     let stale = false;
 
-    getChatPageData(friendId).then((result) => {
+    fetchDM(friendId).then((result) => {
       if (stale) return;
-
-      if (!result || "error" in result) {
+      if (result) {
+        setData(result);
+      } else {
         setData((prev) => {
           if (!prev) setError(true);
           return prev;
         });
-        setLoading(false);
-        return;
       }
-
-      setDMCache(friendId, result);
-      setData(result);
       setLoading(false);
     });
 

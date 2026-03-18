@@ -1,4 +1,4 @@
-import GroupChatView from "./GroupChatView";
+import { redirect } from "next/navigation";
 
 type Params = {
   params: Promise<{
@@ -8,7 +8,7 @@ type Params = {
 
 async function Page({ params }: Params) {
   const { groupId } = await params;
-  return <GroupChatView groupId={Number(groupId)} />;
+  redirect(`/home?group=${groupId}`);
 }
 
 export default Page;

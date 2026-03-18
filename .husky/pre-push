@@ -1,5 +1,7 @@
 echo "Running type checks before push..."
 cd apps/frontend && npx tsc --noEmit && cd ../..
 cd apps/server && npx tsc --noEmit && cd ../..
+echo "Running frontend tests..."
+cd apps/frontend && npx vitest run && cd ../..
 echo "Running server e2e tests..."
 cd apps/server && npx jest --config test/jest-e2e.json --runInBand --forceExit

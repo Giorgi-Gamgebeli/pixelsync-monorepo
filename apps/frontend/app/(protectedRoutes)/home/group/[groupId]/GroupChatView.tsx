@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getGroupChatPageData } from "@/app/_dataAccessLayer/groupActions";
 import {
   getGroupCache,
-  setGroupCache,
+  fetchGroup,
   type GroupCacheEntry,
 } from "@/app/_lib/chatCache";
 import GroupChatHeader from "./GroupChatHeader";
@@ -22,20 +21,16 @@ function GroupChatView({ groupId }: { groupId: number }) {
   useEffect(() => {
     let stale = false;
 
-    getGroupChatPageData(groupId).then((result) => {
+    fetchGroup(groupId).then((result) => {
       if (stale) return;
-
-      if (!result || "error" in result) {
+      if (result) {
+        setData(result);
+      } else {
         setData((prev) => {
           if (!prev) setError(true);
           return prev;
         });
-        setLoading(false);
-        return;
       }
-
-      setGroupCache(groupId, result);
-      setData(result);
       setLoading(false);
     });
 
