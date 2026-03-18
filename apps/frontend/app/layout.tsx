@@ -1,17 +1,9 @@
 import type { Metadata } from "next";
-import { Rubik } from "next/font/google";
 import "./globals.css";
 import { DarkModeProvider } from "./_context/DarkModeContext";
 import { ActiveSectionContextProvider } from "./_context/ActiveSectionContext";
 import ClientProviders from "./ClientProviders";
 import { SessionProvider } from "next-auth/react";
-
-const rubik = Rubik({
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--fontFamily_Rubik",
-});
 
 export const metadata: Metadata = {
   title: "PixelSync | Collaborative Whiteboard for Teams",
@@ -26,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={rubik.className}>
+      <body className="font-sans">
         <ActiveSectionContextProvider>
           <DarkModeProvider>
             <SessionProvider>
