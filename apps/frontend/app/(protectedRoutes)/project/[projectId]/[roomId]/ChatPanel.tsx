@@ -17,7 +17,7 @@ type ChatPanelProps = {
   onToggle: () => void;
 };
 
-function ChatPanel({ roomName, isOpen, onToggle }: ChatPanelProps) {
+function ChatPanel({ roomName, isOpen }: Omit<ChatPanelProps, "onToggle">) {
   const [message, setMessage] = useState("");
 
   // Placeholder messages for UI demonstration
@@ -26,28 +26,18 @@ function ChatPanel({ roomName, isOpen, onToggle }: ChatPanelProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="flex h-full w-80 flex-col border-l border-border bg-secondary shadow-xl">
+    <div className="bg-secondary flex h-full w-full flex-col shadow-xl">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h3 className="text-sm font-medium text-white">Chat</h3>
-        <button
-          onClick={onToggle}
-          aria-label="Close chat"
-          className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-surface hover:text-gray-300"
-        >
-          <Icon icon="mdi:close" className="text-base" />
-        </button>
+      <div className="border-border flex items-center justify-between border-b px-4 py-2">
+        <h3 className="text-xs font-semibold text-gray-400 uppercase">Chat</h3>
       </div>
 
       {/* Messages */}
       <div className="scrollbar-thin flex flex-1 flex-col justify-end gap-3 overflow-y-auto p-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-surface">
-              <Icon
-                icon="mdi:chat-outline"
-                className="text-xl text-gray-600"
-              />
+            <div className="bg-surface mb-3 flex h-10 w-10 items-center justify-center rounded-xl">
+              <Icon icon="mdi:chat-outline" className="text-xl text-gray-600" />
             </div>
             <p className="text-xs text-gray-500">
               Start the conversation in &quot;{roomName}&quot;.
@@ -74,14 +64,14 @@ function ChatPanel({ roomName, isOpen, onToggle }: ChatPanelProps) {
       </div>
 
       {/* Input */}
-      <div className="border-t border-border p-3">
+      <div className="border-border border-t p-3">
         <div className="flex items-center gap-2">
           <input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder={`Message...`}
-            className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-white outline-none transition-colors placeholder:text-gray-500 focus:border-brand-500"
+            className="border-border bg-surface focus:border-brand-500 flex-1 rounded-lg border px-3 py-2 text-sm text-white transition-colors outline-none placeholder:text-gray-500"
           />
           <button
             disabled={!message.trim()}

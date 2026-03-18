@@ -13,6 +13,9 @@ type CreateRoomModalProps = {
 function CreateRoomModal({ projectId, onClose }: CreateRoomModalProps) {
   const [roomName, setRoomName] = useState("");
   const [description, setDescription] = useState("");
+  const [boardType, setBoardType] = useState<
+    "NORMAL" | "WEB_DESIGN" | "WEB_DESIGN_HTML_CSS"
+  >("NORMAL");
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleCreate() {
@@ -20,7 +23,11 @@ function CreateRoomModal({ projectId, onClose }: CreateRoomModalProps) {
 
     setIsLoading(true);
     try {
-      const result = await createRoom(Number(projectId), roomName.trim());
+      const result = await createRoom(
+        Number(projectId),
+        roomName.trim(),
+        boardType,
+      );
 
       if (result && "error" in result) {
         toast.error(result.error);
@@ -84,6 +91,54 @@ function CreateRoomModal({ projectId, onClose }: CreateRoomModalProps) {
               placeholder="What's this room for?"
               className="border-border bg-surface focus:border-brand-500 w-full rounded-lg border px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-gray-500"
             />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-300">
+              Board Type
+            </label>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setBoardType("NORMAL")}
+                className={`flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border p-4 transition-colors ${
+                  boardType === "NORMAL"
+                    ? "border-brand-500 bg-brand-500/10 text-brand-400"
+                    : "border-border bg-surface text-gray-400 hover:border-gray-500"
+                }`}
+              >
+                <Icon icon="mdi:draw" className="text-2xl" />
+                <span className="text-sm font-medium">Drawing Board</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setBoardType("WEB_DESIGN")}
+                className={`flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border p-4 transition-colors ${
+                  boardType === "WEB_DESIGN"
+                    ? "border-brand-500 bg-brand-500/10 text-brand-400"
+                    : "border-border bg-surface text-gray-400 hover:border-gray-500"
+                }`}
+              >
+                <Icon icon="mdi:web" className="text-2xl" />
+                <span className="text-sm font-medium">Web Design Board</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setBoardType("WEB_DESIGN_HTML_CSS")}
+                className={`flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border p-4 transition-colors ${
+                  boardType === "WEB_DESIGN_HTML_CSS"
+                    ? "border-brand-500 bg-brand-500/10 text-brand-400"
+                    : "border-border bg-surface text-gray-400 hover:border-gray-500"
+                }`}
+              >
+                <Icon icon="mdi:language-html5" className="text-2xl" />
+                <span className="text-sm font-medium">
+                  Web Design (HTML CSS)
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 

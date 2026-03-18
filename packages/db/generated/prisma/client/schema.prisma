@@ -106,6 +106,8 @@ model DirectMessage {
 
   @@index([senderId])
   @@index([receiverId])
+  @@index([receiverId, isRead])
+  @@index([receiverId, senderId, createdAt])
 }
 
 model Channel {
@@ -154,15 +156,29 @@ model Projects {
 }
 
 model Whiteboard {
-  id          Int      @id @unique @default(autoincrement())
+  id          Int           @id @unique @default(autoincrement())
   title       String
   content     Bytes
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
+  type        BoardType     @default(NORMAL)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @default(now())
   workspaceId Int
-  workspace   Projects @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Projects      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  records     BoardRecord[]
 
   @@index([workspaceId])
+}
+
+model BoardRecord {
+  id       Int        @id @unique @default(autoincrement())
+  recordId String // Tldraw id, e.g. 'shape:id123'
+  boardId  Int
+  typeName String
+  data     String // JSON string of the record
+  board    Whiteboard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@unique([boardId, recordId])
+  @@index([boardId])
 }
 
 model GroupChat {
@@ -191,6 +207,7 @@ model GroupMessage {
 
   @@index([groupId])
   @@index([senderId])
+  @@index([groupId, createdAt])
 }
 
 enum UserStatus {
@@ -209,6 +226,12 @@ enum Theme {
 enum ChannelType {
   TEXT
   VOICE
+}
+
+enum BoardType {
+  NORMAL
+  WEB_DESIGN
+  WEB_DESIGN_HTML_CSS
 }
 
 enum RequestStatus {

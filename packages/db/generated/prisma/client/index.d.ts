@@ -69,6 +69,11 @@ export type Projects = $Result.DefaultSelection<Prisma.$ProjectsPayload>
  */
 export type Whiteboard = $Result.DefaultSelection<Prisma.$WhiteboardPayload>
 /**
+ * Model BoardRecord
+ * 
+ */
+export type BoardRecord = $Result.DefaultSelection<Prisma.$BoardRecordPayload>
+/**
  * Model GroupChat
  * 
  */
@@ -110,6 +115,15 @@ export const ChannelType: {
 export type ChannelType = (typeof ChannelType)[keyof typeof ChannelType]
 
 
+export const BoardType: {
+  NORMAL: 'NORMAL',
+  WEB_DESIGN: 'WEB_DESIGN',
+  WEB_DESIGN_HTML_CSS: 'WEB_DESIGN_HTML_CSS'
+};
+
+export type BoardType = (typeof BoardType)[keyof typeof BoardType]
+
+
 export const RequestStatus: {
   PENDING: 'PENDING',
   ACCEPTED: 'ACCEPTED',
@@ -131,6 +145,10 @@ export const Theme: typeof $Enums.Theme
 export type ChannelType = $Enums.ChannelType
 
 export const ChannelType: typeof $Enums.ChannelType
+
+export type BoardType = $Enums.BoardType
+
+export const BoardType: typeof $Enums.BoardType
 
 export type RequestStatus = $Enums.RequestStatus
 
@@ -366,6 +384,16 @@ export class PrismaClient<
     * ```
     */
   get whiteboard(): Prisma.WhiteboardDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.boardRecord`: Exposes CRUD operations for the **BoardRecord** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more BoardRecords
+    * const boardRecords = await prisma.boardRecord.findMany()
+    * ```
+    */
+  get boardRecord(): Prisma.BoardRecordDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.groupChat`: Exposes CRUD operations for the **GroupChat** model.
@@ -831,6 +859,7 @@ export namespace Prisma {
     ChannelMessage: 'ChannelMessage',
     Projects: 'Projects',
     Whiteboard: 'Whiteboard',
+    BoardRecord: 'BoardRecord',
     GroupChat: 'GroupChat',
     GroupMessage: 'GroupMessage'
   };
@@ -848,7 +877,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "resetPasswordToken" | "userSettings" | "directMessage" | "channel" | "channelMessage" | "projects" | "whiteboard" | "groupChat" | "groupMessage"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "resetPasswordToken" | "userSettings" | "directMessage" | "channel" | "channelMessage" | "projects" | "whiteboard" | "boardRecord" | "groupChat" | "groupMessage"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1666,6 +1695,80 @@ export namespace Prisma {
           }
         }
       }
+      BoardRecord: {
+        payload: Prisma.$BoardRecordPayload<ExtArgs>
+        fields: Prisma.BoardRecordFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BoardRecordFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardRecordPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BoardRecordFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardRecordPayload>
+          }
+          findFirst: {
+            args: Prisma.BoardRecordFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardRecordPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BoardRecordFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardRecordPayload>
+          }
+          findMany: {
+            args: Prisma.BoardRecordFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardRecordPayload>[]
+          }
+          create: {
+            args: Prisma.BoardRecordCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardRecordPayload>
+          }
+          createMany: {
+            args: Prisma.BoardRecordCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BoardRecordCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardRecordPayload>[]
+          }
+          delete: {
+            args: Prisma.BoardRecordDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardRecordPayload>
+          }
+          update: {
+            args: Prisma.BoardRecordUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardRecordPayload>
+          }
+          deleteMany: {
+            args: Prisma.BoardRecordDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BoardRecordUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.BoardRecordUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardRecordPayload>[]
+          }
+          upsert: {
+            args: Prisma.BoardRecordUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardRecordPayload>
+          }
+          aggregate: {
+            args: Prisma.BoardRecordAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBoardRecord>
+          }
+          groupBy: {
+            args: Prisma.BoardRecordGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BoardRecordGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BoardRecordCountArgs<ExtArgs>
+            result: $Utils.Optional<BoardRecordCountAggregateOutputType> | number
+          }
+        }
+      }
       GroupChat: {
         payload: Prisma.$GroupChatPayload<ExtArgs>
         fields: Prisma.GroupChatFieldRefs
@@ -1933,6 +2036,7 @@ export namespace Prisma {
     channelMessage?: ChannelMessageOmit
     projects?: ProjectsOmit
     whiteboard?: WhiteboardOmit
+    boardRecord?: BoardRecordOmit
     groupChat?: GroupChatOmit
     groupMessage?: GroupMessageOmit
   }
@@ -2235,6 +2339,37 @@ export namespace Prisma {
    */
   export type ProjectsCountOutputTypeCountUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserWhereInput
+  }
+
+
+  /**
+   * Count Type WhiteboardCountOutputType
+   */
+
+  export type WhiteboardCountOutputType = {
+    records: number
+  }
+
+  export type WhiteboardCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    records?: boolean | WhiteboardCountOutputTypeCountRecordsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * WhiteboardCountOutputType without action
+   */
+  export type WhiteboardCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WhiteboardCountOutputType
+     */
+    select?: WhiteboardCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * WhiteboardCountOutputType without action
+   */
+  export type WhiteboardCountOutputTypeCountRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BoardRecordWhereInput
   }
 
 
@@ -13802,6 +13937,7 @@ export namespace Prisma {
     id: number | null
     title: string | null
     content: Bytes | null
+    type: $Enums.BoardType | null
     createdAt: Date | null
     updatedAt: Date | null
     workspaceId: number | null
@@ -13811,6 +13947,7 @@ export namespace Prisma {
     id: number | null
     title: string | null
     content: Bytes | null
+    type: $Enums.BoardType | null
     createdAt: Date | null
     updatedAt: Date | null
     workspaceId: number | null
@@ -13820,6 +13957,7 @@ export namespace Prisma {
     id: number
     title: number
     content: number
+    type: number
     createdAt: number
     updatedAt: number
     workspaceId: number
@@ -13841,6 +13979,7 @@ export namespace Prisma {
     id?: true
     title?: true
     content?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
     workspaceId?: true
@@ -13850,6 +13989,7 @@ export namespace Prisma {
     id?: true
     title?: true
     content?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
     workspaceId?: true
@@ -13859,6 +13999,7 @@ export namespace Prisma {
     id?: true
     title?: true
     content?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
     workspaceId?: true
@@ -13955,6 +14096,7 @@ export namespace Prisma {
     id: number
     title: string
     content: Bytes
+    type: $Enums.BoardType
     createdAt: Date
     updatedAt: Date
     workspaceId: number
@@ -13983,16 +14125,20 @@ export namespace Prisma {
     id?: boolean
     title?: boolean
     content?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workspaceId?: boolean
     workspace?: boolean | ProjectsDefaultArgs<ExtArgs>
+    records?: boolean | Whiteboard$recordsArgs<ExtArgs>
+    _count?: boolean | WhiteboardCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["whiteboard"]>
 
   export type WhiteboardSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
     content?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workspaceId?: boolean
@@ -14003,6 +14149,7 @@ export namespace Prisma {
     id?: boolean
     title?: boolean
     content?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workspaceId?: boolean
@@ -14013,14 +14160,17 @@ export namespace Prisma {
     id?: boolean
     title?: boolean
     content?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     workspaceId?: boolean
   }
 
-  export type WhiteboardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "content" | "createdAt" | "updatedAt" | "workspaceId", ExtArgs["result"]["whiteboard"]>
+  export type WhiteboardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "content" | "type" | "createdAt" | "updatedAt" | "workspaceId", ExtArgs["result"]["whiteboard"]>
   export type WhiteboardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workspace?: boolean | ProjectsDefaultArgs<ExtArgs>
+    records?: boolean | Whiteboard$recordsArgs<ExtArgs>
+    _count?: boolean | WhiteboardCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WhiteboardIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workspace?: boolean | ProjectsDefaultArgs<ExtArgs>
@@ -14033,11 +14183,13 @@ export namespace Prisma {
     name: "Whiteboard"
     objects: {
       workspace: Prisma.$ProjectsPayload<ExtArgs>
+      records: Prisma.$BoardRecordPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
       title: string
       content: Prisma.Bytes
+      type: $Enums.BoardType
       createdAt: Date
       updatedAt: Date
       workspaceId: number
@@ -14436,6 +14588,7 @@ export namespace Prisma {
   export interface Prisma__WhiteboardClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     workspace<T extends ProjectsDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProjectsDefaultArgs<ExtArgs>>): Prisma__ProjectsClient<$Result.GetResult<Prisma.$ProjectsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    records<T extends Whiteboard$recordsArgs<ExtArgs> = {}>(args?: Subset<T, Whiteboard$recordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BoardRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -14468,6 +14621,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Whiteboard", 'Int'>
     readonly title: FieldRef<"Whiteboard", 'String'>
     readonly content: FieldRef<"Whiteboard", 'Bytes'>
+    readonly type: FieldRef<"Whiteboard", 'BoardType'>
     readonly createdAt: FieldRef<"Whiteboard", 'DateTime'>
     readonly updatedAt: FieldRef<"Whiteboard", 'DateTime'>
     readonly workspaceId: FieldRef<"Whiteboard", 'Int'>
@@ -14872,6 +15026,30 @@ export namespace Prisma {
   }
 
   /**
+   * Whiteboard.records
+   */
+  export type Whiteboard$recordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordInclude<ExtArgs> | null
+    where?: BoardRecordWhereInput
+    orderBy?: BoardRecordOrderByWithRelationInput | BoardRecordOrderByWithRelationInput[]
+    cursor?: BoardRecordWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BoardRecordScalarFieldEnum | BoardRecordScalarFieldEnum[]
+  }
+
+  /**
    * Whiteboard without action
    */
   export type WhiteboardDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14887,6 +15065,1107 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: WhiteboardInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model BoardRecord
+   */
+
+  export type AggregateBoardRecord = {
+    _count: BoardRecordCountAggregateOutputType | null
+    _avg: BoardRecordAvgAggregateOutputType | null
+    _sum: BoardRecordSumAggregateOutputType | null
+    _min: BoardRecordMinAggregateOutputType | null
+    _max: BoardRecordMaxAggregateOutputType | null
+  }
+
+  export type BoardRecordAvgAggregateOutputType = {
+    id: number | null
+    boardId: number | null
+  }
+
+  export type BoardRecordSumAggregateOutputType = {
+    id: number | null
+    boardId: number | null
+  }
+
+  export type BoardRecordMinAggregateOutputType = {
+    id: number | null
+    recordId: string | null
+    boardId: number | null
+    typeName: string | null
+    data: string | null
+  }
+
+  export type BoardRecordMaxAggregateOutputType = {
+    id: number | null
+    recordId: string | null
+    boardId: number | null
+    typeName: string | null
+    data: string | null
+  }
+
+  export type BoardRecordCountAggregateOutputType = {
+    id: number
+    recordId: number
+    boardId: number
+    typeName: number
+    data: number
+    _all: number
+  }
+
+
+  export type BoardRecordAvgAggregateInputType = {
+    id?: true
+    boardId?: true
+  }
+
+  export type BoardRecordSumAggregateInputType = {
+    id?: true
+    boardId?: true
+  }
+
+  export type BoardRecordMinAggregateInputType = {
+    id?: true
+    recordId?: true
+    boardId?: true
+    typeName?: true
+    data?: true
+  }
+
+  export type BoardRecordMaxAggregateInputType = {
+    id?: true
+    recordId?: true
+    boardId?: true
+    typeName?: true
+    data?: true
+  }
+
+  export type BoardRecordCountAggregateInputType = {
+    id?: true
+    recordId?: true
+    boardId?: true
+    typeName?: true
+    data?: true
+    _all?: true
+  }
+
+  export type BoardRecordAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BoardRecord to aggregate.
+     */
+    where?: BoardRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BoardRecords to fetch.
+     */
+    orderBy?: BoardRecordOrderByWithRelationInput | BoardRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BoardRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BoardRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BoardRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned BoardRecords
+    **/
+    _count?: true | BoardRecordCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: BoardRecordAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: BoardRecordSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BoardRecordMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BoardRecordMaxAggregateInputType
+  }
+
+  export type GetBoardRecordAggregateType<T extends BoardRecordAggregateArgs> = {
+        [P in keyof T & keyof AggregateBoardRecord]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBoardRecord[P]>
+      : GetScalarType<T[P], AggregateBoardRecord[P]>
+  }
+
+
+
+
+  export type BoardRecordGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BoardRecordWhereInput
+    orderBy?: BoardRecordOrderByWithAggregationInput | BoardRecordOrderByWithAggregationInput[]
+    by: BoardRecordScalarFieldEnum[] | BoardRecordScalarFieldEnum
+    having?: BoardRecordScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BoardRecordCountAggregateInputType | true
+    _avg?: BoardRecordAvgAggregateInputType
+    _sum?: BoardRecordSumAggregateInputType
+    _min?: BoardRecordMinAggregateInputType
+    _max?: BoardRecordMaxAggregateInputType
+  }
+
+  export type BoardRecordGroupByOutputType = {
+    id: number
+    recordId: string
+    boardId: number
+    typeName: string
+    data: string
+    _count: BoardRecordCountAggregateOutputType | null
+    _avg: BoardRecordAvgAggregateOutputType | null
+    _sum: BoardRecordSumAggregateOutputType | null
+    _min: BoardRecordMinAggregateOutputType | null
+    _max: BoardRecordMaxAggregateOutputType | null
+  }
+
+  type GetBoardRecordGroupByPayload<T extends BoardRecordGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BoardRecordGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BoardRecordGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BoardRecordGroupByOutputType[P]>
+            : GetScalarType<T[P], BoardRecordGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BoardRecordSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    recordId?: boolean
+    boardId?: boolean
+    typeName?: boolean
+    data?: boolean
+    board?: boolean | WhiteboardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["boardRecord"]>
+
+  export type BoardRecordSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    recordId?: boolean
+    boardId?: boolean
+    typeName?: boolean
+    data?: boolean
+    board?: boolean | WhiteboardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["boardRecord"]>
+
+  export type BoardRecordSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    recordId?: boolean
+    boardId?: boolean
+    typeName?: boolean
+    data?: boolean
+    board?: boolean | WhiteboardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["boardRecord"]>
+
+  export type BoardRecordSelectScalar = {
+    id?: boolean
+    recordId?: boolean
+    boardId?: boolean
+    typeName?: boolean
+    data?: boolean
+  }
+
+  export type BoardRecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "recordId" | "boardId" | "typeName" | "data", ExtArgs["result"]["boardRecord"]>
+  export type BoardRecordInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    board?: boolean | WhiteboardDefaultArgs<ExtArgs>
+  }
+  export type BoardRecordIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    board?: boolean | WhiteboardDefaultArgs<ExtArgs>
+  }
+  export type BoardRecordIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    board?: boolean | WhiteboardDefaultArgs<ExtArgs>
+  }
+
+  export type $BoardRecordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BoardRecord"
+    objects: {
+      board: Prisma.$WhiteboardPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      recordId: string
+      boardId: number
+      typeName: string
+      data: string
+    }, ExtArgs["result"]["boardRecord"]>
+    composites: {}
+  }
+
+  type BoardRecordGetPayload<S extends boolean | null | undefined | BoardRecordDefaultArgs> = $Result.GetResult<Prisma.$BoardRecordPayload, S>
+
+  type BoardRecordCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BoardRecordFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BoardRecordCountAggregateInputType | true
+    }
+
+  export interface BoardRecordDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BoardRecord'], meta: { name: 'BoardRecord' } }
+    /**
+     * Find zero or one BoardRecord that matches the filter.
+     * @param {BoardRecordFindUniqueArgs} args - Arguments to find a BoardRecord
+     * @example
+     * // Get one BoardRecord
+     * const boardRecord = await prisma.boardRecord.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BoardRecordFindUniqueArgs>(args: SelectSubset<T, BoardRecordFindUniqueArgs<ExtArgs>>): Prisma__BoardRecordClient<$Result.GetResult<Prisma.$BoardRecordPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one BoardRecord that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {BoardRecordFindUniqueOrThrowArgs} args - Arguments to find a BoardRecord
+     * @example
+     * // Get one BoardRecord
+     * const boardRecord = await prisma.boardRecord.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BoardRecordFindUniqueOrThrowArgs>(args: SelectSubset<T, BoardRecordFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BoardRecordClient<$Result.GetResult<Prisma.$BoardRecordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BoardRecord that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardRecordFindFirstArgs} args - Arguments to find a BoardRecord
+     * @example
+     * // Get one BoardRecord
+     * const boardRecord = await prisma.boardRecord.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BoardRecordFindFirstArgs>(args?: SelectSubset<T, BoardRecordFindFirstArgs<ExtArgs>>): Prisma__BoardRecordClient<$Result.GetResult<Prisma.$BoardRecordPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BoardRecord that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardRecordFindFirstOrThrowArgs} args - Arguments to find a BoardRecord
+     * @example
+     * // Get one BoardRecord
+     * const boardRecord = await prisma.boardRecord.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BoardRecordFindFirstOrThrowArgs>(args?: SelectSubset<T, BoardRecordFindFirstOrThrowArgs<ExtArgs>>): Prisma__BoardRecordClient<$Result.GetResult<Prisma.$BoardRecordPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more BoardRecords that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardRecordFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all BoardRecords
+     * const boardRecords = await prisma.boardRecord.findMany()
+     * 
+     * // Get first 10 BoardRecords
+     * const boardRecords = await prisma.boardRecord.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const boardRecordWithIdOnly = await prisma.boardRecord.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends BoardRecordFindManyArgs>(args?: SelectSubset<T, BoardRecordFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BoardRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a BoardRecord.
+     * @param {BoardRecordCreateArgs} args - Arguments to create a BoardRecord.
+     * @example
+     * // Create one BoardRecord
+     * const BoardRecord = await prisma.boardRecord.create({
+     *   data: {
+     *     // ... data to create a BoardRecord
+     *   }
+     * })
+     * 
+     */
+    create<T extends BoardRecordCreateArgs>(args: SelectSubset<T, BoardRecordCreateArgs<ExtArgs>>): Prisma__BoardRecordClient<$Result.GetResult<Prisma.$BoardRecordPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many BoardRecords.
+     * @param {BoardRecordCreateManyArgs} args - Arguments to create many BoardRecords.
+     * @example
+     * // Create many BoardRecords
+     * const boardRecord = await prisma.boardRecord.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BoardRecordCreateManyArgs>(args?: SelectSubset<T, BoardRecordCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many BoardRecords and returns the data saved in the database.
+     * @param {BoardRecordCreateManyAndReturnArgs} args - Arguments to create many BoardRecords.
+     * @example
+     * // Create many BoardRecords
+     * const boardRecord = await prisma.boardRecord.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many BoardRecords and only return the `id`
+     * const boardRecordWithIdOnly = await prisma.boardRecord.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BoardRecordCreateManyAndReturnArgs>(args?: SelectSubset<T, BoardRecordCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BoardRecordPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a BoardRecord.
+     * @param {BoardRecordDeleteArgs} args - Arguments to delete one BoardRecord.
+     * @example
+     * // Delete one BoardRecord
+     * const BoardRecord = await prisma.boardRecord.delete({
+     *   where: {
+     *     // ... filter to delete one BoardRecord
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BoardRecordDeleteArgs>(args: SelectSubset<T, BoardRecordDeleteArgs<ExtArgs>>): Prisma__BoardRecordClient<$Result.GetResult<Prisma.$BoardRecordPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one BoardRecord.
+     * @param {BoardRecordUpdateArgs} args - Arguments to update one BoardRecord.
+     * @example
+     * // Update one BoardRecord
+     * const boardRecord = await prisma.boardRecord.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BoardRecordUpdateArgs>(args: SelectSubset<T, BoardRecordUpdateArgs<ExtArgs>>): Prisma__BoardRecordClient<$Result.GetResult<Prisma.$BoardRecordPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more BoardRecords.
+     * @param {BoardRecordDeleteManyArgs} args - Arguments to filter BoardRecords to delete.
+     * @example
+     * // Delete a few BoardRecords
+     * const { count } = await prisma.boardRecord.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BoardRecordDeleteManyArgs>(args?: SelectSubset<T, BoardRecordDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BoardRecords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardRecordUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many BoardRecords
+     * const boardRecord = await prisma.boardRecord.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BoardRecordUpdateManyArgs>(args: SelectSubset<T, BoardRecordUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BoardRecords and returns the data updated in the database.
+     * @param {BoardRecordUpdateManyAndReturnArgs} args - Arguments to update many BoardRecords.
+     * @example
+     * // Update many BoardRecords
+     * const boardRecord = await prisma.boardRecord.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more BoardRecords and only return the `id`
+     * const boardRecordWithIdOnly = await prisma.boardRecord.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends BoardRecordUpdateManyAndReturnArgs>(args: SelectSubset<T, BoardRecordUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BoardRecordPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one BoardRecord.
+     * @param {BoardRecordUpsertArgs} args - Arguments to update or create a BoardRecord.
+     * @example
+     * // Update or create a BoardRecord
+     * const boardRecord = await prisma.boardRecord.upsert({
+     *   create: {
+     *     // ... data to create a BoardRecord
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the BoardRecord we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BoardRecordUpsertArgs>(args: SelectSubset<T, BoardRecordUpsertArgs<ExtArgs>>): Prisma__BoardRecordClient<$Result.GetResult<Prisma.$BoardRecordPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of BoardRecords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardRecordCountArgs} args - Arguments to filter BoardRecords to count.
+     * @example
+     * // Count the number of BoardRecords
+     * const count = await prisma.boardRecord.count({
+     *   where: {
+     *     // ... the filter for the BoardRecords we want to count
+     *   }
+     * })
+    **/
+    count<T extends BoardRecordCountArgs>(
+      args?: Subset<T, BoardRecordCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BoardRecordCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a BoardRecord.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardRecordAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BoardRecordAggregateArgs>(args: Subset<T, BoardRecordAggregateArgs>): Prisma.PrismaPromise<GetBoardRecordAggregateType<T>>
+
+    /**
+     * Group by BoardRecord.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardRecordGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BoardRecordGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BoardRecordGroupByArgs['orderBy'] }
+        : { orderBy?: BoardRecordGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BoardRecordGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBoardRecordGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the BoardRecord model
+   */
+  readonly fields: BoardRecordFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for BoardRecord.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BoardRecordClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    board<T extends WhiteboardDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WhiteboardDefaultArgs<ExtArgs>>): Prisma__WhiteboardClient<$Result.GetResult<Prisma.$WhiteboardPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the BoardRecord model
+   */
+  interface BoardRecordFieldRefs {
+    readonly id: FieldRef<"BoardRecord", 'Int'>
+    readonly recordId: FieldRef<"BoardRecord", 'String'>
+    readonly boardId: FieldRef<"BoardRecord", 'Int'>
+    readonly typeName: FieldRef<"BoardRecord", 'String'>
+    readonly data: FieldRef<"BoardRecord", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * BoardRecord findUnique
+   */
+  export type BoardRecordFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which BoardRecord to fetch.
+     */
+    where: BoardRecordWhereUniqueInput
+  }
+
+  /**
+   * BoardRecord findUniqueOrThrow
+   */
+  export type BoardRecordFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which BoardRecord to fetch.
+     */
+    where: BoardRecordWhereUniqueInput
+  }
+
+  /**
+   * BoardRecord findFirst
+   */
+  export type BoardRecordFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which BoardRecord to fetch.
+     */
+    where?: BoardRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BoardRecords to fetch.
+     */
+    orderBy?: BoardRecordOrderByWithRelationInput | BoardRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BoardRecords.
+     */
+    cursor?: BoardRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BoardRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BoardRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BoardRecords.
+     */
+    distinct?: BoardRecordScalarFieldEnum | BoardRecordScalarFieldEnum[]
+  }
+
+  /**
+   * BoardRecord findFirstOrThrow
+   */
+  export type BoardRecordFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which BoardRecord to fetch.
+     */
+    where?: BoardRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BoardRecords to fetch.
+     */
+    orderBy?: BoardRecordOrderByWithRelationInput | BoardRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BoardRecords.
+     */
+    cursor?: BoardRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BoardRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BoardRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BoardRecords.
+     */
+    distinct?: BoardRecordScalarFieldEnum | BoardRecordScalarFieldEnum[]
+  }
+
+  /**
+   * BoardRecord findMany
+   */
+  export type BoardRecordFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which BoardRecords to fetch.
+     */
+    where?: BoardRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BoardRecords to fetch.
+     */
+    orderBy?: BoardRecordOrderByWithRelationInput | BoardRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing BoardRecords.
+     */
+    cursor?: BoardRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BoardRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BoardRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BoardRecords.
+     */
+    distinct?: BoardRecordScalarFieldEnum | BoardRecordScalarFieldEnum[]
+  }
+
+  /**
+   * BoardRecord create
+   */
+  export type BoardRecordCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordInclude<ExtArgs> | null
+    /**
+     * The data needed to create a BoardRecord.
+     */
+    data: XOR<BoardRecordCreateInput, BoardRecordUncheckedCreateInput>
+  }
+
+  /**
+   * BoardRecord createMany
+   */
+  export type BoardRecordCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many BoardRecords.
+     */
+    data: BoardRecordCreateManyInput | BoardRecordCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * BoardRecord createManyAndReturn
+   */
+  export type BoardRecordCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * The data used to create many BoardRecords.
+     */
+    data: BoardRecordCreateManyInput | BoardRecordCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BoardRecord update
+   */
+  export type BoardRecordUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordInclude<ExtArgs> | null
+    /**
+     * The data needed to update a BoardRecord.
+     */
+    data: XOR<BoardRecordUpdateInput, BoardRecordUncheckedUpdateInput>
+    /**
+     * Choose, which BoardRecord to update.
+     */
+    where: BoardRecordWhereUniqueInput
+  }
+
+  /**
+   * BoardRecord updateMany
+   */
+  export type BoardRecordUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update BoardRecords.
+     */
+    data: XOR<BoardRecordUpdateManyMutationInput, BoardRecordUncheckedUpdateManyInput>
+    /**
+     * Filter which BoardRecords to update
+     */
+    where?: BoardRecordWhereInput
+    /**
+     * Limit how many BoardRecords to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * BoardRecord updateManyAndReturn
+   */
+  export type BoardRecordUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * The data used to update BoardRecords.
+     */
+    data: XOR<BoardRecordUpdateManyMutationInput, BoardRecordUncheckedUpdateManyInput>
+    /**
+     * Filter which BoardRecords to update
+     */
+    where?: BoardRecordWhereInput
+    /**
+     * Limit how many BoardRecords to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BoardRecord upsert
+   */
+  export type BoardRecordUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordInclude<ExtArgs> | null
+    /**
+     * The filter to search for the BoardRecord to update in case it exists.
+     */
+    where: BoardRecordWhereUniqueInput
+    /**
+     * In case the BoardRecord found by the `where` argument doesn't exist, create a new BoardRecord with this data.
+     */
+    create: XOR<BoardRecordCreateInput, BoardRecordUncheckedCreateInput>
+    /**
+     * In case the BoardRecord was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BoardRecordUpdateInput, BoardRecordUncheckedUpdateInput>
+  }
+
+  /**
+   * BoardRecord delete
+   */
+  export type BoardRecordDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordInclude<ExtArgs> | null
+    /**
+     * Filter which BoardRecord to delete.
+     */
+    where: BoardRecordWhereUniqueInput
+  }
+
+  /**
+   * BoardRecord deleteMany
+   */
+  export type BoardRecordDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BoardRecords to delete
+     */
+    where?: BoardRecordWhereInput
+    /**
+     * Limit how many BoardRecords to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * BoardRecord without action
+   */
+  export type BoardRecordDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardRecord
+     */
+    select?: BoardRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardRecord
+     */
+    omit?: BoardRecordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardRecordInclude<ExtArgs> | null
   }
 
 
@@ -17327,12 +18606,24 @@ export namespace Prisma {
     id: 'id',
     title: 'title',
     content: 'content',
+    type: 'type',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     workspaceId: 'workspaceId'
   };
 
   export type WhiteboardScalarFieldEnum = (typeof WhiteboardScalarFieldEnum)[keyof typeof WhiteboardScalarFieldEnum]
+
+
+  export const BoardRecordScalarFieldEnum: {
+    id: 'id',
+    recordId: 'recordId',
+    boardId: 'boardId',
+    typeName: 'typeName',
+    data: 'data'
+  };
+
+  export type BoardRecordScalarFieldEnum = (typeof BoardRecordScalarFieldEnum)[keyof typeof BoardRecordScalarFieldEnum]
 
 
   export const GroupChatScalarFieldEnum: {
@@ -17490,6 +18781,20 @@ export namespace Prisma {
    * Reference to a field of type 'Bytes[]'
    */
   export type ListBytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'BoardType'
+   */
+  export type EnumBoardTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoardType'>
+    
+
+
+  /**
+   * Reference to a field of type 'BoardType[]'
+   */
+  export type ListEnumBoardTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoardType[]'>
     
 
 
@@ -18231,20 +19536,24 @@ export namespace Prisma {
     id?: IntFilter<"Whiteboard"> | number
     title?: StringFilter<"Whiteboard"> | string
     content?: BytesFilter<"Whiteboard"> | Bytes
+    type?: EnumBoardTypeFilter<"Whiteboard"> | $Enums.BoardType
     createdAt?: DateTimeFilter<"Whiteboard"> | Date | string
     updatedAt?: DateTimeFilter<"Whiteboard"> | Date | string
     workspaceId?: IntFilter<"Whiteboard"> | number
     workspace?: XOR<ProjectsScalarRelationFilter, ProjectsWhereInput>
+    records?: BoardRecordListRelationFilter
   }
 
   export type WhiteboardOrderByWithRelationInput = {
     id?: SortOrder
     title?: SortOrder
     content?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workspaceId?: SortOrder
     workspace?: ProjectsOrderByWithRelationInput
+    records?: BoardRecordOrderByRelationAggregateInput
   }
 
   export type WhiteboardWhereUniqueInput = Prisma.AtLeast<{
@@ -18254,16 +19563,19 @@ export namespace Prisma {
     NOT?: WhiteboardWhereInput | WhiteboardWhereInput[]
     title?: StringFilter<"Whiteboard"> | string
     content?: BytesFilter<"Whiteboard"> | Bytes
+    type?: EnumBoardTypeFilter<"Whiteboard"> | $Enums.BoardType
     createdAt?: DateTimeFilter<"Whiteboard"> | Date | string
     updatedAt?: DateTimeFilter<"Whiteboard"> | Date | string
     workspaceId?: IntFilter<"Whiteboard"> | number
     workspace?: XOR<ProjectsScalarRelationFilter, ProjectsWhereInput>
+    records?: BoardRecordListRelationFilter
   }, "id" | "id">
 
   export type WhiteboardOrderByWithAggregationInput = {
     id?: SortOrder
     title?: SortOrder
     content?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workspaceId?: SortOrder
@@ -18281,9 +19593,68 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"Whiteboard"> | number
     title?: StringWithAggregatesFilter<"Whiteboard"> | string
     content?: BytesWithAggregatesFilter<"Whiteboard"> | Bytes
+    type?: EnumBoardTypeWithAggregatesFilter<"Whiteboard"> | $Enums.BoardType
     createdAt?: DateTimeWithAggregatesFilter<"Whiteboard"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Whiteboard"> | Date | string
     workspaceId?: IntWithAggregatesFilter<"Whiteboard"> | number
+  }
+
+  export type BoardRecordWhereInput = {
+    AND?: BoardRecordWhereInput | BoardRecordWhereInput[]
+    OR?: BoardRecordWhereInput[]
+    NOT?: BoardRecordWhereInput | BoardRecordWhereInput[]
+    id?: IntFilter<"BoardRecord"> | number
+    recordId?: StringFilter<"BoardRecord"> | string
+    boardId?: IntFilter<"BoardRecord"> | number
+    typeName?: StringFilter<"BoardRecord"> | string
+    data?: StringFilter<"BoardRecord"> | string
+    board?: XOR<WhiteboardScalarRelationFilter, WhiteboardWhereInput>
+  }
+
+  export type BoardRecordOrderByWithRelationInput = {
+    id?: SortOrder
+    recordId?: SortOrder
+    boardId?: SortOrder
+    typeName?: SortOrder
+    data?: SortOrder
+    board?: WhiteboardOrderByWithRelationInput
+  }
+
+  export type BoardRecordWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    boardId_recordId?: BoardRecordBoardIdRecordIdCompoundUniqueInput
+    AND?: BoardRecordWhereInput | BoardRecordWhereInput[]
+    OR?: BoardRecordWhereInput[]
+    NOT?: BoardRecordWhereInput | BoardRecordWhereInput[]
+    recordId?: StringFilter<"BoardRecord"> | string
+    boardId?: IntFilter<"BoardRecord"> | number
+    typeName?: StringFilter<"BoardRecord"> | string
+    data?: StringFilter<"BoardRecord"> | string
+    board?: XOR<WhiteboardScalarRelationFilter, WhiteboardWhereInput>
+  }, "id" | "id" | "boardId_recordId">
+
+  export type BoardRecordOrderByWithAggregationInput = {
+    id?: SortOrder
+    recordId?: SortOrder
+    boardId?: SortOrder
+    typeName?: SortOrder
+    data?: SortOrder
+    _count?: BoardRecordCountOrderByAggregateInput
+    _avg?: BoardRecordAvgOrderByAggregateInput
+    _max?: BoardRecordMaxOrderByAggregateInput
+    _min?: BoardRecordMinOrderByAggregateInput
+    _sum?: BoardRecordSumOrderByAggregateInput
+  }
+
+  export type BoardRecordScalarWhereWithAggregatesInput = {
+    AND?: BoardRecordScalarWhereWithAggregatesInput | BoardRecordScalarWhereWithAggregatesInput[]
+    OR?: BoardRecordScalarWhereWithAggregatesInput[]
+    NOT?: BoardRecordScalarWhereWithAggregatesInput | BoardRecordScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"BoardRecord"> | number
+    recordId?: StringWithAggregatesFilter<"BoardRecord"> | string
+    boardId?: IntWithAggregatesFilter<"BoardRecord"> | number
+    typeName?: StringWithAggregatesFilter<"BoardRecord"> | string
+    data?: StringWithAggregatesFilter<"BoardRecord"> | string
   }
 
   export type GroupChatWhereInput = {
@@ -19167,41 +20538,50 @@ export namespace Prisma {
   export type WhiteboardCreateInput = {
     title: string
     content: Bytes
+    type?: $Enums.BoardType
     createdAt?: Date | string
     updatedAt?: Date | string
     workspace: ProjectsCreateNestedOneWithoutWhiteboardsInput
+    records?: BoardRecordCreateNestedManyWithoutBoardInput
   }
 
   export type WhiteboardUncheckedCreateInput = {
     id?: number
     title: string
     content: Bytes
+    type?: $Enums.BoardType
     createdAt?: Date | string
     updatedAt?: Date | string
     workspaceId: number
+    records?: BoardRecordUncheckedCreateNestedManyWithoutBoardInput
   }
 
   export type WhiteboardUpdateInput = {
     title?: StringFieldUpdateOperationsInput | string
     content?: BytesFieldUpdateOperationsInput | Bytes
+    type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workspace?: ProjectsUpdateOneRequiredWithoutWhiteboardsNestedInput
+    records?: BoardRecordUpdateManyWithoutBoardNestedInput
   }
 
   export type WhiteboardUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     content?: BytesFieldUpdateOperationsInput | Bytes
+    type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workspaceId?: IntFieldUpdateOperationsInput | number
+    records?: BoardRecordUncheckedUpdateManyWithoutBoardNestedInput
   }
 
   export type WhiteboardCreateManyInput = {
     id?: number
     title: string
     content: Bytes
+    type?: $Enums.BoardType
     createdAt?: Date | string
     updatedAt?: Date | string
     workspaceId: number
@@ -19210,6 +20590,7 @@ export namespace Prisma {
   export type WhiteboardUpdateManyMutationInput = {
     title?: StringFieldUpdateOperationsInput | string
     content?: BytesFieldUpdateOperationsInput | Bytes
+    type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19218,9 +20599,62 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     content?: BytesFieldUpdateOperationsInput | Bytes
+    type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workspaceId?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type BoardRecordCreateInput = {
+    recordId: string
+    typeName: string
+    data: string
+    board: WhiteboardCreateNestedOneWithoutRecordsInput
+  }
+
+  export type BoardRecordUncheckedCreateInput = {
+    id?: number
+    recordId: string
+    boardId: number
+    typeName: string
+    data: string
+  }
+
+  export type BoardRecordUpdateInput = {
+    recordId?: StringFieldUpdateOperationsInput | string
+    typeName?: StringFieldUpdateOperationsInput | string
+    data?: StringFieldUpdateOperationsInput | string
+    board?: WhiteboardUpdateOneRequiredWithoutRecordsNestedInput
+  }
+
+  export type BoardRecordUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    recordId?: StringFieldUpdateOperationsInput | string
+    boardId?: IntFieldUpdateOperationsInput | number
+    typeName?: StringFieldUpdateOperationsInput | string
+    data?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BoardRecordCreateManyInput = {
+    id?: number
+    recordId: string
+    boardId: number
+    typeName: string
+    data: string
+  }
+
+  export type BoardRecordUpdateManyMutationInput = {
+    recordId?: StringFieldUpdateOperationsInput | string
+    typeName?: StringFieldUpdateOperationsInput | string
+    data?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BoardRecordUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    recordId?: StringFieldUpdateOperationsInput | string
+    boardId?: IntFieldUpdateOperationsInput | number
+    typeName?: StringFieldUpdateOperationsInput | string
+    data?: StringFieldUpdateOperationsInput | string
   }
 
   export type GroupChatCreateInput = {
@@ -20078,10 +21512,28 @@ export namespace Prisma {
     not?: NestedBytesFilter<$PrismaModel> | Bytes
   }
 
+  export type EnumBoardTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.BoardType | EnumBoardTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.BoardType[] | ListEnumBoardTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BoardType[] | ListEnumBoardTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumBoardTypeFilter<$PrismaModel> | $Enums.BoardType
+  }
+
+  export type BoardRecordListRelationFilter = {
+    every?: BoardRecordWhereInput
+    some?: BoardRecordWhereInput
+    none?: BoardRecordWhereInput
+  }
+
+  export type BoardRecordOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type WhiteboardCountOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
     content?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workspaceId?: SortOrder
@@ -20096,6 +21548,7 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     content?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workspaceId?: SortOrder
@@ -20105,6 +21558,7 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     content?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     workspaceId?: SortOrder
@@ -20123,6 +21577,60 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBytesFilter<$PrismaModel>
     _max?: NestedBytesFilter<$PrismaModel>
+  }
+
+  export type EnumBoardTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BoardType | EnumBoardTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.BoardType[] | ListEnumBoardTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BoardType[] | ListEnumBoardTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumBoardTypeWithAggregatesFilter<$PrismaModel> | $Enums.BoardType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBoardTypeFilter<$PrismaModel>
+    _max?: NestedEnumBoardTypeFilter<$PrismaModel>
+  }
+
+  export type WhiteboardScalarRelationFilter = {
+    is?: WhiteboardWhereInput
+    isNot?: WhiteboardWhereInput
+  }
+
+  export type BoardRecordBoardIdRecordIdCompoundUniqueInput = {
+    boardId: number
+    recordId: string
+  }
+
+  export type BoardRecordCountOrderByAggregateInput = {
+    id?: SortOrder
+    recordId?: SortOrder
+    boardId?: SortOrder
+    typeName?: SortOrder
+    data?: SortOrder
+  }
+
+  export type BoardRecordAvgOrderByAggregateInput = {
+    id?: SortOrder
+    boardId?: SortOrder
+  }
+
+  export type BoardRecordMaxOrderByAggregateInput = {
+    id?: SortOrder
+    recordId?: SortOrder
+    boardId?: SortOrder
+    typeName?: SortOrder
+    data?: SortOrder
+  }
+
+  export type BoardRecordMinOrderByAggregateInput = {
+    id?: SortOrder
+    recordId?: SortOrder
+    boardId?: SortOrder
+    typeName?: SortOrder
+    data?: SortOrder
+  }
+
+  export type BoardRecordSumOrderByAggregateInput = {
+    id?: SortOrder
+    boardId?: SortOrder
   }
 
   export type GroupChatCountOrderByAggregateInput = {
@@ -21142,8 +22650,26 @@ export namespace Prisma {
     connect?: ProjectsWhereUniqueInput
   }
 
+  export type BoardRecordCreateNestedManyWithoutBoardInput = {
+    create?: XOR<BoardRecordCreateWithoutBoardInput, BoardRecordUncheckedCreateWithoutBoardInput> | BoardRecordCreateWithoutBoardInput[] | BoardRecordUncheckedCreateWithoutBoardInput[]
+    connectOrCreate?: BoardRecordCreateOrConnectWithoutBoardInput | BoardRecordCreateOrConnectWithoutBoardInput[]
+    createMany?: BoardRecordCreateManyBoardInputEnvelope
+    connect?: BoardRecordWhereUniqueInput | BoardRecordWhereUniqueInput[]
+  }
+
+  export type BoardRecordUncheckedCreateNestedManyWithoutBoardInput = {
+    create?: XOR<BoardRecordCreateWithoutBoardInput, BoardRecordUncheckedCreateWithoutBoardInput> | BoardRecordCreateWithoutBoardInput[] | BoardRecordUncheckedCreateWithoutBoardInput[]
+    connectOrCreate?: BoardRecordCreateOrConnectWithoutBoardInput | BoardRecordCreateOrConnectWithoutBoardInput[]
+    createMany?: BoardRecordCreateManyBoardInputEnvelope
+    connect?: BoardRecordWhereUniqueInput | BoardRecordWhereUniqueInput[]
+  }
+
   export type BytesFieldUpdateOperationsInput = {
     set?: Bytes
+  }
+
+  export type EnumBoardTypeFieldUpdateOperationsInput = {
+    set?: $Enums.BoardType
   }
 
   export type ProjectsUpdateOneRequiredWithoutWhiteboardsNestedInput = {
@@ -21152,6 +22678,48 @@ export namespace Prisma {
     upsert?: ProjectsUpsertWithoutWhiteboardsInput
     connect?: ProjectsWhereUniqueInput
     update?: XOR<XOR<ProjectsUpdateToOneWithWhereWithoutWhiteboardsInput, ProjectsUpdateWithoutWhiteboardsInput>, ProjectsUncheckedUpdateWithoutWhiteboardsInput>
+  }
+
+  export type BoardRecordUpdateManyWithoutBoardNestedInput = {
+    create?: XOR<BoardRecordCreateWithoutBoardInput, BoardRecordUncheckedCreateWithoutBoardInput> | BoardRecordCreateWithoutBoardInput[] | BoardRecordUncheckedCreateWithoutBoardInput[]
+    connectOrCreate?: BoardRecordCreateOrConnectWithoutBoardInput | BoardRecordCreateOrConnectWithoutBoardInput[]
+    upsert?: BoardRecordUpsertWithWhereUniqueWithoutBoardInput | BoardRecordUpsertWithWhereUniqueWithoutBoardInput[]
+    createMany?: BoardRecordCreateManyBoardInputEnvelope
+    set?: BoardRecordWhereUniqueInput | BoardRecordWhereUniqueInput[]
+    disconnect?: BoardRecordWhereUniqueInput | BoardRecordWhereUniqueInput[]
+    delete?: BoardRecordWhereUniqueInput | BoardRecordWhereUniqueInput[]
+    connect?: BoardRecordWhereUniqueInput | BoardRecordWhereUniqueInput[]
+    update?: BoardRecordUpdateWithWhereUniqueWithoutBoardInput | BoardRecordUpdateWithWhereUniqueWithoutBoardInput[]
+    updateMany?: BoardRecordUpdateManyWithWhereWithoutBoardInput | BoardRecordUpdateManyWithWhereWithoutBoardInput[]
+    deleteMany?: BoardRecordScalarWhereInput | BoardRecordScalarWhereInput[]
+  }
+
+  export type BoardRecordUncheckedUpdateManyWithoutBoardNestedInput = {
+    create?: XOR<BoardRecordCreateWithoutBoardInput, BoardRecordUncheckedCreateWithoutBoardInput> | BoardRecordCreateWithoutBoardInput[] | BoardRecordUncheckedCreateWithoutBoardInput[]
+    connectOrCreate?: BoardRecordCreateOrConnectWithoutBoardInput | BoardRecordCreateOrConnectWithoutBoardInput[]
+    upsert?: BoardRecordUpsertWithWhereUniqueWithoutBoardInput | BoardRecordUpsertWithWhereUniqueWithoutBoardInput[]
+    createMany?: BoardRecordCreateManyBoardInputEnvelope
+    set?: BoardRecordWhereUniqueInput | BoardRecordWhereUniqueInput[]
+    disconnect?: BoardRecordWhereUniqueInput | BoardRecordWhereUniqueInput[]
+    delete?: BoardRecordWhereUniqueInput | BoardRecordWhereUniqueInput[]
+    connect?: BoardRecordWhereUniqueInput | BoardRecordWhereUniqueInput[]
+    update?: BoardRecordUpdateWithWhereUniqueWithoutBoardInput | BoardRecordUpdateWithWhereUniqueWithoutBoardInput[]
+    updateMany?: BoardRecordUpdateManyWithWhereWithoutBoardInput | BoardRecordUpdateManyWithWhereWithoutBoardInput[]
+    deleteMany?: BoardRecordScalarWhereInput | BoardRecordScalarWhereInput[]
+  }
+
+  export type WhiteboardCreateNestedOneWithoutRecordsInput = {
+    create?: XOR<WhiteboardCreateWithoutRecordsInput, WhiteboardUncheckedCreateWithoutRecordsInput>
+    connectOrCreate?: WhiteboardCreateOrConnectWithoutRecordsInput
+    connect?: WhiteboardWhereUniqueInput
+  }
+
+  export type WhiteboardUpdateOneRequiredWithoutRecordsNestedInput = {
+    create?: XOR<WhiteboardCreateWithoutRecordsInput, WhiteboardUncheckedCreateWithoutRecordsInput>
+    connectOrCreate?: WhiteboardCreateOrConnectWithoutRecordsInput
+    upsert?: WhiteboardUpsertWithoutRecordsInput
+    connect?: WhiteboardWhereUniqueInput
+    update?: XOR<XOR<WhiteboardUpdateToOneWithWhereWithoutRecordsInput, WhiteboardUpdateWithoutRecordsInput>, WhiteboardUncheckedUpdateWithoutRecordsInput>
   }
 
   export type UserCreateNestedOneWithoutOwnedGroupChatsInput = {
@@ -21535,6 +23103,13 @@ export namespace Prisma {
     not?: NestedBytesFilter<$PrismaModel> | Bytes
   }
 
+  export type NestedEnumBoardTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.BoardType | EnumBoardTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.BoardType[] | ListEnumBoardTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BoardType[] | ListEnumBoardTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumBoardTypeFilter<$PrismaModel> | $Enums.BoardType
+  }
+
   export type NestedBytesWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Bytes | BytesFieldRefInput<$PrismaModel>
     in?: Bytes[] | ListBytesFieldRefInput<$PrismaModel>
@@ -21543,6 +23118,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBytesFilter<$PrismaModel>
     _max?: NestedBytesFilter<$PrismaModel>
+  }
+
+  export type NestedEnumBoardTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BoardType | EnumBoardTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.BoardType[] | ListEnumBoardTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BoardType[] | ListEnumBoardTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumBoardTypeWithAggregatesFilter<$PrismaModel> | $Enums.BoardType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBoardTypeFilter<$PrismaModel>
+    _max?: NestedEnumBoardTypeFilter<$PrismaModel>
   }
 
   export type AccountCreateWithoutUserInput = {
@@ -23470,16 +25055,20 @@ export namespace Prisma {
   export type WhiteboardCreateWithoutWorkspaceInput = {
     title: string
     content: Bytes
+    type?: $Enums.BoardType
     createdAt?: Date | string
     updatedAt?: Date | string
+    records?: BoardRecordCreateNestedManyWithoutBoardInput
   }
 
   export type WhiteboardUncheckedCreateWithoutWorkspaceInput = {
     id?: number
     title: string
     content: Bytes
+    type?: $Enums.BoardType
     createdAt?: Date | string
     updatedAt?: Date | string
+    records?: BoardRecordUncheckedCreateNestedManyWithoutBoardInput
   }
 
   export type WhiteboardCreateOrConnectWithoutWorkspaceInput = {
@@ -23663,6 +25252,7 @@ export namespace Prisma {
     id?: IntFilter<"Whiteboard"> | number
     title?: StringFilter<"Whiteboard"> | string
     content?: BytesFilter<"Whiteboard"> | Bytes
+    type?: EnumBoardTypeFilter<"Whiteboard"> | $Enums.BoardType
     createdAt?: DateTimeFilter<"Whiteboard"> | Date | string
     updatedAt?: DateTimeFilter<"Whiteboard"> | Date | string
     workspaceId?: IntFilter<"Whiteboard"> | number
@@ -23710,6 +25300,29 @@ export namespace Prisma {
     create: XOR<ProjectsCreateWithoutWhiteboardsInput, ProjectsUncheckedCreateWithoutWhiteboardsInput>
   }
 
+  export type BoardRecordCreateWithoutBoardInput = {
+    recordId: string
+    typeName: string
+    data: string
+  }
+
+  export type BoardRecordUncheckedCreateWithoutBoardInput = {
+    id?: number
+    recordId: string
+    typeName: string
+    data: string
+  }
+
+  export type BoardRecordCreateOrConnectWithoutBoardInput = {
+    where: BoardRecordWhereUniqueInput
+    create: XOR<BoardRecordCreateWithoutBoardInput, BoardRecordUncheckedCreateWithoutBoardInput>
+  }
+
+  export type BoardRecordCreateManyBoardInputEnvelope = {
+    data: BoardRecordCreateManyBoardInput | BoardRecordCreateManyBoardInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ProjectsUpsertWithoutWhiteboardsInput = {
     update: XOR<ProjectsUpdateWithoutWhiteboardsInput, ProjectsUncheckedUpdateWithoutWhiteboardsInput>
     create: XOR<ProjectsCreateWithoutWhiteboardsInput, ProjectsUncheckedCreateWithoutWhiteboardsInput>
@@ -23740,6 +25353,87 @@ export namespace Prisma {
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     Channels?: ChannelUncheckedUpdateManyWithoutWorkspaceNestedInput
     users?: UserUncheckedUpdateManyWithoutProjectsNestedInput
+  }
+
+  export type BoardRecordUpsertWithWhereUniqueWithoutBoardInput = {
+    where: BoardRecordWhereUniqueInput
+    update: XOR<BoardRecordUpdateWithoutBoardInput, BoardRecordUncheckedUpdateWithoutBoardInput>
+    create: XOR<BoardRecordCreateWithoutBoardInput, BoardRecordUncheckedCreateWithoutBoardInput>
+  }
+
+  export type BoardRecordUpdateWithWhereUniqueWithoutBoardInput = {
+    where: BoardRecordWhereUniqueInput
+    data: XOR<BoardRecordUpdateWithoutBoardInput, BoardRecordUncheckedUpdateWithoutBoardInput>
+  }
+
+  export type BoardRecordUpdateManyWithWhereWithoutBoardInput = {
+    where: BoardRecordScalarWhereInput
+    data: XOR<BoardRecordUpdateManyMutationInput, BoardRecordUncheckedUpdateManyWithoutBoardInput>
+  }
+
+  export type BoardRecordScalarWhereInput = {
+    AND?: BoardRecordScalarWhereInput | BoardRecordScalarWhereInput[]
+    OR?: BoardRecordScalarWhereInput[]
+    NOT?: BoardRecordScalarWhereInput | BoardRecordScalarWhereInput[]
+    id?: IntFilter<"BoardRecord"> | number
+    recordId?: StringFilter<"BoardRecord"> | string
+    boardId?: IntFilter<"BoardRecord"> | number
+    typeName?: StringFilter<"BoardRecord"> | string
+    data?: StringFilter<"BoardRecord"> | string
+  }
+
+  export type WhiteboardCreateWithoutRecordsInput = {
+    title: string
+    content: Bytes
+    type?: $Enums.BoardType
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspace: ProjectsCreateNestedOneWithoutWhiteboardsInput
+  }
+
+  export type WhiteboardUncheckedCreateWithoutRecordsInput = {
+    id?: number
+    title: string
+    content: Bytes
+    type?: $Enums.BoardType
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    workspaceId: number
+  }
+
+  export type WhiteboardCreateOrConnectWithoutRecordsInput = {
+    where: WhiteboardWhereUniqueInput
+    create: XOR<WhiteboardCreateWithoutRecordsInput, WhiteboardUncheckedCreateWithoutRecordsInput>
+  }
+
+  export type WhiteboardUpsertWithoutRecordsInput = {
+    update: XOR<WhiteboardUpdateWithoutRecordsInput, WhiteboardUncheckedUpdateWithoutRecordsInput>
+    create: XOR<WhiteboardCreateWithoutRecordsInput, WhiteboardUncheckedCreateWithoutRecordsInput>
+    where?: WhiteboardWhereInput
+  }
+
+  export type WhiteboardUpdateToOneWithWhereWithoutRecordsInput = {
+    where?: WhiteboardWhereInput
+    data: XOR<WhiteboardUpdateWithoutRecordsInput, WhiteboardUncheckedUpdateWithoutRecordsInput>
+  }
+
+  export type WhiteboardUpdateWithoutRecordsInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    content?: BytesFieldUpdateOperationsInput | Bytes
+    type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspace?: ProjectsUpdateOneRequiredWithoutWhiteboardsNestedInput
+  }
+
+  export type WhiteboardUncheckedUpdateWithoutRecordsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    content?: BytesFieldUpdateOperationsInput | Bytes
+    type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workspaceId?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserCreateWithoutOwnedGroupChatsInput = {
@@ -24822,6 +26516,7 @@ export namespace Prisma {
     id?: number
     title: string
     content: Bytes
+    type?: $Enums.BoardType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -24859,22 +26554,27 @@ export namespace Prisma {
   export type WhiteboardUpdateWithoutWorkspaceInput = {
     title?: StringFieldUpdateOperationsInput | string
     content?: BytesFieldUpdateOperationsInput | Bytes
+    type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    records?: BoardRecordUpdateManyWithoutBoardNestedInput
   }
 
   export type WhiteboardUncheckedUpdateWithoutWorkspaceInput = {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     content?: BytesFieldUpdateOperationsInput | Bytes
+    type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    records?: BoardRecordUncheckedUpdateManyWithoutBoardNestedInput
   }
 
   export type WhiteboardUncheckedUpdateManyWithoutWorkspaceInput = {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     content?: BytesFieldUpdateOperationsInput | Bytes
+    type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24951,6 +26651,33 @@ export namespace Prisma {
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BoardRecordCreateManyBoardInput = {
+    id?: number
+    recordId: string
+    typeName: string
+    data: string
+  }
+
+  export type BoardRecordUpdateWithoutBoardInput = {
+    recordId?: StringFieldUpdateOperationsInput | string
+    typeName?: StringFieldUpdateOperationsInput | string
+    data?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BoardRecordUncheckedUpdateWithoutBoardInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    recordId?: StringFieldUpdateOperationsInput | string
+    typeName?: StringFieldUpdateOperationsInput | string
+    data?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BoardRecordUncheckedUpdateManyWithoutBoardInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    recordId?: StringFieldUpdateOperationsInput | string
+    typeName?: StringFieldUpdateOperationsInput | string
+    data?: StringFieldUpdateOperationsInput | string
   }
 
   export type GroupMessageCreateManyGroupInput = {

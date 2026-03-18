@@ -159,12 +159,26 @@ model Whiteboard {
   id          Int      @id @unique @default(autoincrement())
   title       String
   content     Bytes
+  type        BoardType @default(NORMAL)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
   workspaceId Int
   workspace   Projects @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  records     BoardRecord[]
 
   @@index([workspaceId])
+}
+
+model BoardRecord {
+  id         Int      @id @unique @default(autoincrement())
+  recordId   String   // Tldraw id, e.g. 'shape:id123'
+  boardId    Int
+  typeName   String
+  data       String   // JSON string of the record
+  board      Whiteboard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@index([boardId])
+  @@unique([boardId, recordId])
 }
 
 model GroupChat {
@@ -212,6 +226,12 @@ enum Theme {
 enum ChannelType {
   TEXT
   VOICE
+}
+
+enum BoardType {
+  NORMAL
+  WEB_DESIGN
+  WEB_DESIGN_HTML_CSS
 }
 
 enum RequestStatus {

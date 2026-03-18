@@ -20,10 +20,11 @@ async function Page({ params }: Params) {
 
   return (
     <RoomCanvas
+      roomId={room.id}
       roomName={room.title}
       projectId={projectId}
       onlineCount={0}
-      onInvite={() => {}}
+      boardType={room.type as "NORMAL" | "WEB_DESIGN" | "WEB_DESIGN_HTML_CSS"}
     />
   );
 }

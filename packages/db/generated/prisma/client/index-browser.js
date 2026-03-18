@@ -223,9 +223,18 @@ exports.Prisma.WhiteboardScalarFieldEnum = {
   id: 'id',
   title: 'title',
   content: 'content',
+  type: 'type',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   workspaceId: 'workspaceId'
+};
+
+exports.Prisma.BoardRecordScalarFieldEnum = {
+  id: 'id',
+  recordId: 'recordId',
+  boardId: 'boardId',
+  typeName: 'typeName',
+  data: 'data'
 };
 
 exports.Prisma.GroupChatScalarFieldEnum = {
@@ -278,6 +287,12 @@ exports.ChannelType = exports.$Enums.ChannelType = {
   VOICE: 'VOICE'
 };
 
+exports.BoardType = exports.$Enums.BoardType = {
+  NORMAL: 'NORMAL',
+  WEB_DESIGN: 'WEB_DESIGN',
+  WEB_DESIGN_HTML_CSS: 'WEB_DESIGN_HTML_CSS'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Account: 'Account',
@@ -290,6 +305,7 @@ exports.Prisma.ModelName = {
   ChannelMessage: 'ChannelMessage',
   Projects: 'Projects',
   Whiteboard: 'Whiteboard',
+  BoardRecord: 'BoardRecord',
   GroupChat: 'GroupChat',
   GroupMessage: 'GroupMessage'
 };

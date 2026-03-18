@@ -36,12 +36,13 @@ function ProjectSidebar({
 }: ProjectSidebarProps) {
   const pathname = usePathname();
   const isProjectHome = pathname === `/project/${projectId}`;
+  const isProjectChat = pathname === `/project/${projectId}/chat`;
 
   const onlineMembers = members.filter((m) => m.status === "ONLINE");
   const offlineMembers = members.filter((m) => m.status !== "ONLINE");
 
   return (
-    <aside className="scrollbar-thin flex w-64 flex-col border-r border-border bg-secondary/50">
+    <aside className="scrollbar-thin border-border bg-secondary/50 flex w-64 flex-col border-r">
       {/* Project header */}
       <div className="flex items-center justify-between p-4">
         <h2 className="truncate text-sm font-semibold text-white">
@@ -49,7 +50,7 @@ function ProjectSidebar({
         </h2>
         <button
           onClick={onInvite}
-          className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-surface hover:text-gray-300"
+          className="hover:bg-surface flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:text-gray-300"
           title="Invite members"
           aria-label="Invite members"
         >
@@ -57,22 +58,32 @@ function ProjectSidebar({
         </button>
       </div>
 
-      {/* Overview link */}
-      <div className="px-3">
+      <div className="px-3 py-2">
         <Link
           href={`/project/${projectId}`}
           className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
             isProjectHome
               ? "bg-surface text-white"
-              : "text-gray-400 hover:bg-surface/50 hover:text-gray-200"
+              : "hover:bg-surface/50 text-gray-400 hover:text-gray-200"
           }`}
         >
           <Icon icon="mdi:view-dashboard-outline" className="text-lg" />
           Overview
         </Link>
+        <Link
+          href={`/project/${projectId}/chat`}
+          className={`mt-1 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            isProjectChat
+              ? "bg-surface text-white"
+              : "hover:bg-surface/50 text-gray-400 hover:text-gray-200"
+          }`}
+        >
+          <Icon icon="mdi:chat-outline" className="text-lg" />
+          Project Chat
+        </Link>
       </div>
 
-      <div className="mx-3 my-2 border-t border-border/60" />
+      <div className="border-border/60 mx-3 my-2 border-t" />
 
       {/* Rooms section */}
       <div className="flex-1 overflow-y-auto px-3">
@@ -96,8 +107,8 @@ function ProjectSidebar({
                 href={`/project/${projectId}/${room.id}`}
                 className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
                   isActive
-                    ? "bg-surface text-white font-medium"
-                    : "text-gray-400 hover:bg-surface/50 hover:text-gray-200"
+                    ? "bg-surface font-medium text-white"
+                    : "hover:bg-surface/50 text-gray-400 hover:text-gray-200"
                 }`}
               >
                 <span className="truncate">{room.name}</span>
@@ -120,7 +131,7 @@ function ProjectSidebar({
       </div>
 
       {/* Members section */}
-      <div className="border-t border-border/60 p-3">
+      <div className="border-border/60 border-t p-3">
         <p className="mb-2 px-2 text-xs font-medium text-gray-500">
           Members ({members.length})
         </p>
@@ -148,11 +159,7 @@ function ProjectSidebar({
               key={member.id}
               className="flex items-center gap-2 rounded-lg px-2 py-1.5 opacity-40"
             >
-              <UserAvatar
-                userName={member.userName}
-                id={member.id}
-                size={24}
-              />
+              <UserAvatar userName={member.userName} id={member.id} size={24} />
               <span className="truncate text-sm text-gray-500">
                 {member.userName}
               </span>
