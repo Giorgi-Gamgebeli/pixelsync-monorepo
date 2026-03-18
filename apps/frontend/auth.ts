@@ -132,9 +132,7 @@ const nextAuth = NextAuth({
   adapter: PrismaAdapter(db),
 });
 
-export const {
-  handlers: { GET, POST },
-  signIn,
-  signOut,
-} = nextAuth;
+export const { GET, POST } = nextAuth.handlers;
+export const signIn: NextAuthResult["signIn"] = nextAuth.signIn;
+export const signOut: NextAuthResult["signOut"] = nextAuth.signOut;
 export const auth: NextAuthResult["auth"] = nextAuth.auth;
