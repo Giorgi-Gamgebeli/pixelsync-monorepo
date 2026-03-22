@@ -2,62 +2,44 @@
 
 import InfiniteViewer from "react-infinite-viewer";
 import Moveable from "react-moveable";
-import type { MouseEvent, RefObject } from "react";
-import { BOARD_HEIGHT, BOARD_WIDTH } from "./constants";
-import type { HtmlCssNode, MarqueeSelection } from "./types";
+import {
+  BOARD_HEIGHT,
+  BOARD_WIDTH,
+} from "@/app/(protectedRoutes)/project/[projectId]/[roomId]/htmlCssBoardRoom/constants";
+import { useBoard } from "@/app/(protectedRoutes)/project/[projectId]/[roomId]/htmlCssBoardRoom/BoardContext";
+import { buildSrcDoc } from "@/app/(protectedRoutes)/project/[projectId]/[roomId]/htmlCssBoardRoom/utils";
 
-type BoardCanvasProps = {
-  editMode: boolean;
-  boardRef: RefObject<HTMLDivElement | null>;
-  boardViewportRef: RefObject<HTMLDivElement | null>;
-  viewerRef: RefObject<any>;
-  moveableRef: RefObject<Moveable | null>;
-  boardZoom: number;
-  isSpacePressed: boolean;
-  isTransforming: boolean;
-  marqueeSelection: MarqueeSelection | null;
-  selectedIds: string[];
-  selectedTargets: HTMLElement[];
-  nodes: HtmlCssNode[];
-  onMouseDownViewport: (event: MouseEvent<HTMLDivElement>) => void;
-  onSelectNode: (id: string, event: MouseEvent<HTMLDivElement>) => void;
-  onSetTransforming: (value: boolean) => void;
-  onDragNode: (id: string, event: any) => void;
-  onResizeNode: (id: string, event: any) => void;
-  onBindPreviewFrame: (
-    iframe: HTMLIFrameElement | null,
-    nodeId: string,
-    mode: "board" | "edit",
-  ) => void;
-  buildSrcDoc: (node: HtmlCssNode) => string;
-};
+export default function BoardCanvas() {
+  const {
+    editMode,
+    boardRef,
+    boardViewportRef,
+    viewerRef,
+    moveableRef,
+    boardZoom,
+    isSpacePressed,
+    isTransforming,
+    marqueeSelection,
+    selectedIds,
+    selectedTargets,
+    nodes,
+    handleBoardViewportMouseDown,
+    setSelectedIds,
+    setIsTransforming,
+    handleDrag,
+    handleResize,
+    bindPreviewFrame,
+  } = useBoard();
 
-export default function BoardCanvas({
-  editMode,
-  boardRef,
-  boardViewportRef,
-  viewerRef,
-  moveableRef,
-  boardZoom,
-  isSpacePressed,
-  isTransforming,
-  marqueeSelection,
-  selectedIds,
-  selectedTargets,
-  nodes,
-  onMouseDownViewport,
-  onSelectNode,
-  onSetTransforming,
-  onDragNode,
-  onResizeNode,
-  onBindPreviewFrame,
-  buildSrcDoc,
-}: BoardCanvasProps) {
   return (
     <div
       ref={boardViewportRef}
-      className={editMode ? "hidden" : "relative z-0 block h-full w-full"}
-      onMouseDown={onMouseDownViewport}
+      className={
+        editMode
+          ? "pointer-events-none relative z-0 block h-full w-full"
+          : "relative z-0 block h-full w-full"
+      }
+      onMouseDown={handleBoardViewportMouseDown}
     >
       <InfiniteViewer
         ref={viewerRef}
@@ -82,7 +64,11 @@ export default function BoardCanvas({
             <div
               key={node.id}
               data-node-id={node.id}
-              onMouseDown={(event) => onSelectNode(node.id, event)}
+              onMouseDown={(event) => {
+                if (isSpacePressed) return;
+                event.stopPropagation();
+                setSelectedIds([node.id]);
+              }}
               className={`html-css-node absolute cursor-pointer ${
                 selectedIds.includes(node.id)
                   ? "ring-brand-400 ring-2 ring-offset-1 ring-offset-[#121212]"
@@ -101,7 +87,7 @@ export default function BoardCanvas({
                   sandbox="allow-same-origin"
                   srcDoc={buildSrcDoc(node)}
                   onLoad={(event) =>
-                    onBindPreviewFrame(event.currentTarget, node.id, "board")
+                    bindPreviewFrame(event.currentTarget, node.id)
                   }
                 />
               </div>
@@ -149,39 +135,39 @@ export default function BoardCanvas({
         origin={false}
         throttleDrag={0}
         throttleResize={0}
-        onDragStart={() => onSetTransforming(true)}
+        onDragStart={() => setIsTransforming(true)}
         onDrag={(event) => {
           const target = event.target as HTMLElement;
           const id = target.dataset.nodeId;
           if (!id) return;
-          onDragNode(id, event);
+          handleDrag(id, event);
         }}
-        onDragEnd={() => onSetTransforming(false)}
-        onDragGroupStart={() => onSetTransforming(true)}
+        onDragEnd={() => setIsTransforming(false)}
+        onDragGroupStart={() => setIsTransforming(true)}
         onDragGroup={(event) => {
           for (const dragEvent of event.events) {
             const id = (dragEvent.target as HTMLElement).dataset.nodeId;
             if (!id) continue;
-            onDragNode(id, dragEvent);
+            handleDrag(id, dragEvent);
           }
         }}
-        onDragGroupEnd={() => onSetTransforming(false)}
-        onResizeStart={() => onSetTransforming(true)}
+        onDragGroupEnd={() => setIsTransforming(false)}
+        onResizeStart={() => setIsTransforming(true)}
         onResize={(event) => {
           const id = (event.target as HTMLElement).dataset.nodeId;
           if (!id) return;
-          onResizeNode(id, event);
+          handleResize(id, event);
         }}
-        onResizeEnd={() => onSetTransforming(false)}
-        onResizeGroupStart={() => onSetTransforming(true)}
+        onResizeEnd={() => setIsTransforming(false)}
+        onResizeGroupStart={() => setIsTransforming(true)}
         onResizeGroup={(event) => {
           for (const resizeEvent of event.events) {
             const id = (resizeEvent.target as HTMLElement).dataset.nodeId;
             if (!id) continue;
-            onResizeNode(id, resizeEvent);
+            handleResize(id, resizeEvent);
           }
         }}
-        onResizeGroupEnd={() => onSetTransforming(false)}
+        onResizeGroupEnd={() => setIsTransforming(false)}
       />
     </div>
   );

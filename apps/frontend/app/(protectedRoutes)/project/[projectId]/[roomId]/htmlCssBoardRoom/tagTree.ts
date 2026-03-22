@@ -10,20 +10,6 @@ export function toComponentArray(collection: any): any[] {
     const asArray = collection.toArray();
     if (Array.isArray(asArray)) return asArray;
   }
-  if (typeof collection.map === "function") {
-    const asArray = collection.map((item: any) => item);
-    if (Array.isArray(asArray)) return asArray;
-  }
-  if (typeof collection.forEach === "function") {
-    const asArray: any[] = [];
-    collection.forEach((item: any) => asArray.push(item));
-    if (asArray.length > 0) return asArray;
-  }
-  if (typeof collection.each === "function") {
-    const asArray: any[] = [];
-    collection.each((item: any) => asArray.push(item));
-    if (asArray.length > 0) return asArray;
-  }
   if (
     typeof collection.at === "function" &&
     Number.isFinite(collection.length)
@@ -98,9 +84,7 @@ export function buildTagTreeNode(component: any): TagTreeNode | null {
 
   let tagName = rawTag;
   if (!tagName) {
-    if (type === "textnode") {
-      tagName = "#text";
-    } else if (type) {
+    if (type) {
       tagName = type;
     } else {
       tagName = "node";

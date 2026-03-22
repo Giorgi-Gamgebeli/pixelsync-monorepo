@@ -31,7 +31,18 @@ function bytesToString(bytes: Uint8Array | Buffer | null | undefined) {
 
 export const getProjects = cache(async function getProjects() {
   try {
-    const projects = await db.projects.findMany();
+    const session = await auth();
+    if (!session) return [];
+
+    const projects = await db.projects.findMany({
+      where: {
+        OR: [
+          { ownerId: session.user.id },
+          { users: { some: { id: session.user.id } } },
+        ],
+      },
+      orderBy: { createdAt: "asc" },
+    });
 
     return projects;
   } catch (error) {

@@ -1,61 +1,43 @@
 "use client";
 
+import { useMemo } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Link from "next/link";
 import { PAGE_PRESETS } from "./constants";
-import type { HtmlCssNode } from "./types";
+import { useBoard } from "./BoardContext";
 
-type RoomHeaderProps = {
-  projectId: string;
-  roomName: string;
-  onlineCount: number;
-  selectedNode: HtmlCssNode | null;
-  editMode: boolean;
-  editFitPercent: number;
-  boardZoom: number;
-  layersOpen: boolean;
-  propertiesOpen: boolean;
-  onApplyPagePreset: (presetKey: string) => void;
-  onUpdateSelectedWidth: (value: number) => void;
-  onUpdateSelectedHeight: (value: number) => void;
-  onSwapPageOrientation: () => void;
-  onZoomOut: () => void;
-  onResetZoom: () => void;
-  onZoomIn: () => void;
-  onShowInvite: () => void;
-  onToggleEditMode: () => void;
-  onAddPage: () => void;
-  onExportSelected: () => void;
-  onDeleteSelected: () => void;
-  onToggleLayersOpen: () => void;
-  onTogglePropertiesOpen: () => void;
-};
+export default function RoomHeader() {
+  const {
+    projectId,
+    roomName,
+    onlineCount,
+    nodes,
+    selectedIds,
+    editMode,
+    editFitPercent,
+    boardZoom,
+    layersOpen,
+    propertiesOpen,
+    applyPagePreset,
+    updateNode,
+    swapPageOrientation,
+    zoomOut,
+    resetZoom,
+    zoomIn,
+    setShowInvite,
+    setEditMode,
+    addPage,
+    exportSelected,
+    deleteSelected,
+    setLayersOpen,
+    setPropertiesOpen,
+  } = useBoard();
 
-export default function RoomHeader({
-  projectId,
-  roomName,
-  onlineCount,
-  selectedNode,
-  editMode,
-  editFitPercent,
-  boardZoom,
-  layersOpen,
-  propertiesOpen,
-  onApplyPagePreset,
-  onUpdateSelectedWidth,
-  onUpdateSelectedHeight,
-  onSwapPageOrientation,
-  onZoomOut,
-  onResetZoom,
-  onZoomIn,
-  onShowInvite,
-  onToggleEditMode,
-  onAddPage,
-  onExportSelected,
-  onDeleteSelected,
-  onToggleLayersOpen,
-  onTogglePropertiesOpen,
-}: RoomHeaderProps) {
+  const selectedNode = useMemo(
+    () => nodes.find((node) => node.id === selectedIds[0]) ?? null,
+    [nodes, selectedIds],
+  );
+
   return (
     <div className="border-border flex h-12 shrink-0 items-center justify-between border-b px-4">
       <div className="flex items-center gap-3">
@@ -77,7 +59,7 @@ export default function RoomHeader({
             <select
               defaultValue=""
               onChange={(event) => {
-                onApplyPagePreset(event.target.value);
+                applyPagePreset(event.target.value);
                 event.currentTarget.value = "";
               }}
               className="hover:bg-surface focus:bg-surface max-w-[140px] rounded bg-transparent px-1 py-0.5 text-xs text-gray-200 outline-none"
@@ -96,9 +78,11 @@ export default function RoomHeader({
             <input
               type="number"
               value={Math.round(selectedNode.w)}
-              min={0}
+              min={1}
               onChange={(event) =>
-                onUpdateSelectedWidth(Math.max(0, Number(event.target.value)))
+                updateNode(selectedNode.id, {
+                  w: Math.max(1, Number(event.target.value)),
+                })
               }
               className="focus:bg-surface w-16 rounded bg-transparent px-1 py-0.5 text-xs text-gray-200 outline-none"
               aria-label="Viewport width"
@@ -107,15 +91,17 @@ export default function RoomHeader({
             <input
               type="number"
               value={Math.round(selectedNode.h)}
-              min={0}
+              min={1}
               onChange={(event) =>
-                onUpdateSelectedHeight(Math.max(0, Number(event.target.value)))
+                updateNode(selectedNode.id, {
+                  h: Math.max(1, Number(event.target.value)),
+                })
               }
               className="focus:bg-surface w-16 rounded bg-transparent px-1 py-0.5 text-xs text-gray-200 outline-none"
               aria-label="Viewport height"
             />
             <button
-              onClick={onSwapPageOrientation}
+              onClick={swapPageOrientation}
               className="hover:bg-surface ml-0.5 flex h-6 w-6 items-center justify-center rounded text-gray-300 transition-colors hover:text-white"
               aria-label="Swap viewport orientation"
             >
@@ -133,7 +119,9 @@ export default function RoomHeader({
               step={1}
               value={Math.round(selectedNode.w)}
               onChange={(event) =>
-                onUpdateSelectedWidth(Math.max(0, Number(event.target.value)))
+                updateNode(selectedNode.id, {
+                  w: Math.max(1, Number(event.target.value)),
+                })
               }
               className="accent-brand-500 w-24"
               aria-label="Viewport width resizer"
@@ -154,21 +142,21 @@ export default function RoomHeader({
         {!editMode && (
           <div className="bg-surface/60 ml-1 flex items-center gap-1 rounded-lg p-1">
             <button
-              onClick={onZoomOut}
+              onClick={zoomOut}
               className="hover:bg-surface flex h-6 w-6 items-center justify-center rounded text-gray-300 transition-colors hover:text-white"
               aria-label="Zoom out"
             >
               <Icon icon="mdi:minus" className="text-sm" />
             </button>
             <button
-              onClick={onResetZoom}
+              onClick={resetZoom}
               className="hover:bg-surface min-w-[52px] rounded px-1.5 py-0.5 text-center text-xs text-gray-300 transition-colors hover:text-white"
               aria-label="Reset zoom"
             >
               {Math.round(boardZoom * 100)}%
             </button>
             <button
-              onClick={onZoomIn}
+              onClick={zoomIn}
               className="hover:bg-surface flex h-6 w-6 items-center justify-center rounded text-gray-300 transition-colors hover:text-white"
               aria-label="Zoom in"
             >
@@ -178,7 +166,7 @@ export default function RoomHeader({
         )}
 
         <button
-          onClick={onShowInvite}
+          onClick={() => setShowInvite(true)}
           className="hover:bg-surface flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs text-gray-400 transition-colors hover:text-white"
         >
           <Icon icon="mdi:share-variant" className="text-sm" />
@@ -186,7 +174,7 @@ export default function RoomHeader({
         </button>
 
         <button
-          onClick={onToggleEditMode}
+          onClick={() => setEditMode(!editMode)}
           disabled={!selectedNode}
           className="hover:bg-surface flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs text-gray-400 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
@@ -198,27 +186,27 @@ export default function RoomHeader({
             }
             className="text-sm"
           />
-          {editMode ? "Board Mode" : "Edit Mode"}
+          {editMode ? "Edit Mode" : "Board Mode"}
         </button>
 
         <div className="bg-border mx-1 h-4 w-px" />
 
         <button
-          onClick={onAddPage}
+          onClick={addPage}
           className="hover:bg-surface flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs text-gray-400 transition-colors hover:text-white"
         >
           <Icon icon="mdi:plus-box-outline" className="text-sm" />
           Add Page
         </button>
         <button
-          onClick={onExportSelected}
+          onClick={exportSelected}
           className="hover:bg-surface flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs text-gray-400 transition-colors hover:text-white"
         >
           <Icon icon="mdi:code-braces-box" className="text-sm" />
           Export
         </button>
         <button
-          onClick={onDeleteSelected}
+          onClick={deleteSelected}
           className="hover:bg-surface flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:text-gray-300"
           aria-label="Delete selected component"
         >
@@ -226,7 +214,7 @@ export default function RoomHeader({
         </button>
 
         <button
-          onClick={onToggleLayersOpen}
+          onClick={() => setLayersOpen(!layersOpen)}
           aria-label="Toggle layers"
           className={`relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors ${
             layersOpen
@@ -237,7 +225,7 @@ export default function RoomHeader({
           <Icon icon="mdi:layers-outline" className="text-lg" />
         </button>
         <button
-          onClick={onTogglePropertiesOpen}
+          onClick={() => setPropertiesOpen(!propertiesOpen)}
           aria-label="Toggle properties"
           className={`relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors ${
             propertiesOpen

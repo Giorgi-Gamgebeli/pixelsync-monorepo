@@ -1,69 +1,67 @@
 "use client";
 
+import { useMemo } from "react";
 import { STYLE_GROUPS, STYLE_SELECT_OPTIONS, TAG_OPTIONS } from "./constants";
 import { labelFromStyleKey } from "./utils";
-import type { HtmlCssNode, StyleDraft } from "./types";
+import { useBoard } from "./BoardContext";
 
-type MoveTargetOption = {
-  cid: string;
-  label: string;
-};
+export default function DesignPanel() {
+  const {
+    nodes,
+    selectedIds,
+    updateNode,
+    importTag,
+    setImportTag,
+    importAsChild,
+    setImportAsChild,
+    importSnippet,
+    setImportSnippet,
+    addTagToSelectedComponent,
+    selectRootTag,
+    importHtmlSnippetToComponent,
+    selectedHtmlTag,
+    clearTagSelection,
+    selectedTagText,
+    applySelectedTagText,
+    selectedTagCid,
+    moveSelectedTagBy,
+    nestSelectedTagIntoPreviousSibling,
+    outdentSelectedTag,
+    moveTargetCid,
+    setMoveTargetCid,
+    moveSelectedTagIntoTarget,
+    styleDraft,
+    applyStyleValue,
+    tagTree,
+  } = useBoard();
 
-type DesignPanelProps = {
-  selectedNode: HtmlCssNode | null;
-  selectedHtmlTag: string;
-  selectedTagCid: string | null;
-  selectedTagText: string;
-  importTag: string;
-  importAsChild: boolean;
-  importSnippet: string;
-  moveTargetCid: string;
-  moveTargetOptions: MoveTargetOption[];
-  styleDraft: StyleDraft;
-  onUpdateNode: (id: string, patch: Partial<HtmlCssNode>) => void;
-  onSetImportTag: (value: string) => void;
-  onSetImportAsChild: (value: boolean) => void;
-  onSetImportSnippet: (value: string) => void;
-  onAddTagToSelectedComponent: () => void;
-  onSelectRootTag: () => void;
-  onImportHtmlSnippetToComponent: () => void;
-  onClearTagSelection: () => void;
-  onApplySelectedTagText: (value: string) => void;
-  onMoveSelectedTagBy: (delta: number) => void;
-  onNestSelectedTagIntoPreviousSibling: () => void;
-  onOutdentSelectedTag: () => void;
-  onSetMoveTargetCid: (value: string) => void;
-  onMoveSelectedTagIntoTarget: () => void;
-  onApplyStyleValue: (key: string, value: string) => void;
-};
+  const selectedNode = useMemo(
+    () => nodes.find((node) => node.id === selectedIds[0]) ?? null,
+    [nodes, selectedIds],
+  );
 
-export default function DesignPanel({
-  selectedNode,
-  selectedHtmlTag,
-  selectedTagCid,
-  selectedTagText,
-  importTag,
-  importAsChild,
-  importSnippet,
-  moveTargetCid,
-  moveTargetOptions,
-  styleDraft,
-  onUpdateNode,
-  onSetImportTag,
-  onSetImportAsChild,
-  onSetImportSnippet,
-  onAddTagToSelectedComponent,
-  onSelectRootTag,
-  onImportHtmlSnippetToComponent,
-  onClearTagSelection,
-  onApplySelectedTagText,
-  onMoveSelectedTagBy,
-  onNestSelectedTagIntoPreviousSibling,
-  onOutdentSelectedTag,
-  onSetMoveTargetCid,
-  onMoveSelectedTagIntoTarget,
-  onApplyStyleValue,
-}: DesignPanelProps) {
+  const moveTargetOptions = useMemo(() => {
+    const options: Array<{ cid: string; label: string }> = [];
+    const walk = (items: any[], depth: number) => {
+      for (const item of items) {
+        if (item.cid !== selectedTagCid) {
+          const name = item.tagName.startsWith("#")
+            ? item.tagName
+            : `<${item.tagName}>`;
+          options.push({
+            cid: item.cid,
+            label: `${"  ".repeat(depth)}${name}`,
+          });
+        }
+        if (item.children.length > 0) {
+          walk(item.children, depth + 1);
+        }
+      }
+    };
+    walk(tagTree, 0);
+    return options;
+  }, [tagTree, selectedTagCid]);
+
   return (
     <aside className="border-border bg-secondary flex h-full w-96 flex-col border-l">
       <div className="border-border border-b px-4 py-3">
@@ -83,7 +81,7 @@ export default function DesignPanel({
               <input
                 value={selectedNode.name}
                 onChange={(event) =>
-                  onUpdateNode(selectedNode.id, {
+                  updateNode(selectedNode.id, {
                     name: event.target.value,
                   })
                 }
@@ -94,42 +92,12 @@ export default function DesignPanel({
 
             <section>
               <h4 className="mb-2 text-xs font-semibold text-gray-400 uppercase">
-                Frame
-              </h4>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  value={Math.round(selectedNode.w)}
-                  onChange={(event) =>
-                    onUpdateNode(selectedNode.id, {
-                      w: Math.max(0, Number(event.target.value)),
-                    })
-                  }
-                  className="bg-surface focus:ring-brand-500 rounded px-2 py-1.5 text-xs text-white outline-none focus:ring-1"
-                  placeholder="width"
-                />
-                <input
-                  type="number"
-                  value={Math.round(selectedNode.h)}
-                  onChange={(event) =>
-                    onUpdateNode(selectedNode.id, {
-                      h: Math.max(0, Number(event.target.value)),
-                    })
-                  }
-                  className="bg-surface focus:ring-brand-500 rounded px-2 py-1.5 text-xs text-white outline-none focus:ring-1"
-                  placeholder="height"
-                />
-              </div>
-            </section>
-
-            <section>
-              <h4 className="mb-2 text-xs font-semibold text-gray-400 uppercase">
                 Import HTML Tag
               </h4>
               <div className="space-y-2">
                 <select
                   value={importTag}
-                  onChange={(event) => onSetImportTag(event.target.value)}
+                  onChange={(event) => setImportTag(event.target.value)}
                   className="bg-surface focus:ring-brand-500 w-full rounded px-2 py-2 text-xs text-white outline-none focus:ring-1"
                 >
                   {TAG_OPTIONS.map((tag) => (
@@ -143,22 +111,20 @@ export default function DesignPanel({
                   <input
                     type="checkbox"
                     checked={importAsChild}
-                    onChange={(event) =>
-                      onSetImportAsChild(event.target.checked)
-                    }
+                    onChange={(event) => setImportAsChild(event.target.checked)}
                   />
                   Add as child of selected tag
                 </label>
 
                 <div className="grid grid-cols-2 gap-2">
                   <button
-                    onClick={onAddTagToSelectedComponent}
+                    onClick={addTagToSelectedComponent}
                     className="bg-brand-500 hover:bg-brand-600 rounded px-3 py-2 text-xs font-medium text-white"
                   >
                     Import Tag
                   </button>
                   <button
-                    onClick={onSelectRootTag}
+                    onClick={selectRootTag}
                     className="bg-surface hover:bg-surface/80 rounded px-3 py-2 text-xs text-gray-300"
                   >
                     Select Root
@@ -167,12 +133,12 @@ export default function DesignPanel({
 
                 <textarea
                   value={importSnippet}
-                  onChange={(event) => onSetImportSnippet(event.target.value)}
+                  onChange={(event) => setImportSnippet(event.target.value)}
                   className="bg-surface focus:ring-brand-500 min-h-[74px] w-full rounded px-2 py-1.5 text-xs text-white outline-none focus:ring-1"
                   placeholder="Paste raw HTML snippet"
                 />
                 <button
-                  onClick={onImportHtmlSnippetToComponent}
+                  onClick={importHtmlSnippetToComponent}
                   className="bg-surface hover:bg-surface/80 w-full rounded px-3 py-2 text-xs text-gray-200"
                 >
                   Import HTML Snippet
@@ -191,7 +157,7 @@ export default function DesignPanel({
                 </span>
               </div>
               <button
-                onClick={onClearTagSelection}
+                onClick={clearTagSelection}
                 className="bg-surface hover:bg-surface/80 mt-2 w-full rounded px-3 py-2 text-xs text-gray-300"
               >
                 Deselect Tag
@@ -204,7 +170,7 @@ export default function DesignPanel({
               </h4>
               <textarea
                 value={selectedTagText}
-                onChange={(event) => onApplySelectedTagText(event.target.value)}
+                onChange={(event) => applySelectedTagText(event.target.value)}
                 disabled={!selectedTagCid}
                 className="bg-surface focus:ring-brand-500 min-h-[74px] w-full rounded px-2 py-1.5 text-xs text-white outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-40"
                 placeholder="Type text for selected tag"
@@ -217,28 +183,28 @@ export default function DesignPanel({
               </h4>
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => onMoveSelectedTagBy(-1)}
+                  onClick={() => moveSelectedTagBy(-1)}
                   disabled={!selectedTagCid}
                   className="bg-surface hover:bg-surface/80 rounded px-3 py-1.5 text-xs text-gray-300 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Move Up
                 </button>
                 <button
-                  onClick={() => onMoveSelectedTagBy(1)}
+                  onClick={() => moveSelectedTagBy(1)}
                   disabled={!selectedTagCid}
                   className="bg-surface hover:bg-surface/80 rounded px-3 py-1.5 text-xs text-gray-300 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Move Down
                 </button>
                 <button
-                  onClick={onNestSelectedTagIntoPreviousSibling}
+                  onClick={nestSelectedTagIntoPreviousSibling}
                   disabled={!selectedTagCid}
                   className="bg-surface hover:bg-surface/80 rounded px-3 py-1.5 text-xs text-gray-300 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Nest In
                 </button>
                 <button
-                  onClick={onOutdentSelectedTag}
+                  onClick={outdentSelectedTag}
                   disabled={!selectedTagCid}
                   className="bg-surface hover:bg-surface/80 rounded px-3 py-1.5 text-xs text-gray-300 disabled:cursor-not-allowed disabled:opacity-40"
                 >
@@ -248,7 +214,7 @@ export default function DesignPanel({
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <select
                   value={moveTargetCid}
-                  onChange={(event) => onSetMoveTargetCid(event.target.value)}
+                  onChange={(event) => setMoveTargetCid(event.target.value)}
                   className="bg-surface focus:ring-brand-500 col-span-1 rounded px-2 py-1.5 text-xs text-white outline-none focus:ring-1"
                 >
                   <option value="">Move into...</option>
@@ -259,7 +225,7 @@ export default function DesignPanel({
                   ))}
                 </select>
                 <button
-                  onClick={onMoveSelectedTagIntoTarget}
+                  onClick={moveSelectedTagIntoTarget}
                   disabled={!selectedTagCid || !moveTargetCid}
                   className="bg-surface hover:bg-surface/80 rounded px-3 py-1.5 text-xs text-gray-300 disabled:cursor-not-allowed disabled:opacity-40"
                 >
@@ -291,7 +257,7 @@ export default function DesignPanel({
                               <select
                                 value={value}
                                 onChange={(event) =>
-                                  onApplyStyleValue(key, event.target.value)
+                                  applyStyleValue(key, event.target.value)
                                 }
                                 className="bg-surface focus:ring-brand-500 w-full rounded px-2 py-1.5 text-xs text-white outline-none focus:ring-1"
                               >
@@ -308,7 +274,7 @@ export default function DesignPanel({
                               <input
                                 value={value}
                                 onChange={(event) =>
-                                  onApplyStyleValue(key, event.target.value)
+                                  applyStyleValue(key, event.target.value)
                                 }
                                 className="bg-surface focus:ring-brand-500 w-full rounded px-2 py-1.5 text-xs text-white outline-none focus:ring-1"
                                 placeholder="e.g. 100%, 16px, 1rem"

@@ -11,6 +11,7 @@ import {
   readStyleDraft,
 } from "./tagTree";
 import type { HtmlCssNode, StyleDraft, TagTreeNode } from "./types";
+import type { BoardViewerLike, GrapesEditorLike } from "./contracts";
 import { createEmptyStyleDraft, normalizeHtmlFragment } from "./utils";
 
 type UseGrapesLifecycleArgs = {
@@ -25,7 +26,7 @@ type UseGrapesLifecycleArgs = {
   setSelectedHtmlTag: React.Dispatch<React.SetStateAction<string>>;
   setStyleDraft: React.Dispatch<React.SetStateAction<StyleDraft>>;
   setSelectedTagText: React.Dispatch<React.SetStateAction<string>>;
-  viewerRef: React.RefObject<any>;
+  viewerRef: React.RefObject<BoardViewerLike | null>;
   getViewerZoom: () => number;
   setViewerZoomSmooth: (
     nextZoom: number,
@@ -56,23 +57,22 @@ export function useGrapesLifecycle({
   resetZoom,
 }: UseGrapesLifecycleArgs) {
   const [editFitPercent, setEditFitPercent] = useState(100);
+  const [isGrapesReady, setIsGrapesReady] = useState(false);
 
   const grapesCanvasRef = useRef<HTMLDivElement | null>(null);
-  const grapesEditorRef = useRef<any>(null);
+  const grapesEditorRef = useRef<GrapesEditorLike | null>(null);
   const grapesSyncingRef = useRef(false);
   const activeNodeIdRef = useRef<string | null>(null);
   const previewFrameCleanupRef = useRef<Map<HTMLIFrameElement, () => void>>(
     new Map(),
   );
-  const previewFrameMetaRef = useRef<
-    Map<HTMLIFrameElement, { nodeId: string; mode: "board" | "edit" }>
-  >(new Map());
+  const previewFrameMetaRef = useRef<Map<HTMLIFrameElement, string>>(new Map());
   const pendingPreviewPathRef = useRef<{
     nodeId: string;
     path: number[];
   } | null>(null);
 
-  const syncActiveNodeFromEditor = (editor: any) => {
+  const syncActiveNodeFromEditor = (editor: GrapesEditorLike | null) => {
     const nodeId = activeNodeIdRef.current ?? selectedNode?.id ?? null;
     if (!nodeId) return;
 
@@ -83,7 +83,10 @@ export function useGrapesLifecycle({
     );
   };
 
-  const fitEditorCanvasToNode = (editor: any, node: HtmlCssNode | null) => {
+  const fitEditorCanvasToNode = (
+    editor: GrapesEditorLike | null,
+    node: HtmlCssNode | null,
+  ) => {
     if (!editor || !node) return;
     const host = grapesCanvasRef.current;
     if (!host) return;
@@ -211,7 +214,6 @@ export function useGrapesLifecycle({
   const bindPreviewFrame = (
     iframe: HTMLIFrameElement | null,
     nodeId: string,
-    mode: "board" | "edit",
   ) => {
     if (!iframe) return;
 
@@ -233,9 +235,7 @@ export function useGrapesLifecycle({
           : (rawTarget?.parentElement ?? null);
       if (!target) return;
 
-      if (mode === "board") {
-        onSetSelectedIds([nodeId]);
-      }
+      onSetSelectedIds([nodeId]);
 
       const path = getDomElementPath(target, doc.body);
       if (activeNodeIdRef.current !== nodeId) {
@@ -249,8 +249,6 @@ export function useGrapesLifecycle({
       if (!(event.ctrlKey || event.metaKey)) return;
       event.preventDefault();
       event.stopPropagation();
-
-      if (mode !== "board") return;
 
       const wheelContainer = viewerRef.current?.getContainer?.() as
         | HTMLElement
@@ -287,8 +285,6 @@ export function useGrapesLifecycle({
       event.preventDefault();
       event.stopPropagation();
 
-      if (mode !== "board") return;
-
       if (key === "0") {
         resetZoom();
         return;
@@ -304,7 +300,7 @@ export function useGrapesLifecycle({
     doc.addEventListener("wheel", handleWheel, { passive: false });
     doc.addEventListener("keydown", handleKeyDown, true);
 
-    previewFrameMetaRef.current.set(iframe, { nodeId, mode });
+    previewFrameMetaRef.current.set(iframe, nodeId);
     applyPreviewSelectionToFrame(iframe, nodeId);
 
     previewFrameCleanupRef.current.set(iframe, () => {
@@ -319,6 +315,7 @@ export function useGrapesLifecycle({
     if (grapesEditorRef.current || !grapesCanvasRef.current || !selectedNode)
       return;
 
+    setIsGrapesReady(false);
     let cancelled = false;
 
     const ensureStylesheet = () => {
@@ -350,10 +347,6 @@ export function useGrapesLifecycle({
       };
 
       editor.on("update", refreshTreeFromEditor);
-      editor.on("component:add", refreshTreeFromEditor);
-      editor.on("component:remove", refreshTreeFromEditor);
-      editor.on("component:update", refreshTreeFromEditor);
-      editor.on("component:drag:end", refreshTreeFromEditor);
 
       editor.on("component:selected", (component: any) => {
         const tagName = String(
@@ -383,6 +376,7 @@ export function useGrapesLifecycle({
       requestAnimationFrame(() => {
         editor.refresh?.();
         fitEditorCanvasToNode(editor, selectedNode);
+        setIsGrapesReady(true);
       });
     };
 
@@ -403,6 +397,7 @@ export function useGrapesLifecycle({
         grapesEditorRef.current.destroy();
         grapesEditorRef.current = null;
       }
+      setIsGrapesReady(false);
     };
   }, []);
 
@@ -413,6 +408,7 @@ export function useGrapesLifecycle({
     if (!selectedNode) {
       activeNodeIdRef.current = null;
       pendingPreviewPathRef.current = null;
+      setIsGrapesReady(false);
       setSelectedHtmlTag("(none)");
       setSelectedTagCid(null);
       setTagTree([]);
@@ -422,6 +418,7 @@ export function useGrapesLifecycle({
     }
 
     activeNodeIdRef.current = selectedNode.id;
+    setIsGrapesReady(false);
     grapesSyncingRef.current = true;
     editor.setComponents(normalizeHtmlFragment(selectedNode.html));
     editor.setStyle(selectedNode.css);
@@ -429,6 +426,7 @@ export function useGrapesLifecycle({
     requestAnimationFrame(() => {
       editor.refresh?.();
       fitEditorCanvasToNode(editor, selectedNode);
+      setIsGrapesReady(true);
     });
 
     const wrapper = editor.getWrapper?.();
@@ -451,10 +449,10 @@ export function useGrapesLifecycle({
   }, [selectedNode?.id]);
 
   useEffect(() => {
-    for (const [iframe, meta] of previewFrameMetaRef.current.entries()) {
-      applyPreviewSelectionToFrame(iframe, meta.nodeId);
+    for (const [iframe, nodeId] of previewFrameMetaRef.current.entries()) {
+      applyPreviewSelectionToFrame(iframe, nodeId);
     }
-  }, [selectedTagCid, selectedNode?.id, nodes]);
+  }, [selectedTagCid, selectedNode?.id]);
 
   useEffect(() => {
     if (!editMode || !selectedNode) return;
@@ -466,7 +464,7 @@ export function useGrapesLifecycle({
       rebuildTagTree();
     });
     return () => cancelAnimationFrame(frame);
-  }, [editMode, selectedNode?.id, nodes]);
+  }, [editMode, selectedNode?.id]);
 
   useEffect(() => {
     if (!editMode || !selectedNode) return;
@@ -486,6 +484,7 @@ export function useGrapesLifecycle({
     grapesCanvasRef,
     grapesEditorRef,
     editFitPercent,
+    isGrapesReady,
     bindPreviewFrame,
     rebuildTagTree,
     syncActiveNodeFromEditor,

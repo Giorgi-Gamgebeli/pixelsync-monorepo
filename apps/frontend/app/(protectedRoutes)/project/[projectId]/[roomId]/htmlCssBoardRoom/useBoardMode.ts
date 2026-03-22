@@ -9,6 +9,11 @@ import {
 import Moveable from "react-moveable";
 import { INITIAL_BOARD_ZOOM } from "./constants";
 import type { HtmlCssNode, MarqueeSelection } from "./types";
+import type {
+  BoardViewerLike,
+  MoveableDragLikeEvent,
+  MoveableResizeLikeEvent,
+} from "./contracts";
 import { isTextInputTarget } from "./utils";
 
 type UseBoardModeArgs = {
@@ -39,7 +44,7 @@ export function useBoardMode({
 
   const boardRef = useRef<HTMLDivElement | null>(null);
   const boardViewportRef = useRef<HTMLDivElement | null>(null);
-  const viewerRef = useRef<any>(null);
+  const viewerRef = useRef<BoardViewerLike | null>(null);
   const moveableRef = useRef<Moveable | null>(null);
   const zoomAnimationFrameRef = useRef<number | null>(null);
   const targetZoomRef = useRef(1);
@@ -119,15 +124,15 @@ export function useBoardMode({
   const zoomOut = () => setViewerZoomSmooth(getViewerZoom() / 1.1);
   const resetZoom = () => setViewerZoomSmooth(INITIAL_BOARD_ZOOM);
 
-  const handleDrag = (id: string, event: any) => {
-    const [x, y] = event.beforeTranslate as [number, number];
+  const handleDrag = (id: string, event: MoveableDragLikeEvent) => {
+    const [x = 0, y = 0] = event.beforeTranslate;
     onUpdateNode(id, { x, y });
   };
 
-  const handleResize = (id: string, event: any) => {
-    const [x, y] = event.drag.beforeTranslate as [number, number];
-    const width = Math.max(0, Math.round(event.width));
-    const height = Math.max(0, Math.round(event.height));
+  const handleResize = (id: string, event: MoveableResizeLikeEvent) => {
+    const [x = 0, y = 0] = event.drag.beforeTranslate;
+    const width = Math.max(1, Math.round(event.width));
+    const height = Math.max(1, Math.round(event.height));
     onUpdateNode(id, { x, y, w: width, h: height });
   };
 
