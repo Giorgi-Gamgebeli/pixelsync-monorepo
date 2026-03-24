@@ -1,42 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getDMCache, fetchDM, type DMCacheEntry } from "@/app/_lib/chatCache";
+import type { Session } from "next-auth";
 import ChatHeader from "./ChatHeader";
 import Messages from "./Messages";
-import ChatSkeleton from "./ChatSkeleton";
 import ClientIcon from "@/app/_components/ClientIcon";
+import type { DMChatPageData } from "./getCachedDMChatPageData";
 
-function DMChatView({ friendId }: { friendId: string }) {
-  const cached = getDMCache(friendId);
-  const [data, setData] = useState<DMCacheEntry | null>(cached ?? null);
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(!cached);
+type DMChatViewProps = Readonly<{
+  friendId: string;
+  session: Session;
+  initialData: DMChatPageData | { error: string };
+}>;
 
-  useEffect(() => {
-    let stale = false;
-
-    fetchDM(friendId).then((result) => {
-      if (stale) return;
-      if (result) {
-        setData(result);
-      } else {
-        setData((prev) => {
-          if (!prev) setError(true);
-          return prev;
-        });
-      }
-      setLoading(false);
-    });
-
-    return () => {
-      stale = true;
-    };
-  }, [friendId]);
-
-  if (loading) return <ChatSkeleton />;
-
-  if (error || !data) {
+function DMChatView({ friendId, session, initialData }: DMChatViewProps) {
+  if ("error" in initialData) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center">
         <div className="bg-surface mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
@@ -50,18 +27,20 @@ function DMChatView({ friendId }: { friendId: string }) {
     );
   }
 
+  const currentUserAvatarConfig = session.user.avatarConfig ?? null;
+
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-      <ChatHeader friend={data.friend} />
+      <ChatHeader friend={initialData.friend} />
 
       <div className="flex-1 overflow-hidden">
         <Messages
           key={friendId}
           mode="dm"
-          friend={data.friend}
-          session={data.session}
-          messages={data.messages}
-          currentUserAvatarConfig={data.currentUserAvatarConfig}
+          friend={initialData.friend}
+          session={session}
+          messages={initialData.messages}
+          currentUserAvatarConfig={currentUserAvatarConfig}
         />
       </div>
     </div>

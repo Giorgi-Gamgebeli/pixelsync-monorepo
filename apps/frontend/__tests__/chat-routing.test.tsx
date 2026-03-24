@@ -3,6 +3,20 @@ import { cleanup, render, screen } from "@testing-library/react";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/home",
+  redirect: vi.fn(),
+}));
+
+vi.mock("@/auth", () => ({
+  auth: vi.fn(async () => ({
+    user: {
+      id: "current-user",
+      avatarConfig: null,
+      userName: "Current User",
+      name: "Current User",
+      email: "current@test.com",
+      status: "ONLINE",
+    },
+  })),
 }));
 
 vi.mock("next/link", () => ({
@@ -32,6 +46,21 @@ vi.mock("@/app/(protectedRoutes)/home/group/[groupId]/GroupChatView", () => ({
     <div data-testid="group-view">group:{groupId}</div>
   ),
 }));
+
+vi.mock(
+  "@/app/(protectedRoutes)/home/[friendID]/getCachedDMChatPageData",
+  () => ({
+    getCachedDMChatPageData: vi.fn(async (friendId: string) => ({
+      friend: {
+        id: friendId,
+        userName: "Legacy User",
+        status: "ONLINE",
+        avatarConfig: null,
+      },
+      messages: [],
+    })),
+  }),
+);
 
 import HomeNavLink from "@/app/(protectedRoutes)/home/HomeNavLink";
 
