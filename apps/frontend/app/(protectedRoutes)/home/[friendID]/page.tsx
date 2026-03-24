@@ -19,8 +19,6 @@ async function Page({ params }: Params) {
 
   const data = await getCachedDMChatPageData(friendID, session.user.id);
 
-  console.log(data, "data");
-
   return (
     <DMChatView friendId={friendID} session={session} initialData={data} />
   );
