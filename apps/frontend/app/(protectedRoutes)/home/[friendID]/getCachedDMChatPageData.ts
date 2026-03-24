@@ -76,8 +76,6 @@ async function fetchDMChatPageData(
   }
 }
 
-export const getCachedDMChatPageData = unstable_cache(fetchDMChatPageData, [
-  "dm-chat-page-data",
-]);
+export const getCachedDMChatPageData = fetchDMChatPageData;
 
 export type { DMChatPageData };
