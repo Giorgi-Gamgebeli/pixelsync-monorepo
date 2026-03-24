@@ -105,7 +105,7 @@ function Messages(props: MessagesProps) {
         );
       } else if (groupId) {
         patchGroupMessages(
-          groupId as number,
+          groupId,
           messagesRef.current as GroupCacheEntry["messages"],
         );
       }
