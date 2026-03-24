@@ -19,6 +19,8 @@ async function fetchDMChatPageData(
   userId: string,
 ): Promise<DMChatPageData | { error: string }> {
   try {
+    console.log("[dm cache miss]", friendId, userId);
+
     if (friendId === userId) {
       throw new OperationalError("You cannot perform this action on yourself.");
     }

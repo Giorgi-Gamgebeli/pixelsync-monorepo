@@ -40,9 +40,16 @@ export function patchDMMessages(
 }
 
 export function fetchDM(friendId: string): Promise<DMCacheEntry | null> {
+  const cached = dmCache.get(friendId);
+  if (cached) {
+    console.log("[dm client cache hit]", friendId);
+    return Promise.resolve(cached);
+  }
+
   const existing = dmFetching.get(friendId);
   if (existing) return existing;
 
+  console.log("[dm client cache miss]", friendId);
   const promise = getChatPageData(friendId).then((result) => {
     dmFetching.delete(friendId);
     if (result && !("error" in result)) {
@@ -77,6 +84,11 @@ export function patchGroupMessages(
 }
 
 export function fetchGroup(groupId: number): Promise<GroupCacheEntry | null> {
+  const cached = groupCache.get(groupId);
+  if (cached) {
+    return Promise.resolve(cached);
+  }
+
   const existing = groupFetching.get(groupId);
   if (existing) return existing;
 

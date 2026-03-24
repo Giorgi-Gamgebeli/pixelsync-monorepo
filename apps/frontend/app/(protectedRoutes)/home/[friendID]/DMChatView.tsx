@@ -1,18 +1,70 @@
 "use client";
 
-import type { Session } from "next-auth";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import ChatHeader from "./ChatHeader";
 import Messages from "./Messages";
 import ClientIcon from "@/app/_components/ClientIcon";
-import type { DMChatPageData } from "./getCachedDMChatPageData";
+import { fetchDM, getDMCache, type DMCacheEntry } from "@/app/_lib/chatCache";
 
 type DMChatViewProps = Readonly<{
   friendId: string;
-  session: Session;
-  initialData: DMChatPageData | { error: string };
 }>;
 
-function DMChatView({ friendId, session, initialData }: DMChatViewProps) {
+function DMChatView({ friendId }: DMChatViewProps) {
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const [initialData, setInitialData] = useState<DMCacheEntry | null>(
+    () => getDMCache(friendId) ?? null,
+  );
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/");
+    }
+  }, [router, status]);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
+    let cancelled = false;
+    const cached = getDMCache(friendId);
+
+    if (cached) {
+      setInitialData(cached);
+      return;
+    }
+
+    setInitialData(null);
+
+    fetchDM(friendId).then((data) => {
+      if (!cancelled) {
+        setInitialData(data);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [friendId, status]);
+
+  if (status === "loading" || !session?.user?.id) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <p className="text-sm text-gray-500">Loading chat...</p>
+      </div>
+    );
+  }
+
+  if (!initialData) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <p className="text-sm text-gray-500">Loading chat...</p>
+      </div>
+    );
+  }
+
   if ("error" in initialData) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center">
