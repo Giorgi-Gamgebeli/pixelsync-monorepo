@@ -78,7 +78,7 @@ export class DirectMessageGateway
     string,
     { count: number; resetTime: number }
   >();
-  private readonly MESSAGE_RATE_LIMIT = 10; // max messages per window
+  private readonly MESSAGE_RATE_LIMIT = 9999; // max messages per window
   private readonly MESSAGE_RATE_WINDOW = 5_000; // 5 seconds
 
   // Periodic cleanup for stale rate limit entries

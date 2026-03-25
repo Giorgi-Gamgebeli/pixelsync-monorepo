@@ -52,13 +52,13 @@ function LinkPreview({ text }: { text: string }) {
     >
       {ogData.image && (
         <div className="relative h-32 w-full">
-          <Image
+          {/* <Image
             src={ogData.image}
             alt=""
             fill
             className="object-cover"
             loading="lazy"
-          />
+          /> */}
         </div>
       )}
       <div className="px-3 py-2">

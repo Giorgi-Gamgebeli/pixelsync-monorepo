@@ -11,15 +11,39 @@ export type GroupCacheEntry = Exclude<
   { error: string } | undefined
 >;
 
-// Module-level Maps — persist across navigations since the module stays loaded
 const dmCache = new Map<string, DMCacheEntry>();
 const groupCache = new Map<number, GroupCacheEntry>();
 
-// In-flight fetch promises — prevents duplicate requests
 const dmFetching = new Map<string, Promise<DMCacheEntry | null>>();
 const groupFetching = new Map<number, Promise<GroupCacheEntry | null>>();
+const dmListeners = new Map<string, Set<() => void>>();
 
-// --- DM ---
+function notifyDMListeners(friendId: string): void {
+  const listeners = dmListeners.get(friendId);
+  if (!listeners) return;
+  for (const listener of listeners) {
+    listener();
+  }
+}
+
+export function subscribeDMCache(
+  friendId: string,
+  listener: () => void,
+): () => void {
+  let listeners = dmListeners.get(friendId);
+  if (!listeners) {
+    listeners = new Set();
+    dmListeners.set(friendId, listeners);
+  }
+  listeners.add(listener);
+
+  return () => {
+    listeners?.delete(listener);
+    if (listeners && listeners.size === 0) {
+      dmListeners.delete(friendId);
+    }
+  };
+}
 
 export function getDMCache(friendId: string): DMCacheEntry | undefined {
   return dmCache.get(friendId);
@@ -27,6 +51,7 @@ export function getDMCache(friendId: string): DMCacheEntry | undefined {
 
 export function setDMCache(friendId: string, data: DMCacheEntry): void {
   dmCache.set(friendId, data);
+  notifyDMListeners(friendId);
 }
 
 export function patchDMMessages(
@@ -36,7 +61,41 @@ export function patchDMMessages(
   const entry = dmCache.get(friendId);
   if (entry) {
     entry.messages = messages;
+    notifyDMListeners(friendId);
   }
+}
+
+export function upsertDMMessage(
+  friendId: string,
+  message: DMCacheEntry["messages"][number],
+  currentUserId?: string,
+): void {
+  const entry = dmCache.get(friendId);
+  if (!entry) return;
+
+  const byIdIndex = entry.messages.findIndex((m) => m.id === message.id);
+  if (byIdIndex !== -1) {
+    entry.messages[byIdIndex] = message;
+    notifyDMListeners(friendId);
+    return;
+  }
+
+  if (currentUserId && message.senderId === currentUserId) {
+    const optimisticIndex = entry.messages.findIndex(
+      (m) =>
+        m.id < 0 &&
+        m.content === message.content &&
+        m.senderId === currentUserId,
+    );
+    if (optimisticIndex !== -1) {
+      entry.messages[optimisticIndex] = message;
+      notifyDMListeners(friendId);
+      return;
+    }
+  }
+
+  entry.messages.push(message);
+  notifyDMListeners(friendId);
 }
 
 export function fetchDM(friendId: string): Promise<DMCacheEntry | null> {
@@ -54,6 +113,7 @@ export function fetchDM(friendId: string): Promise<DMCacheEntry | null> {
     dmFetching.delete(friendId);
     if (result && !("error" in result)) {
       dmCache.set(friendId, result);
+      notifyDMListeners(friendId);
       return result;
     }
     return null;
@@ -62,8 +122,6 @@ export function fetchDM(friendId: string): Promise<DMCacheEntry | null> {
   dmFetching.set(friendId, promise);
   return promise;
 }
-
-// --- Group ---
 
 export function getGroupCache(groupId: number): GroupCacheEntry | undefined {
   return groupCache.get(groupId);
@@ -105,11 +163,10 @@ export function fetchGroup(groupId: number): Promise<GroupCacheEntry | null> {
   return promise;
 }
 
-// Prefetch from URL on module load — runs before any component mounts
 if (typeof window !== "undefined") {
   const params = new URLSearchParams(window.location.search);
   const dm = params.get("dm");
   const group = params.get("group");
   if (dm) fetchDM(dm);
-  else if (group) fetchGroup(Number(group));
+  if (group) fetchGroup(Number(group));
 }

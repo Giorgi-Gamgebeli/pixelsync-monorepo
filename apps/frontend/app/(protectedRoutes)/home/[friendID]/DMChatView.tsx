@@ -6,7 +6,12 @@ import { useSession } from "next-auth/react";
 import ChatHeader from "./ChatHeader";
 import Messages from "./Messages";
 import ClientIcon from "@/app/_components/ClientIcon";
-import { fetchDM, getDMCache, type DMCacheEntry } from "@/app/_lib/chatCache";
+import {
+  fetchDM,
+  getDMCache,
+  subscribeDMCache,
+  type DMCacheEntry,
+} from "@/app/_lib/chatCache";
 
 type DMChatViewProps = Readonly<{
   friendId: string;
@@ -18,6 +23,18 @@ function DMChatView({ friendId }: DMChatViewProps) {
   const [initialData, setInitialData] = useState<DMCacheEntry | null>(
     () => getDMCache(friendId) ?? null,
   );
+
+  const syncFromCache = () => {
+    const cached = getDMCache(friendId);
+    setInitialData(
+      cached ? { ...cached, messages: [...cached.messages] } : null,
+    );
+  };
+
+  useEffect(() => {
+    syncFromCache();
+    return subscribeDMCache(friendId, syncFromCache);
+  }, [friendId]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -32,7 +49,7 @@ function DMChatView({ friendId }: DMChatViewProps) {
     const cached = getDMCache(friendId);
 
     if (cached) {
-      setInitialData(cached);
+      setInitialData({ ...cached, messages: [...cached.messages] });
       return;
     }
 
@@ -79,8 +96,6 @@ function DMChatView({ friendId }: DMChatViewProps) {
     );
   }
 
-  const currentUserAvatarConfig = session.user.avatarConfig ?? null;
-
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       <ChatHeader friend={initialData.friend} />
@@ -92,7 +107,7 @@ function DMChatView({ friendId }: DMChatViewProps) {
           friend={initialData.friend}
           session={session}
           messages={initialData.messages}
-          currentUserAvatarConfig={currentUserAvatarConfig}
+          currentUserAvatarConfig={session.user.avatarConfig}
         />
       </div>
     </div>

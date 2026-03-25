@@ -1,22 +1,23 @@
 "use client";
 
 import {
+  ClientToServerEvents,
+  ProfileUpdate,
+  ServerToClientEvents,
+  UserStatus,
+} from "@repo/types";
+import {
   type PropsWithChildren,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
-  useCallback,
 } from "react";
 import { io, Socket } from "socket.io-client";
-import {
-  ServerToClientEvents,
-  ClientToServerEvents,
-  ProfileUpdate,
-  UserStatus,
-} from "@repo/types";
 import { getWsToken } from "../_dataAccessLayer/userActions";
+import { upsertDMMessage } from "../_lib/chatCache";
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -123,6 +124,10 @@ function SocketProvider({
         });
 
         socket.on("dm:receive", (message) => {
+          const otherUserId =
+            message.senderId === userId ? message.receiverId : message.senderId;
+          upsertDMMessage(otherUserId, message, userId);
+
           if (message.senderId !== userId) {
             setUnreadMap((prev) => ({
               ...prev,
