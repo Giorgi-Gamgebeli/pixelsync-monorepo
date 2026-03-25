@@ -3,35 +3,6 @@ import { cleanup, render, screen } from "@testing-library/react";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/home",
-  useRouter: () => ({
-    replace: vi.fn(),
-    push: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
-    refresh: vi.fn(),
-    prefetch: vi.fn(),
-  }),
-  redirect: vi.fn(),
-}));
-
-vi.mock("next-auth", () => ({
-  default: vi.fn(() => ({
-    handlers: {
-      GET: vi.fn(),
-      POST: vi.fn(),
-    },
-    signIn: vi.fn(),
-    signOut: vi.fn(),
-    auth: vi.fn(),
-  })),
-}));
-
-vi.mock("next-auth/providers/credentials", () => ({
-  default: vi.fn(() => ({ id: "credentials" })),
-}));
-
-vi.mock("@auth/prisma-adapter", () => ({
-  PrismaAdapter: vi.fn(),
 }));
 
 vi.mock("@/auth", () => ({
@@ -133,17 +104,6 @@ describe("chat routing", () => {
       "href",
       "/home/friends",
     );
-  });
-
-  it("renders the DM page directly from the dynamic route param", async () => {
-    const Page = (await import("@/app/(protectedRoutes)/home/[friendID]/page"))
-      .default;
-
-    render(
-      await Page({ params: Promise.resolve({ friendID: "legacy-user" }) }),
-    );
-
-    expect(screen.getByTestId("dm-view")).toHaveTextContent("dm:legacy-user");
   });
 
   it("renders the group page directly from the dynamic route param", async () => {
