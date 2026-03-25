@@ -1,10 +1,12 @@
-import Link from "next/link";
-import Header from "./_components/Header";
-import { features } from "./_utils/constants";
-import FeatureCard from "./_components/FeatureCard";
-import ShowcaseItem from "./_components/ShowcaseItem";
 import Image from "next/image";
+import Link from "next/link";
+import { Suspense } from "react";
 import logo from "../public/noBGLogo.png";
+import FeatureCard from "./_components/FeatureCard";
+import Header from "./_components/Header";
+import ShowcaseItem from "./_components/ShowcaseItem";
+import { features } from "./_utils/constants";
+import CurrentYear from "./_components/CurrentYear";
 
 function Page() {
   return (
@@ -36,25 +38,25 @@ function Page() {
 
           {/* Product Screenshot Mockup */}
           <div className="flex items-center justify-center">
-            <div className="w-full overflow-hidden rounded-xl border border-border bg-secondary shadow-2xl shadow-brand-500/5">
+            <div className="border-border bg-secondary shadow-brand-500/5 w-full overflow-hidden rounded-xl border shadow-2xl">
               {/* Browser chrome */}
-              <div className="flex items-center gap-2 border-b border-border bg-surface px-4 py-3">
+              <div className="border-border bg-surface flex items-center gap-2 border-b px-4 py-3">
                 <div className="h-3 w-3 rounded-full bg-red-400/80" />
                 <div className="h-3 w-3 rounded-full bg-yellow-400/80" />
                 <div className="h-3 w-3 rounded-full bg-green-400/80" />
-                <div className="ml-4 h-6 flex-1 rounded bg-primary/50" />
+                <div className="bg-primary/50 ml-4 h-6 flex-1 rounded" />
               </div>
               {/* App mockup */}
               <div className="flex h-80 lg:h-96">
                 {/* Mini sidebar */}
-                <div className="flex w-12 flex-col items-center gap-2 border-r border-border bg-sidebar py-3">
+                <div className="border-border bg-sidebar flex w-12 flex-col items-center gap-2 border-r py-3">
                   <div className="bg-brand-500/20 h-8 w-8 rounded-lg" />
-                  <div className="my-1 w-6 border-b border-border" />
-                  <div className="h-8 w-8 rounded-lg bg-surface" />
-                  <div className="h-8 w-8 rounded-lg bg-surface" />
+                  <div className="border-border my-1 w-6 border-b" />
+                  <div className="bg-surface h-8 w-8 rounded-lg" />
+                  <div className="bg-surface h-8 w-8 rounded-lg" />
                 </div>
                 {/* Room sidebar */}
-                <div className="flex w-40 flex-col border-r border-border bg-sidebar p-3">
+                <div className="border-border bg-sidebar flex w-40 flex-col border-r p-3">
                   <p className="mb-2 text-xs font-semibold text-gray-500">
                     Rooms
                   </p>
@@ -74,22 +76,22 @@ function Page() {
                   </p>
                   <div className="flex items-center gap-1.5 py-1">
                     <div className="relative h-5 w-5 rounded-full bg-blue-500/30">
-                      <div className="absolute -right-0.5 -bottom-0.5 h-2 w-2 rounded-full border border-sidebar bg-green-500" />
+                      <div className="border-sidebar absolute -right-0.5 -bottom-0.5 h-2 w-2 rounded-full border bg-green-500" />
                     </div>
                     <p className="text-xs text-gray-400">alex</p>
                   </div>
                   <div className="flex items-center gap-1.5 py-1">
                     <div className="relative h-5 w-5 rounded-full bg-purple-500/30">
-                      <div className="absolute -right-0.5 -bottom-0.5 h-2 w-2 rounded-full border border-sidebar bg-green-500" />
+                      <div className="border-sidebar absolute -right-0.5 -bottom-0.5 h-2 w-2 rounded-full border bg-green-500" />
                     </div>
                     <p className="text-xs text-gray-400">niko</p>
                   </div>
                 </div>
                 {/* Canvas area */}
-                <div className="relative flex-1 bg-secondary p-4">
+                <div className="bg-secondary relative flex-1 p-4">
                   <div className="bg-brand-500/10 border-brand-500/30 absolute top-8 left-8 h-16 w-24 rounded border" />
                   <div className="absolute top-12 left-40 h-20 w-32 rounded border border-blue-500/30 bg-blue-500/10" />
-                  <div className="absolute top-36 left-20 h-12 w-40 rounded border border-border bg-surface" />
+                  <div className="border-border bg-surface absolute top-36 left-20 h-12 w-40 rounded border" />
                   {/* Cursor 1 */}
                   <div className="absolute top-16 left-52 flex items-start gap-1">
                     <svg
@@ -120,8 +122,8 @@ function Page() {
                   </div>
                 </div>
                 {/* Chat panel */}
-                <div className="flex w-44 flex-col border-l border-border bg-sidebar">
-                  <div className="border-b border-border px-3 py-2">
+                <div className="border-border bg-sidebar flex w-44 flex-col border-l">
+                  <div className="border-border border-b px-3 py-2">
                     <p className="text-xs font-semibold text-gray-300">Chat</p>
                   </div>
                   <div className="flex flex-1 flex-col justify-end gap-2 p-2">
@@ -148,8 +150,8 @@ function Page() {
                       <p className="text-[10px] text-gray-400">+1</p>
                     </div>
                   </div>
-                  <div className="border-t border-border p-2">
-                    <div className="h-5 rounded bg-surface" />
+                  <div className="border-border border-t p-2">
+                    <div className="bg-surface h-5 rounded" />
                   </div>
                 </div>
               </div>
@@ -190,7 +192,7 @@ function Page() {
             </p>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-xl">
+          <div className="border-border bg-surface overflow-hidden rounded-2xl border shadow-xl">
             <div className="p-8 lg:p-12">
               <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 <ShowcaseItem
@@ -234,7 +236,7 @@ function Page() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-secondary py-12">
+      <footer className="border-border bg-secondary border-t py-12">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <Image
@@ -244,9 +246,7 @@ function Page() {
               width={32}
               className="rounded-full"
             />
-            <span className="text-sm font-medium text-gray-300">
-              PixelSync
-            </span>
+            <span className="text-sm font-medium text-gray-300">PixelSync</span>
           </div>
           <div className="flex items-center gap-6">
             <Link
@@ -263,7 +263,11 @@ function Page() {
             </Link>
           </div>
           <p className="text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} PixelSync
+            &copy;{" "}
+            <Suspense>
+              <CurrentYear />
+            </Suspense>{" "}
+            PixelSync
           </p>
         </div>
       </footer>

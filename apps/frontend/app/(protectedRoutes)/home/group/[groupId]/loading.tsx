@@ -1,4 +1,4 @@
-import ChatSkeleton from "./ChatSkeleton";
+import ChatSkeleton from "../../[friendID]/ChatSkeleton";
 
 function Loading() {
   return <ChatSkeleton />;

@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import path from "path";
+import path from "node:path";
 import dotenv from "dotenv";
 import { withSentryConfig } from "@sentry/nextjs";
 
@@ -7,6 +7,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 dotenv.config({ path: path.join(__dirname, "../../.env") });
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
   images: {
     remotePatterns: [
       {

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { UserStatus } from "@repo/types";
-import UserAvatar from "@/app/_components/UserAvatar";
 import FriendProfilePanel from "@/app/_components/FriendProfilePanel";
-import { Icon } from "@iconify/react/dist/iconify.js";
-import { useSocketContext } from "@/app/_context/SocketContext";
+import UserAvatar from "@/app/_components/UserAvatar";
 import { useCallContext } from "@/app/_context/CallContext";
+import { useSocketContext } from "@/app/_context/SocketContext";
+import { Icon } from "@iconify/react/dist/iconify.js";
+import { UserStatus } from "@repo/types";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 const STATUS_LABELS: Record<UserStatus, string> = {
@@ -16,23 +16,25 @@ const STATUS_LABELS: Record<UserStatus, string> = {
   OFFLINE: "Offline",
 };
 
-type ChatHeaderProps = {
+type ChatHeaderProps = Readonly<{
   friend: {
     id: string;
     userName: string | null;
     status: UserStatus;
-    avatarConfig?: string | null;
+    avatarConfig: string | null;
   };
-};
+}>;
 
 function ChatHeader({ friend }: ChatHeaderProps) {
   const { statusMap, profileMap } = useSocketContext();
   const { initiateCall } = useCallContext();
+
   const [profileOpen, setProfileOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-  const moreMenuRef = useRef<HTMLDivElement>(null);
-  const status = statusMap[friend.id] ?? friend.status;
 
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+
+  const status = statusMap[friend.id] ?? friend.status;
   const profile = profileMap[friend.id];
   const displayUserName = profile?.userName ?? friend.userName;
   const displayAvatarConfig = profile?.avatarConfig ?? friend.avatarConfig;

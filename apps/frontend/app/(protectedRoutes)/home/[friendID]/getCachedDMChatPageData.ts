@@ -1,8 +1,6 @@
-import { unstable_cache } from "next/cache";
-import { auth } from "@/auth";
+import { handleErrorsOnServer, OperationalError } from "@/app/_utils/helpers";
 import { db } from "@repo/db";
 import type { DirectMessage, UserStatus } from "@repo/types";
-import { handleErrorsOnServer, OperationalError } from "@/app/_utils/helpers";
 
 type DMChatPageData = {
   friend: {
@@ -14,13 +12,11 @@ type DMChatPageData = {
   messages: DirectMessage[];
 };
 
-async function fetchDMChatPageData(
+export async function getCachedDMChatPageData(
   friendId: string,
   userId: string,
 ): Promise<DMChatPageData | { error: string }> {
   try {
-    console.log("[dm cache miss]", friendId, userId);
-
     if (friendId === userId) {
       throw new OperationalError("You cannot perform this action on yourself.");
     }
@@ -63,7 +59,7 @@ async function fetchDMChatPageData(
         status: friend.status,
         avatarConfig: friend.avatarConfig,
       },
-      messages: messages.reverse().map((message) => ({
+      messages: messages.toReversed().map((message) => ({
         id: message.id,
         content: message.content,
         senderId: message.senderId,
@@ -71,15 +67,11 @@ async function fetchDMChatPageData(
         createdAt: message.createdAt.toISOString(),
         updatedAt: message.updatedAt.toISOString(),
         isRead: message.isRead,
-      })) as DirectMessage[],
+      })),
     };
   } catch (error) {
     return handleErrorsOnServer(error);
   }
 }
-
-export const getCachedDMChatPageData = unstable_cache(fetchDMChatPageData, [
-  "dm-chat-page-data",
-]);
 
 export type { DMChatPageData };

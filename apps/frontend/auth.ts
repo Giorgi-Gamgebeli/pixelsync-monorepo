@@ -33,12 +33,9 @@ const nextAuth = NextAuth({
           },
         });
 
-        if (!user || !user.password) return null;
+        if (!user?.password) return null;
 
-        const isPasswordValid = await compare(
-          password as string,
-          user.password as string,
-        );
+        const isPasswordValid = await compare(password, user.password);
 
         if (!isPasswordValid) return null;
 

@@ -4,8 +4,6 @@ import {
 } from "@/app/_dataAccessLayer/userActions";
 import FriendsPage from "./FriendsPage";
 
-export const revalidate = 0;
-
 async function Page() {
   const [friendsResult, pendingResult] = await Promise.all([
     getFriends(),
