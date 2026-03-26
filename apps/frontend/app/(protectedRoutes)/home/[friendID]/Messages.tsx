@@ -1,17 +1,16 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { UserStatus, DirectMessage, GroupMessage } from "@repo/types";
 import { Session } from "next-auth";
 import Message from "./Message";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useSocketContext } from "@/app/_context/SocketContext";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  patchDMMessages,
-  patchGroupMessages,
-  type DMCacheEntry,
-  type GroupCacheEntry,
-} from "@/app/_lib/chatCache";
+  replaceDMChatMessages,
+  replaceGroupChatMessages,
+} from "@/app/_lib/chatQueries";
 
 const GROUPING_WINDOW_MS = 5 * 60 * 1000;
 
@@ -71,6 +70,7 @@ function Messages(props: MessagesProps) {
   const friendId = friend?.id ?? null;
   const groupId = group?.id ?? null;
 
+  const queryClient = useQueryClient();
   const {
     socket,
     isConnected,
@@ -95,23 +95,6 @@ function Messages(props: MessagesProps) {
     setLocalMessages(messages || []);
   }, [messages]);
 
-  // Save messages to cache on unmount so they survive navigation
-  useEffect(() => {
-    return () => {
-      if (friendId) {
-        patchDMMessages(
-          friendId,
-          messagesRef.current as DMCacheEntry["messages"],
-        );
-      } else if (groupId) {
-        patchGroupMessages(
-          groupId,
-          messagesRef.current as GroupCacheEntry["messages"],
-        );
-      }
-    };
-  }, [friendId, groupId]);
-
   useEffect(() => {
     if (friendId) markAsRead(friendId);
   }, [friendId, markAsRead]);
@@ -123,41 +106,41 @@ function Messages(props: MessagesProps) {
     });
   }, [localMessages, isFriendTyping, typingUsers]);
 
+  const persistMessages = useCallback(
+    (nextMessages: ChatMessage[]) => {
+      if (friendId) {
+        replaceDMChatMessages(
+          queryClient,
+          friendId,
+          nextMessages as DirectMessage[],
+        );
+        return;
+      }
+
+      if (groupId) {
+        replaceGroupChatMessages(
+          queryClient,
+          groupId,
+          nextMessages as GroupMessage[],
+        );
+      }
+    },
+    [friendId, groupId, queryClient],
+  );
+
   // Socket listeners
   useEffect(() => {
     if (!socket || !isConnected) return;
 
     if (friendId) {
-      const onReceive = (message: DirectMessage) => {
-        const isFromFriend = message.senderId === friendId;
-        const isToFriend = message.receiverId === friendId;
-        if (!isFromFriend && !isToFriend) return;
-
-        setLocalMessages((prev) => {
-          if (message.senderId === session.user.id) {
-            const pendingIndex = prev.findIndex(
-              (m) => m.id < 0 && m.content === message.content,
-            );
-            if (pendingIndex !== -1) {
-              const updated = [...prev];
-              updated[pendingIndex] = message;
-              return updated;
-            }
-          }
-          return [...prev, message];
-        });
-      };
-
       const onTyping = (data: { userId: string; isTyping: boolean }) => {
         if (data.userId === friendId) {
           setIsFriendTyping(data.isTyping);
         }
       };
 
-      socket.on("dm:receive", onReceive);
       socket.on("dm:typing", onTyping);
       return () => {
-        socket.off("dm:receive", onReceive);
         socket.off("dm:typing", onTyping);
       };
     }
@@ -166,7 +149,8 @@ function Messages(props: MessagesProps) {
       const onReceive = (message: GroupMessage) => {
         if (message.groupId !== groupId) return;
 
-        setLocalMessages((prev) => {
+        const nextMessages = (() => {
+          const prev = messagesRef.current;
           if (message.senderId === session.user.id) {
             const pendingIndex = prev.findIndex(
               (m) => m.id < 0 && m.content === message.content,
@@ -178,7 +162,10 @@ function Messages(props: MessagesProps) {
             }
           }
           return [...prev, message];
-        });
+        })();
+
+        setLocalMessages(nextMessages);
+        persistMessages(nextMessages);
       };
 
       const onTyping = (data: {
@@ -198,7 +185,14 @@ function Messages(props: MessagesProps) {
         socket.off("group:typing", onTyping);
       };
     }
-  }, [isConnected, socket, session.user.id, friendId, groupId]);
+  }, [
+    isConnected,
+    socket,
+    session.user.id,
+    friendId,
+    groupId,
+    persistMessages,
+  ]);
 
   const handleSend = () => {
     const text = inputValue.trim();
@@ -207,8 +201,9 @@ function Messages(props: MessagesProps) {
     const optimisticId = -Date.now();
 
     if (friend) {
-      setLocalMessages((prev) => [
-        ...prev,
+      const previousMessages = messagesRef.current as DirectMessage[];
+      const nextMessages: DirectMessage[] = [
+        ...previousMessages,
         {
           id: optimisticId,
           content: text,
@@ -218,14 +213,17 @@ function Messages(props: MessagesProps) {
           updatedAt: new Date().toISOString(),
           isRead: false,
         },
-      ]);
+      ];
+      setLocalMessages(nextMessages);
+      persistMessages(nextMessages);
       sendMessage(friend.id, text);
       setTyping(friend.id, false);
     }
 
     if (group) {
-      setLocalMessages((prev) => [
-        ...prev,
+      const previousMessages = messagesRef.current as GroupMessage[];
+      const nextMessages: GroupMessage[] = [
+        ...previousMessages,
         {
           id: optimisticId,
           content: text,
@@ -239,7 +237,9 @@ function Messages(props: MessagesProps) {
             avatarConfig: currentUserAvatarConfig,
           },
         },
-      ]);
+      ];
+      setLocalMessages(nextMessages);
+      persistMessages(nextMessages);
       sendGroupMessage(group.id, text);
       setGroupTyping(group.id, false);
     }

@@ -24,6 +24,7 @@
     "@repo/zod": "*",
     "@sentry/nextjs": "^10.43.0",
     "@tailwindcss/postcss": "^4.2.1",
+    "@tanstack/react-query": "^5.95.2",
     "autoprefixer": "^10.4.20",
     "bcryptjs": "^3.0.2",
     "dotenv": "^17.3.1",

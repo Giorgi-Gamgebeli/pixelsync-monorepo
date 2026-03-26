@@ -1,47 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  getGroupCache,
-  fetchGroup,
-  type GroupCacheEntry,
-} from "@/app/_lib/chatCache";
 import GroupChatHeader from "./GroupChatHeader";
 import GroupCallBanner from "./GroupCallBanner";
 import Messages from "../../[friendID]/Messages";
 import ChatSkeleton from "../../[friendID]/ChatSkeleton";
 import ClientIcon from "@/app/_components/ClientIcon";
+import { useGroupChatQuery } from "@/app/_lib/chatQueries";
 
 function GroupChatView({ groupId }: { groupId: number }) {
-  const cached = getGroupCache(groupId);
-  const [data, setData] = useState<GroupCacheEntry | null>(cached ?? null);
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(!cached);
+  const { data, error, isPending } = useGroupChatQuery(groupId);
 
-  useEffect(() => {
-    let stale = false;
+  if (isPending && !data) return <ChatSkeleton />;
 
-    fetchGroup(groupId).then((result) => {
-      if (stale) return;
-      if (result) {
-        setData(result);
-      } else {
-        setData((prev) => {
-          if (!prev) setError(true);
-          return prev;
-        });
-      }
-      setLoading(false);
-    });
-
-    return () => {
-      stale = true;
-    };
-  }, [groupId]);
-
-  if (loading) return <ChatSkeleton />;
-
-  if (error || !data) {
+  if (error || !data || "error" in data) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center">
         <div className="bg-surface mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">

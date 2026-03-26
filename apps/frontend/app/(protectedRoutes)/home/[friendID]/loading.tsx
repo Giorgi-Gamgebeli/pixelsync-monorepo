@@ -1,7 +1,0 @@
-import ChatSkeleton from "./ChatSkeleton";
-
-function Loading() {
-  return <ChatSkeleton />;
-}
-
-export default Loading;

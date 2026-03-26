@@ -17,7 +17,8 @@ import {
 } from "react";
 import { io, Socket } from "socket.io-client";
 import { getWsToken } from "../_dataAccessLayer/userActions";
-import { upsertDMMessage } from "../_lib/chatCache";
+import { useQueryClient } from "@tanstack/react-query";
+import { upsertDMChatMessage } from "../_lib/chatQueries";
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -62,6 +63,7 @@ function SocketProvider({
   children,
 }: PropsWithChildren<{ userId: string }>) {
   const socketRef = useRef<TypedSocket | null>(null);
+  const queryClient = useQueryClient();
   const [isConnected, setIsConnected] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [statusMap, setStatusMap] = useState<Record<string, UserStatus>>({});
@@ -126,7 +128,7 @@ function SocketProvider({
         socket.on("dm:receive", (message) => {
           const otherUserId =
             message.senderId === userId ? message.receiverId : message.senderId;
-          upsertDMMessage(otherUserId, message, userId);
+          upsertDMChatMessage(queryClient, otherUserId, message, userId);
 
           if (message.senderId !== userId) {
             setUnreadMap((prev) => ({
@@ -164,7 +166,7 @@ function SocketProvider({
       socketRef.current = null;
       setIsConnected(false);
     };
-  }, [userId]);
+  }, [userId, queryClient]);
 
   const sendMessage = useCallback(
     (receiverId: string, content: string) => {
