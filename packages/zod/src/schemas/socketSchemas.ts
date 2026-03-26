@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const groupSendSchema = z.object({
+  id: z.string().min(1),
   groupId: z.number().int().positive(),
   content: z
     .string()

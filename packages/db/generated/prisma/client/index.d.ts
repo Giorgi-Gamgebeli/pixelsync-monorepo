@@ -9270,22 +9270,12 @@ export namespace Prisma {
 
   export type AggregateDirectMessage = {
     _count: DirectMessageCountAggregateOutputType | null
-    _avg: DirectMessageAvgAggregateOutputType | null
-    _sum: DirectMessageSumAggregateOutputType | null
     _min: DirectMessageMinAggregateOutputType | null
     _max: DirectMessageMaxAggregateOutputType | null
   }
 
-  export type DirectMessageAvgAggregateOutputType = {
-    id: number | null
-  }
-
-  export type DirectMessageSumAggregateOutputType = {
-    id: number | null
-  }
-
   export type DirectMessageMinAggregateOutputType = {
-    id: number | null
+    id: string | null
     content: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -9295,7 +9285,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageMaxAggregateOutputType = {
-    id: number | null
+    id: string | null
     content: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -9315,14 +9305,6 @@ export namespace Prisma {
     _all: number
   }
 
-
-  export type DirectMessageAvgAggregateInputType = {
-    id?: true
-  }
-
-  export type DirectMessageSumAggregateInputType = {
-    id?: true
-  }
 
   export type DirectMessageMinAggregateInputType = {
     id?: true
@@ -9393,18 +9375,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: DirectMessageAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: DirectMessageSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: DirectMessageMinAggregateInputType
@@ -9435,14 +9405,12 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: DirectMessageCountAggregateInputType | true
-    _avg?: DirectMessageAvgAggregateInputType
-    _sum?: DirectMessageSumAggregateInputType
     _min?: DirectMessageMinAggregateInputType
     _max?: DirectMessageMaxAggregateInputType
   }
 
   export type DirectMessageGroupByOutputType = {
-    id: number
+    id: string
     content: string
     createdAt: Date
     updatedAt: Date
@@ -9450,8 +9418,6 @@ export namespace Prisma {
     senderId: string
     receiverId: string
     _count: DirectMessageCountAggregateOutputType | null
-    _avg: DirectMessageAvgAggregateOutputType | null
-    _sum: DirectMessageSumAggregateOutputType | null
     _min: DirectMessageMinAggregateOutputType | null
     _max: DirectMessageMaxAggregateOutputType | null
   }
@@ -9537,7 +9503,7 @@ export namespace Prisma {
       sender: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      id: number
+      id: string
       content: string
       createdAt: Date
       updatedAt: Date
@@ -9969,7 +9935,7 @@ export namespace Prisma {
    * Fields of the DirectMessage model
    */
   interface DirectMessageFieldRefs {
-    readonly id: FieldRef<"DirectMessage", 'Int'>
+    readonly id: FieldRef<"DirectMessage", 'String'>
     readonly content: FieldRef<"DirectMessage", 'String'>
     readonly createdAt: FieldRef<"DirectMessage", 'DateTime'>
     readonly updatedAt: FieldRef<"DirectMessage", 'DateTime'>
@@ -17337,17 +17303,15 @@ export namespace Prisma {
   }
 
   export type GroupMessageAvgAggregateOutputType = {
-    id: number | null
     groupId: number | null
   }
 
   export type GroupMessageSumAggregateOutputType = {
-    id: number | null
     groupId: number | null
   }
 
   export type GroupMessageMinAggregateOutputType = {
-    id: number | null
+    id: string | null
     content: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -17357,7 +17321,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageMaxAggregateOutputType = {
-    id: number | null
+    id: string | null
     content: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -17379,12 +17343,10 @@ export namespace Prisma {
 
 
   export type GroupMessageAvgAggregateInputType = {
-    id?: true
     groupId?: true
   }
 
   export type GroupMessageSumAggregateInputType = {
-    id?: true
     groupId?: true
   }
 
@@ -17506,7 +17468,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageGroupByOutputType = {
-    id: number
+    id: string
     content: string
     createdAt: Date
     updatedAt: Date
@@ -17601,7 +17563,7 @@ export namespace Prisma {
       sender: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      id: number
+      id: string
       content: string
       createdAt: Date
       updatedAt: Date
@@ -18033,7 +17995,7 @@ export namespace Prisma {
    * Fields of the GroupMessage model
    */
   interface GroupMessageFieldRefs {
-    readonly id: FieldRef<"GroupMessage", 'Int'>
+    readonly id: FieldRef<"GroupMessage", 'String'>
     readonly content: FieldRef<"GroupMessage", 'String'>
     readonly createdAt: FieldRef<"GroupMessage", 'DateTime'>
     readonly updatedAt: FieldRef<"GroupMessage", 'DateTime'>
@@ -19249,7 +19211,7 @@ export namespace Prisma {
     AND?: DirectMessageWhereInput | DirectMessageWhereInput[]
     OR?: DirectMessageWhereInput[]
     NOT?: DirectMessageWhereInput | DirectMessageWhereInput[]
-    id?: IntFilter<"DirectMessage"> | number
+    id?: StringFilter<"DirectMessage"> | string
     content?: StringFilter<"DirectMessage"> | string
     createdAt?: DateTimeFilter<"DirectMessage"> | Date | string
     updatedAt?: DateTimeFilter<"DirectMessage"> | Date | string
@@ -19273,7 +19235,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
+    id?: string
     AND?: DirectMessageWhereInput | DirectMessageWhereInput[]
     OR?: DirectMessageWhereInput[]
     NOT?: DirectMessageWhereInput | DirectMessageWhereInput[]
@@ -19296,17 +19258,15 @@ export namespace Prisma {
     senderId?: SortOrder
     receiverId?: SortOrder
     _count?: DirectMessageCountOrderByAggregateInput
-    _avg?: DirectMessageAvgOrderByAggregateInput
     _max?: DirectMessageMaxOrderByAggregateInput
     _min?: DirectMessageMinOrderByAggregateInput
-    _sum?: DirectMessageSumOrderByAggregateInput
   }
 
   export type DirectMessageScalarWhereWithAggregatesInput = {
     AND?: DirectMessageScalarWhereWithAggregatesInput | DirectMessageScalarWhereWithAggregatesInput[]
     OR?: DirectMessageScalarWhereWithAggregatesInput[]
     NOT?: DirectMessageScalarWhereWithAggregatesInput | DirectMessageScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"DirectMessage"> | number
+    id?: StringWithAggregatesFilter<"DirectMessage"> | string
     content?: StringWithAggregatesFilter<"DirectMessage"> | string
     createdAt?: DateTimeWithAggregatesFilter<"DirectMessage"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"DirectMessage"> | Date | string
@@ -19724,7 +19684,7 @@ export namespace Prisma {
     AND?: GroupMessageWhereInput | GroupMessageWhereInput[]
     OR?: GroupMessageWhereInput[]
     NOT?: GroupMessageWhereInput | GroupMessageWhereInput[]
-    id?: IntFilter<"GroupMessage"> | number
+    id?: StringFilter<"GroupMessage"> | string
     content?: StringFilter<"GroupMessage"> | string
     createdAt?: DateTimeFilter<"GroupMessage"> | Date | string
     updatedAt?: DateTimeFilter<"GroupMessage"> | Date | string
@@ -19748,7 +19708,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
+    id?: string
     AND?: GroupMessageWhereInput | GroupMessageWhereInput[]
     OR?: GroupMessageWhereInput[]
     NOT?: GroupMessageWhereInput | GroupMessageWhereInput[]
@@ -19781,7 +19741,7 @@ export namespace Prisma {
     AND?: GroupMessageScalarWhereWithAggregatesInput | GroupMessageScalarWhereWithAggregatesInput[]
     OR?: GroupMessageScalarWhereWithAggregatesInput[]
     NOT?: GroupMessageScalarWhereWithAggregatesInput | GroupMessageScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"GroupMessage"> | number
+    id?: StringWithAggregatesFilter<"GroupMessage"> | string
     content?: StringWithAggregatesFilter<"GroupMessage"> | string
     createdAt?: DateTimeWithAggregatesFilter<"GroupMessage"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"GroupMessage"> | Date | string
@@ -20261,6 +20221,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageCreateInput = {
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20270,7 +20231,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUncheckedCreateInput = {
-    id?: number
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20280,6 +20241,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20289,7 +20251,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20299,7 +20261,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageCreateManyInput = {
-    id?: number
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20309,6 +20271,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20316,7 +20279,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20718,6 +20681,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageCreateInput = {
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20727,7 +20691,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUncheckedCreateInput = {
-    id?: number
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20737,6 +20701,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20746,7 +20711,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20756,7 +20721,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageCreateManyInput = {
-    id?: number
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20766,6 +20731,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20773,7 +20739,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21325,10 +21291,6 @@ export namespace Prisma {
     receiverId?: SortOrder
   }
 
-  export type DirectMessageAvgOrderByAggregateInput = {
-    id?: SortOrder
-  }
-
   export type DirectMessageMaxOrderByAggregateInput = {
     id?: SortOrder
     content?: SortOrder
@@ -21347,10 +21309,6 @@ export namespace Prisma {
     isRead?: SortOrder
     senderId?: SortOrder
     receiverId?: SortOrder
-  }
-
-  export type DirectMessageSumOrderByAggregateInput = {
-    id?: SortOrder
   }
 
   export type EnumChannelTypeFilter<$PrismaModel = never> = {
@@ -21681,7 +21639,6 @@ export namespace Prisma {
   }
 
   export type GroupMessageAvgOrderByAggregateInput = {
-    id?: SortOrder
     groupId?: SortOrder
   }
 
@@ -21706,7 +21663,6 @@ export namespace Prisma {
   }
 
   export type GroupMessageSumOrderByAggregateInput = {
-    id?: SortOrder
     groupId?: SortOrder
   }
 
@@ -23196,6 +23152,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageCreateWithoutReceiverInput = {
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23204,7 +23161,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUncheckedCreateWithoutReceiverInput = {
-    id?: number
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23223,6 +23180,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageCreateWithoutSenderInput = {
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23231,7 +23189,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUncheckedCreateWithoutSenderInput = {
-    id?: number
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23548,6 +23506,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageCreateWithoutSenderInput = {
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23556,7 +23515,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUncheckedCreateWithoutSenderInput = {
-    id?: number
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23657,7 +23616,7 @@ export namespace Prisma {
     AND?: DirectMessageScalarWhereInput | DirectMessageScalarWhereInput[]
     OR?: DirectMessageScalarWhereInput[]
     NOT?: DirectMessageScalarWhereInput | DirectMessageScalarWhereInput[]
-    id?: IntFilter<"DirectMessage"> | number
+    id?: StringFilter<"DirectMessage"> | string
     content?: StringFilter<"DirectMessage"> | string
     createdAt?: DateTimeFilter<"DirectMessage"> | Date | string
     updatedAt?: DateTimeFilter<"DirectMessage"> | Date | string
@@ -23919,7 +23878,7 @@ export namespace Prisma {
     AND?: GroupMessageScalarWhereInput | GroupMessageScalarWhereInput[]
     OR?: GroupMessageScalarWhereInput[]
     NOT?: GroupMessageScalarWhereInput | GroupMessageScalarWhereInput[]
-    id?: IntFilter<"GroupMessage"> | number
+    id?: StringFilter<"GroupMessage"> | string
     content?: StringFilter<"GroupMessage"> | string
     createdAt?: DateTimeFilter<"GroupMessage"> | Date | string
     updatedAt?: DateTimeFilter<"GroupMessage"> | Date | string
@@ -25563,6 +25522,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageCreateWithoutGroupInput = {
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25571,7 +25531,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUncheckedCreateWithoutGroupInput = {
-    id?: number
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25896,7 +25856,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageCreateManyReceiverInput = {
-    id?: number
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25905,7 +25865,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageCreateManySenderInput = {
-    id?: number
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25935,7 +25895,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageCreateManySenderInput = {
-    id?: number
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26012,6 +25972,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUpdateWithoutReceiverInput = {
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26020,7 +25981,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUncheckedUpdateWithoutReceiverInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26029,7 +25990,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUncheckedUpdateManyWithoutReceiverInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26038,6 +25999,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUpdateWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26046,7 +26008,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUncheckedUpdateWithoutSenderInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26055,7 +26017,7 @@ export namespace Prisma {
   }
 
   export type DirectMessageUncheckedUpdateManyWithoutSenderInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26369,6 +26331,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUpdateWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26377,7 +26340,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUncheckedUpdateWithoutSenderInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26386,7 +26349,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUncheckedUpdateManyWithoutSenderInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26681,7 +26644,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageCreateManyGroupInput = {
-    id?: number
+    id: string
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26764,6 +26727,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26772,7 +26736,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUncheckedUpdateWithoutGroupInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26781,7 +26745,7 @@ export namespace Prisma {
   }
 
   export type GroupMessageUncheckedUpdateManyWithoutGroupInput = {
-    id?: IntFieldUpdateOperationsInput | number
+    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

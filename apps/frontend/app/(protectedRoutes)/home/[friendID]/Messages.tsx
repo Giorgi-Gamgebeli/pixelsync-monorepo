@@ -1,15 +1,16 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { UserStatus, DirectMessage, GroupMessage } from "@repo/types";
+import type { UserStatus, DirectMessage, GroupMessage } from "@repo/types";
 import type { Session } from "next-auth";
 import Message from "./Message";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useSocketContext } from "@/app/_context/SocketContext";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { v7 as uuidv7 } from "uuid";
 import {
-  replaceDMChatMessages,
-  replaceGroupChatMessages,
+  upsertDMChatMessage,
+  upsertGroupChatMessage,
 } from "@/app/_lib/chatQueries";
 
 const GROUPING_WINDOW_MS = 5 * 60 * 1000;
@@ -82,18 +83,11 @@ function Messages(props: MessagesProps) {
     setGroupTyping,
   } = useSocketContext();
 
-  const [localMessages, setLocalMessages] = useState<ChatMessage[]>(messages);
   const [inputValue, setInputValue] = useState("");
   const [isFriendTyping, setIsFriendTyping] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const messagesRef = useRef(localMessages);
-  messagesRef.current = localMessages;
-
-  useEffect(() => {
-    setLocalMessages(messages || []);
-  }, [messages]);
 
   useEffect(() => {
     if (friendId) markAsRead(friendId);
@@ -104,29 +98,7 @@ function Messages(props: MessagesProps) {
       top: scrollRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [localMessages, isFriendTyping, typingUsers]);
-
-  const persistMessages = useCallback(
-    (nextMessages: ChatMessage[]) => {
-      if (friendId) {
-        replaceDMChatMessages(
-          queryClient,
-          friendId,
-          nextMessages as DirectMessage[],
-        );
-        return;
-      }
-
-      if (groupId) {
-        replaceGroupChatMessages(
-          queryClient,
-          groupId,
-          nextMessages as GroupMessage[],
-        );
-      }
-    },
-    [friendId, groupId, queryClient],
-  );
+  }, [messages, isFriendTyping, typingUsers]);
 
   // Socket listeners
   useEffect(() => {
@@ -148,24 +120,7 @@ function Messages(props: MessagesProps) {
     if (groupId) {
       const onReceive = (message: GroupMessage) => {
         if (message.groupId !== groupId) return;
-
-        const nextMessages = (() => {
-          const prev = messagesRef.current;
-          if (message.senderId === session.user.id) {
-            const pendingIndex = prev.findIndex(
-              (m) => m.id < 0 && m.content === message.content,
-            );
-            if (pendingIndex !== -1) {
-              const updated = [...prev];
-              updated[pendingIndex] = message;
-              return updated;
-            }
-          }
-          return [...prev, message];
-        })();
-
-        setLocalMessages(nextMessages);
-        persistMessages(nextMessages);
+        upsertGroupChatMessage(queryClient, groupId, message);
       };
 
       const onTyping = (data: {
@@ -185,62 +140,47 @@ function Messages(props: MessagesProps) {
         socket.off("group:typing", onTyping);
       };
     }
-  }, [
-    isConnected,
-    socket,
-    session.user.id,
-    friendId,
-    groupId,
-    persistMessages,
-  ]);
+  }, [isConnected, socket, session.user.id, friendId, groupId, queryClient]);
 
   const handleSend = () => {
     const text = inputValue.trim();
     if (!text) return;
 
-    const optimisticId = -Date.now();
+    const messageId = uuidv7();
 
     if (friend) {
-      const previousMessages = messagesRef.current as DirectMessage[];
-      const nextMessages: DirectMessage[] = [
-        ...previousMessages,
-        {
-          id: optimisticId,
-          content: text,
-          senderId: session.user.id,
-          receiverId: friend.id,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          isRead: false,
-        },
-      ];
-      setLocalMessages(nextMessages);
-      persistMessages(nextMessages);
-      sendMessage(friend.id, text);
+      const optimisticMessage: DirectMessage = {
+        id: messageId,
+        content: text,
+        senderId: session.user.id,
+        receiverId: friend.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isRead: false,
+        pending: true,
+      };
+      upsertDMChatMessage(queryClient, friend.id, optimisticMessage);
+      sendMessage(friend.id, text, messageId);
       setTyping(friend.id, false);
     }
 
     if (group) {
-      const previousMessages = messagesRef.current as GroupMessage[];
-      const nextMessages: GroupMessage[] = [
-        ...previousMessages,
-        {
-          id: optimisticId,
-          content: text,
-          senderId: session.user.id,
-          groupId: group.id,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          isEdited: false,
-          sender: {
-            userName: session.user.userName ?? null,
-            avatarConfig: currentUserAvatarConfig,
-          },
+      const optimisticMessage: GroupMessage = {
+        id: messageId,
+        content: text,
+        senderId: session.user.id,
+        groupId: group.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isEdited: false,
+        pending: true,
+        sender: {
+          userName: session.user.userName ?? null,
+          avatarConfig: currentUserAvatarConfig,
         },
-      ];
-      setLocalMessages(nextMessages);
-      persistMessages(nextMessages);
-      sendGroupMessage(group.id, text);
+      };
+      upsertGroupChatMessage(queryClient, group.id, optimisticMessage);
+      sendGroupMessage(group.id, text, messageId);
       setGroupTyping(group.id, false);
     }
 
@@ -256,9 +196,9 @@ function Messages(props: MessagesProps) {
       return (
         member?.userName ??
         (
-          localMessages.find(
-            (m) => m.senderId === senderId && "sender" in m,
-          ) as GroupMessage | undefined
+          messages.find((m) => m.senderId === senderId && "sender" in m) as
+            | GroupMessage
+            | undefined
         )?.sender?.userName ??
         "Unknown"
       );
@@ -329,16 +269,16 @@ function Messages(props: MessagesProps) {
         className="scrollbar-custom flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-6 py-4"
       >
         <div className="flex-1" />
-        {localMessages && localMessages.length > 0 ? (
-          localMessages.map((m, i) => (
+        {messages && messages.length > 0 ? (
+          messages.map((m, i) => (
             <Message
               key={`${m.id}-${i}`}
               text={m.content}
               isOwn={m.senderId === session.user.id}
               senderName={getSenderName(m.senderId)}
               createdAt={m.createdAt}
-              pending={m.id < 0}
-              grouped={shouldGroupMessage(m, localMessages[i - 1])}
+              pending={Boolean(m.pending)}
+              grouped={shouldGroupMessage(m, messages[i - 1])}
               senderId={m.senderId}
               avatarConfig={getSenderAvatar(m)}
               isRead={getIsRead(m)}

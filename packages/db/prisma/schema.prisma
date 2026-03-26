@@ -94,7 +94,7 @@ model UserSettings {
 }
 
 model DirectMessage {
-  id         Int      @id @unique @default(autoincrement())
+  id         String   @id @unique
   content    String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -195,7 +195,7 @@ model GroupChat {
 }
 
 model GroupMessage {
-  id        Int      @id @unique @default(autoincrement())
+  id        String   @id @unique
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

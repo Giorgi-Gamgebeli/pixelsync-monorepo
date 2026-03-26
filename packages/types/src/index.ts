@@ -22,6 +22,7 @@ export interface ServerToClientEvents extends ServerToCallEvents {
 
 export interface ClientToServerEvents extends ClientToCallEvents {
   "dm:send": (data: {
+    id: string;
     receiverId: string;
     content: string;
     senderId: string;
@@ -30,19 +31,24 @@ export interface ClientToServerEvents extends ClientToCallEvents {
   "dm:read": (data: { senderId: string }) => void;
   "user:profile-update": (data: Omit<ProfileUpdate, "userId">) => void;
   "user:set-status": (data: { status: UserStatus }) => void;
-  "group:send": (data: { groupId: number; content: string }) => void;
+  "group:send": (data: {
+    id: string;
+    groupId: number;
+    content: string;
+  }) => void;
   "group:typing": (data: { groupId: number; isTyping: boolean }) => void;
   "group:join": (data: { groupId: number }) => void;
 }
 
 export interface DirectMessage {
-  id: number;
+  id: string;
   content: string;
   createdAt: string;
   updatedAt: string;
   isRead: boolean;
   senderId: string;
   receiverId: string;
+  pending?: boolean;
   sender?: {
     userName: string;
     avatar?: string;
@@ -50,13 +56,14 @@ export interface DirectMessage {
 }
 
 export interface GroupMessage {
-  id: number;
+  id: string;
   content: string;
   createdAt: string;
   updatedAt: string;
   isEdited: boolean;
   groupId: number;
   senderId: string;
+  pending?: boolean;
   sender?: {
     userName: string | null;
     avatarConfig?: string | null;

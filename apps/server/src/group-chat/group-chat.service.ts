@@ -30,9 +30,14 @@ export class GroupChatService {
     });
   }
 
-  async createMessage(groupId: number, senderId: string, content: string) {
+  async createMessage(
+    id: string,
+    groupId: number,
+    senderId: string,
+    content: string,
+  ) {
     return db.groupMessage.create({
-      data: { content, groupId, senderId },
+      data: { id, content, groupId, senderId },
     });
   }
 

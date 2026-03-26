@@ -30,11 +30,11 @@ type SocketContextValue = {
   unreadMap: Record<string, number>;
   readAckSet: Set<string>;
   profileMap: Record<string, Partial<ProfileUpdate>>;
-  sendMessage: (receiverId: string, content: string) => void;
+  sendMessage: (receiverId: string, content: string, id: string) => void;
   setTyping: (receiverId: string, isTyping: boolean) => void;
   markAsRead: (friendId: string) => void;
   broadcastProfileUpdate: (data: Omit<ProfileUpdate, "userId">) => void;
-  sendGroupMessage: (groupId: number, content: string) => void;
+  sendGroupMessage: (groupId: number, content: string, id: string) => void;
   setGroupTyping: (groupId: number, isTyping: boolean) => void;
   joinGroup: (groupId: number) => void;
   setStatus: (status: UserStatus) => void;
@@ -128,7 +128,7 @@ function SocketProvider({
         socket.on("dm:receive", (message) => {
           const otherUserId =
             message.senderId === userId ? message.receiverId : message.senderId;
-          upsertDMChatMessage(queryClient, otherUserId, message, userId);
+          upsertDMChatMessage(queryClient, otherUserId, message);
 
           if (message.senderId !== userId) {
             setUnreadMap((prev) => ({
@@ -169,8 +169,9 @@ function SocketProvider({
   }, [userId, queryClient]);
 
   const sendMessage = useCallback(
-    (receiverId: string, content: string) => {
+    (receiverId: string, content: string, id: string) => {
       socketRef.current?.emit("dm:send", {
+        id,
         receiverId,
         content,
         senderId: userId,
@@ -200,9 +201,12 @@ function SocketProvider({
     [],
   );
 
-  const sendGroupMessage = useCallback((groupId: number, content: string) => {
-    socketRef.current?.emit("group:send", { groupId, content });
-  }, []);
+  const sendGroupMessage = useCallback(
+    (groupId: number, content: string, id: string) => {
+      socketRef.current?.emit("group:send", { id, groupId, content });
+    },
+    [],
+  );
 
   const setGroupTyping = useCallback((groupId: number, isTyping: boolean) => {
     socketRef.current?.emit("group:typing", { groupId, isTyping });

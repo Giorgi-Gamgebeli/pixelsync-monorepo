@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 export const createDirectMessageSchema = z.object({
+  id: z.string().min(1),
+
   content: z
     .string({
       message: "Only text is allowed",

@@ -132,7 +132,6 @@ function upsertDMChatMessage(
   queryClient: QueryClient,
   friendId: string,
   message: DirectMessage,
-  currentUserId?: string,
 ) {
   queryClient.setQueryData<DMChatPageData>(dmChatKey(friendId), (prev) => {
     if (!prev) return prev;
@@ -144,19 +143,6 @@ function upsertDMChatMessage(
       return { ...prev, messages };
     }
 
-    if (currentUserId && message.senderId === currentUserId) {
-      const optimisticIndex = messages.findIndex(
-        (m) =>
-          m.id < 0 &&
-          m.content === message.content &&
-          m.senderId === currentUserId,
-      );
-      if (optimisticIndex !== -1) {
-        messages[optimisticIndex] = message;
-        return { ...prev, messages };
-      }
-    }
-
     messages.push(message);
     return { ...prev, messages };
   });
@@ -166,7 +152,6 @@ function upsertGroupChatMessage(
   queryClient: QueryClient,
   groupId: number,
   message: GroupMessage,
-  currentUserId?: string,
 ) {
   queryClient.setQueryData<GroupChatPageData>(groupChatKey(groupId), (prev) => {
     if (!prev) return prev;
@@ -176,19 +161,6 @@ function upsertGroupChatMessage(
     if (byIdIndex !== -1) {
       messages[byIdIndex] = message;
       return { ...prev, messages };
-    }
-
-    if (currentUserId && message.senderId === currentUserId) {
-      const optimisticIndex = messages.findIndex(
-        (m) =>
-          m.id < 0 &&
-          m.content === message.content &&
-          m.senderId === currentUserId,
-      );
-      if (optimisticIndex !== -1) {
-        messages[optimisticIndex] = message;
-        return { ...prev, messages };
-      }
     }
 
     messages.push(message);

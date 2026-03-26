@@ -32,7 +32,7 @@ import { DirectMessageService } from './direct-message.service';
 import { GroupChatService } from 'src/group-chat/group-chat.service';
 import { TokenService } from 'src/auth/token.service';
 import { corsConfig } from 'src/config/cors';
-import type { CallType } from '@repo/types';
+import type { CallType, DirectMessage, GroupMessage } from '@repo/types';
 
 interface AuthenticatedSocket extends Socket {
   data: {
@@ -282,18 +282,25 @@ export class DirectMessageGateway
     }
 
     const payload = {
-      ...body,
+      id: body.id,
+      content: body.content,
+      receiverId: body.receiverId,
       senderId: user.sub,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       isRead: false,
-    };
+    } satisfies DirectMessage;
 
     this.server.to(body.receiverId).emit('dm:receive', payload);
     client.emit('dm:receive', payload);
 
     this.directMessageService
-      .create({ ...body, senderId: user.sub })
+      .create({
+        id: body.id,
+        receiverId: body.receiverId,
+        content: body.content,
+        senderId: user.sub,
+      })
       .catch((err: unknown) => {
         this.logger.error(err, 'Failed to persist DM');
       });
@@ -380,6 +387,7 @@ export class DirectMessageGateway
     }
 
     const payload = {
+      id: body.id,
       content: body.content,
       groupId: body.groupId,
       senderId: user.sub,
@@ -390,12 +398,12 @@ export class DirectMessageGateway
         userName: user.userName ?? null,
         avatarConfig: user.avatarConfig ?? null,
       },
-    };
+    } satisfies GroupMessage;
 
     this.server.to(`group:${body.groupId}`).emit('group:receive', payload);
 
     this.groupChatService
-      .createMessage(body.groupId, user.sub, body.content)
+      .createMessage(body.id, body.groupId, user.sub, body.content)
       .catch((err: unknown) => {
         this.logger.error(err, 'Failed to persist group message');
       });

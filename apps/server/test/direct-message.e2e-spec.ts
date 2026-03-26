@@ -171,6 +171,7 @@ describe('DirectMessage Gateway (e2e)', () => {
     });
 
     sender.emit('dm:send', {
+      id: 'dm-msg-1',
       receiverId: 'user-2',
       content: 'Hello from e2e!',
       senderId: 'user-1',
@@ -187,6 +188,7 @@ describe('DirectMessage Gateway (e2e)', () => {
     expect(echoed.content).toBe('Hello from e2e!');
 
     expect(mockDirectMessageService.create).toHaveBeenCalledWith({
+      id: 'dm-msg-1',
       receiverId: 'user-2',
       content: 'Hello from e2e!',
       senderId: 'user-1',
@@ -217,6 +219,7 @@ describe('DirectMessage Gateway (e2e)', () => {
     });
 
     sender.emit('dm:send', {
+      id: 'dm-msg-2',
       receiverId: 'user-2',
       content: 'Should not arrive',
       senderId: 'user-1',
@@ -409,6 +412,7 @@ describe('DirectMessage Gateway (e2e)', () => {
     });
 
     sender.emit('dm:send', {
+      id: 'dm-msg-3',
       receiverId: 'user-2',
       content: 'Persist test',
       senderId: 'user-1',
@@ -424,6 +428,7 @@ describe('DirectMessage Gateway (e2e)', () => {
     await new Promise((r) => setTimeout(r, 100));
 
     expect(mockDirectMessageService.create).toHaveBeenCalledWith({
+      id: 'dm-msg-3',
       receiverId: 'user-2',
       content: 'Persist test',
       senderId: 'user-1',

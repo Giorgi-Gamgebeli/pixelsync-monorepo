@@ -160,6 +160,7 @@ describe('GroupChat Gateway (e2e)', () => {
     });
 
     sender.emit('group:send', {
+      id: 'group-msg-1',
       groupId: 1,
       content: 'Hello group!',
     });
@@ -202,6 +203,7 @@ describe('GroupChat Gateway (e2e)', () => {
     });
 
     nonMember.emit('group:send', {
+      id: 'group-msg-2',
       groupId: 1,
       content: 'Should not arrive',
     });
@@ -236,9 +238,13 @@ describe('GroupChat Gateway (e2e)', () => {
     });
 
     // Empty string
-    sender.emit('group:send', { groupId: 1, content: '' });
+    sender.emit('group:send', { id: 'group-msg-3', groupId: 1, content: '' });
     // Whitespace only
-    sender.emit('group:send', { groupId: 1, content: '   ' });
+    sender.emit('group:send', {
+      id: 'group-msg-4',
+      groupId: 1,
+      content: '   ',
+    });
 
     await new Promise((r) => setTimeout(r, 300));
 
@@ -275,7 +281,11 @@ describe('GroupChat Gateway (e2e)', () => {
       nonMemberGotMessage = true;
     });
 
-    member.emit('group:send', { groupId: 1, content: 'Secret message' });
+    member.emit('group:send', {
+      id: 'group-msg-5',
+      groupId: 1,
+      content: 'Secret message',
+    });
     await new Promise((r) => setTimeout(r, 300));
 
     // Non-member should NOT have received it (join was rejected)
@@ -358,12 +368,17 @@ describe('GroupChat Gateway (e2e)', () => {
       receiver.on('group:receive', (msg) => resolve(msg));
     });
 
-    sender.emit('group:send', { groupId: 1, content: 'Persist test' });
+    sender.emit('group:send', {
+      id: 'group-msg-6',
+      groupId: 1,
+      content: 'Persist test',
+    });
     await receivedMessage;
 
     await new Promise((r) => setTimeout(r, 100));
 
     expect(mockGroupChatService.createMessage).toHaveBeenCalledWith(
+      'group-msg-6',
       1,
       'user-1',
       'Persist test',
@@ -373,7 +388,7 @@ describe('GroupChat Gateway (e2e)', () => {
     receiver.close();
   });
 
-  it('should not include id in broadcast payload', async () => {
+  it('should include id in broadcast payload', async () => {
     addGroupMembers(1, 'user-1', 'user-2');
 
     const token1 = await createSessionToken({
@@ -393,11 +408,14 @@ describe('GroupChat Gateway (e2e)', () => {
       receiver.on('group:receive', (msg) => resolve(msg));
     });
 
-    sender.emit('group:send', { groupId: 1, content: 'No id check' });
+    sender.emit('group:send', {
+      id: 'group-msg-7',
+      groupId: 1,
+      content: 'No id check',
+    });
     const received = await receivedMessage;
 
-    // id should not be present (or at least not negative)
-    expect(received.id).toBeUndefined();
+    expect(received.id).toBe('group-msg-7');
     expect(received.createdAt).toBeDefined();
     expect(received.updatedAt).toBeDefined();
 

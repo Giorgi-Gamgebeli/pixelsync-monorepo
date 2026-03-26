@@ -10,6 +10,7 @@ export class DirectMessageService {
     try {
       const message = await db.directMessage.create({
         data: {
+          id: body.id,
           content: body.content,
           senderId: body.senderId,
           receiverId: body.receiverId,
