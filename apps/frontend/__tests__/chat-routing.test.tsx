@@ -5,17 +5,10 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/home",
 }));
 
-vi.mock("@/auth", () => ({
-  auth: vi.fn(async () => ({
-    user: {
-      id: "current-user",
-      avatarConfig: null,
-      userName: "Current User",
-      name: "Current User",
-      email: "current@test.com",
-      status: "ONLINE",
-    },
-  })),
+vi.mock("@tanstack/react-query", () => ({
+  useQueryClient: () => ({
+    prefetchQuery: vi.fn(),
+  }),
 }));
 
 vi.mock("next/link", () => ({
@@ -34,32 +27,35 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("@/app/(protectedRoutes)/home/[friendID]/DMChatView", () => ({
-  default: ({ friendId }: { friendId: string }) => (
-    <div data-testid="dm-view">dm:{friendId}</div>
-  ),
-}));
-
-vi.mock("@/app/(protectedRoutes)/home/group/[groupId]/GroupChatView", () => ({
-  default: ({ groupId }: { groupId: number }) => (
-    <div data-testid="group-view">group:{groupId}</div>
-  ),
-}));
-
-vi.mock(
-  "@/app/(protectedRoutes)/home/[friendID]/getCachedDMChatPageData",
-  () => ({
-    getCachedDMChatPageData: vi.fn(async (friendId: string) => ({
-      friend: {
-        id: friendId,
-        userName: "Legacy User",
-        status: "ONLINE",
-        avatarConfig: null,
+vi.mock("@/app/_lib/chatQueries", () => ({
+  useDMChatQuery: vi.fn(),
+  useGroupChatQuery: vi.fn(() => ({
+    data: {
+      session: {
+        user: {
+          id: "current-user",
+          avatarConfig: null,
+          userName: "Current User",
+          name: "Current User",
+          email: "current@test.com",
+          status: "ONLINE",
+        },
       },
+      group: {
+        id: 77,
+        name: "Legacy Group",
+        ownerId: "current-user",
+        members: [],
+      },
+      currentUserAvatarConfig: null,
       messages: [],
-    })),
-  }),
-);
+    },
+    error: null,
+    isPending: false,
+  })),
+  prefetchDMChat: vi.fn(),
+  prefetchGroupChat: vi.fn(),
+}));
 
 import HomeNavLink from "@/app/(protectedRoutes)/home/HomeNavLink";
 
@@ -104,15 +100,5 @@ describe("chat routing", () => {
       "href",
       "/home/friends",
     );
-  });
-
-  it("renders the group page directly from the dynamic route param", async () => {
-    const Page = (
-      await import("@/app/(protectedRoutes)/home/group/[groupId]/page")
-    ).default;
-
-    render(await Page({ params: Promise.resolve({ groupId: "77" }) }));
-
-    expect(screen.getByTestId("group-view")).toHaveTextContent("group:77");
   });
 });

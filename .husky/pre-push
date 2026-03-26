@@ -1,3 +1,6 @@
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 1
+
 echo "Running type checks before push..."
 cd apps/frontend && npx tsc --noEmit && cd ../..
 cd apps/server && npx tsc --noEmit && cd ../..
