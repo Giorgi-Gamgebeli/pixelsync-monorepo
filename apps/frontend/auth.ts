@@ -127,6 +127,7 @@ const nextAuth = NextAuth({
     },
   },
   adapter: PrismaAdapter(db),
+  trustHost: true,
 });
 
 export const { GET, POST } = nextAuth.handlers;
