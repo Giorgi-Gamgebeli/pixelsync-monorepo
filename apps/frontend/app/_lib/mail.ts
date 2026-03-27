@@ -6,7 +6,7 @@ export async function sendVerificationEmail(
   email: string,
   token: string,
 ) {
-  const confirmLink = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/new-verification?token=${token}`;
+  const confirmLink = `${process.env.NEXTAUTH_URL}/auth/new-verification?token=${token}`;
 
   const transport = nodemailer.createTransport({
     service: "gmail",
@@ -115,7 +115,7 @@ export async function sendResetPasswordEmail(
   email: string,
   token: string,
 ) {
-  const confirmLink = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/new-password?token=${token}`;
+  const confirmLink = `${process.env.NEXTAUTH_URL}/auth/new-password?token=${token}`;
 
   const transport = nodemailer.createTransport({
     service: "gmail",

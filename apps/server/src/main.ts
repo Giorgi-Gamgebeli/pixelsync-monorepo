@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { join } from 'path';
+import { join } from 'node:path';
 
 dotenv.config({ path: join(__dirname, '../../../.env') });
 
@@ -19,6 +19,6 @@ async function bootstrap() {
 
   app.enableCors(corsConfig);
 
-  await app.listen(process.env.SERVER_PORT ?? 3000);
+  await app.listen(3000);
 }
 void bootstrap();

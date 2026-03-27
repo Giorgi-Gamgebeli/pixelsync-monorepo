@@ -468,7 +468,7 @@ export async function generateInviteLink(projectId: number) {
     if (project.ownerId !== session.user.id)
       throw new OperationalError("Not authorized!");
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     const inviteUrl = `${baseUrl}/invite/${project.id}`;
 
     return { success: inviteUrl };

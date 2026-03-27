@@ -1,4 +1,4 @@
 export const corsConfig = {
-  origin: process.env.NEXT_PUBLIC_BASE_URL,
+  origin: process.env.NEXTAUTH_URL,
   credentials: true,
 };
