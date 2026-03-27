@@ -31,10 +31,9 @@ type GroupChatPageData = {
 };
 
 type DMChatQueryKey = readonly ["dm-chat", string];
-type GroupChatQueryKey = readonly ["group-chat", number];
+type GroupChatQueryKey = readonly ["group-chat", string];
 
 export type {
-  Session,
   DMChatPageData,
   GroupChatPageData,
   DMChatQueryKey,

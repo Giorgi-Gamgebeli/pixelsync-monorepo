@@ -1,7 +1,9 @@
 "use client";
 
 import ClientIcon from "@/app/_components/ClientIcon";
-import { useDMChatQuery } from "@/app/_lib/chatQueries";
+import { getChatPageData } from "@/app/_dataAccessLayer/userActions";
+import { useQuery } from "@/app/_hooks/useQuery";
+import { dmChatKey } from "@/app/_lib/chatQueryKeys";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import ChatHeader from "./ChatHeader";
@@ -12,10 +14,10 @@ function Page() {
   const params = useParams<{ friendID: string }>();
   const friendID = params.friendID;
   const { status } = useSession();
-  const { data, error, isPending } = useDMChatQuery(
-    friendID,
-    status === "authenticated",
-  );
+  const { data, error, isPending } = useQuery({
+    queryKey: dmChatKey(friendID),
+    queryFn: () => getChatPageData(friendID),
+  });
 
   if (
     status === "loading" ||

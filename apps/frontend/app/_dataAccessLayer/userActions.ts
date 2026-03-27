@@ -168,7 +168,7 @@ export async function getDirectMessages(
       take: 50,
     });
 
-    return messages.reverse().map((m) => ({
+    return messages.toReversed().map((m) => ({
       ...m,
       createdAt: m.createdAt.toISOString(),
       updatedAt: m.updatedAt.toISOString(),
@@ -230,7 +230,7 @@ export async function getChatPageData(friendId: string) {
         avatarConfig: friend.avatarConfig,
       },
       currentUserAvatarConfig: currentUser?.avatarConfig ?? null,
-      messages: messages.reverse().map((m) => ({
+      messages: messages.toReversed().map((m) => ({
         ...m,
         createdAt: m.createdAt.toISOString(),
         updatedAt: m.updatedAt.toISOString(),

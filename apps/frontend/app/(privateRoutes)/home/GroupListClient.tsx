@@ -1,16 +1,22 @@
 "use client";
 
-import HomeNavLink from "./HomeNavLink";
 import { useCallContext } from "@/app/_context/CallContext";
+import { getGroupChatPageData } from "@/app/_dataAccessLayer/groupActions";
+import { usePrefetchQuery } from "@/app/_hooks/usePrefetchQuery";
+import { groupChatKey } from "@/app/_lib/chatQueryKeys";
+import HomeNavLink from "./HomeNavLink";
 
-type Group = {
-  id: number;
-  name: string;
-  _count: { members: number };
-};
+type GroupListClientProps = Readonly<{
+  groups: {
+    id: number;
+    name: string;
+    _count: { members: number };
+  }[];
+}>;
 
-function GroupListClient({ groups }: { groups: Group[] }) {
+function GroupListClient({ groups }: GroupListClientProps) {
   const { activeGroupCalls } = useCallContext();
+  const { prefetchQuery } = usePrefetchQuery();
 
   if (groups.length === 0) {
     return (
@@ -22,10 +28,19 @@ function GroupListClient({ groups }: { groups: Group[] }) {
     <div className="flex flex-col gap-0.5">
       {groups.map((group) => {
         const liveCall = activeGroupCalls[group.id];
+
+        const prefetch = () => {
+          prefetchQuery({
+            queryKey: groupChatKey(group.id),
+            queryFn: () => getGroupChatPageData(group.id),
+          });
+        };
+
         return (
           <HomeNavLink
             key={group.id}
-            chatView={{ type: "group", groupId: group.id }}
+            href={`/home/group/${group.id}`}
+            prefetch={prefetch}
           >
             <div className="bg-surface relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-semibold text-gray-400">
               {group.name.slice(0, 2).toUpperCase()}
@@ -40,7 +55,7 @@ function GroupListClient({ groups }: { groups: Group[] }) {
               <p className="truncate text-sm text-gray-300">{group.name}</p>
               <p className="truncate text-xs text-gray-500">
                 {group._count.members} member
-                {group._count.members !== 1 ? "s" : ""}
+                {group._count.members === 1 ? "" : "s"}
                 {liveCall && (
                   <span className="text-green-400">
                     {" "}

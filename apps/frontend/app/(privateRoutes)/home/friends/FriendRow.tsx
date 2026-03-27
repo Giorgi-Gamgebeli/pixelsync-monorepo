@@ -8,7 +8,9 @@ import { UserStatus } from "@repo/types";
 import UserAvatar from "@/app/_components/UserAvatar";
 import ConfirmDialog from "@/app/_components/ConfirmDialog";
 import { useSocketContext } from "@/app/_context/SocketContext";
-import { unfriend } from "@/app/_dataAccessLayer/userActions";
+import { getChatPageData, unfriend } from "@/app/_dataAccessLayer/userActions";
+import { usePrefetchQuery } from "@/app/_hooks/usePrefetchQuery";
+import { dmChatKey } from "@/app/_lib/chatQueryKeys";
 
 const STATUS_LABELS: Record<UserStatus, string> = {
   ONLINE: "Online",
@@ -17,13 +19,13 @@ const STATUS_LABELS: Record<UserStatus, string> = {
   OFFLINE: "Offline",
 };
 
-type FriendRowProps = {
+type FriendRowProps = Readonly<{
   id: string;
   userName: string | null;
   status: UserStatus;
   avatarConfig?: string | null;
   actions?: React.ReactNode;
-};
+}>;
 
 function FriendRow({
   id,
@@ -34,6 +36,7 @@ function FriendRow({
 }: FriendRowProps) {
   const { statusMap, profileMap, markAsRead } = useSocketContext();
   const router = useRouter();
+  const { prefetchQuery } = usePrefetchQuery();
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -42,6 +45,12 @@ function FriendRow({
   const displayUserName = profile?.userName ?? userName;
   const displayAvatarConfig = profile?.avatarConfig ?? avatarConfig;
   const status = statusMap[id] ?? serverStatus;
+  const prefetch = () => {
+    prefetchQuery({
+      queryKey: dmChatKey(id),
+      queryFn: () => getChatPageData(id),
+    });
+  };
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -53,19 +62,14 @@ function FriendRow({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
-  const handleMouseLeave = () => {
-    setMenuOpen(false);
-  };
-
   return (
     <>
-      <div
-        className="group hover:bg-surface relative flex items-center rounded-lg transition-colors"
-        onMouseLeave={handleMouseLeave}
-      >
+      <div className="group hover:bg-surface relative flex items-center rounded-lg transition-colors">
         <Link
           href={`/home/${id}`}
           className="flex flex-1 items-center gap-3 px-3 py-2"
+          onMouseEnter={prefetch}
+          onFocus={prefetch}
         >
           <UserAvatar
             userName={displayUserName}
@@ -89,6 +93,8 @@ function FriendRow({
               <Link
                 href={`/home/${id}`}
                 className="bg-surface hover:bg-border flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:text-white"
+                onMouseEnter={prefetch}
+                onFocus={prefetch}
               >
                 <Icon icon="mdi:message" className="text-lg" />
               </Link>

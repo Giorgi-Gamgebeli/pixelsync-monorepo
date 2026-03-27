@@ -4,6 +4,6 @@ const dmChatKey = (friendId: string): DMChatQueryKey =>
   ["dm-chat", friendId] as const;
 
 const groupChatKey = (groupId: number): GroupChatQueryKey =>
-  ["group-chat", groupId] as const;
+  ["group-chat", String(groupId)] as const;
 
 export { dmChatKey, groupChatKey };

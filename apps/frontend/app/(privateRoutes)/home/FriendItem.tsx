@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { UserStatus } from "@repo/types";
-import { Icon } from "@iconify/react/dist/iconify.js";
-import UserAvatar from "@/app/_components/UserAvatar";
 import ConfirmDialog from "@/app/_components/ConfirmDialog";
-import HomeNavLink from "./HomeNavLink";
+import UserAvatar from "@/app/_components/UserAvatar";
 import { useSocketContext } from "@/app/_context/SocketContext";
-import { unfriend } from "@/app/_dataAccessLayer/userActions";
+import { getChatPageData, unfriend } from "@/app/_dataAccessLayer/userActions";
+import { usePrefetchQuery } from "@/app/_hooks/usePrefetchQuery";
+import { dmChatKey } from "@/app/_lib/chatQueryKeys";
+import { Icon } from "@iconify/react/dist/iconify.js";
+import { UserStatus } from "@repo/types";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import HomeNavLink from "./HomeNavLink";
 
 const STATUS_LABELS: Record<UserStatus, string> = {
   ONLINE: "Online",
@@ -17,18 +19,23 @@ const STATUS_LABELS: Record<UserStatus, string> = {
   OFFLINE: "Offline",
 };
 
-type Friend = {
-  id: string;
-  userName: string | null;
-  status: UserStatus;
-  avatarConfig?: string | null;
-};
+type FriendItemProps = Readonly<{
+  friend: {
+    id: string;
+    userName: string | null;
+    status: UserStatus;
+    avatarConfig?: string | null;
+  };
+}>;
 
-function FriendItem({ friend }: { friend: Friend }) {
+function FriendItem({ friend }: FriendItemProps) {
   const { statusMap, unreadMap, profileMap, markAsRead } = useSocketContext();
   const router = useRouter();
+  const { prefetchQuery } = usePrefetchQuery();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+
   const menuRef = useRef<HTMLDivElement>(null);
 
   const profile = profileMap[friend.id];
@@ -36,6 +43,13 @@ function FriendItem({ friend }: { friend: Friend }) {
   const displayAvatarConfig = profile?.avatarConfig ?? friend.avatarConfig;
   const status = statusMap[friend.id] ?? friend.status;
   const unread = unreadMap[friend.id] ?? 0;
+
+  const prefetch = () => {
+    prefetchQuery({
+      queryKey: dmChatKey(friend.id),
+      queryFn: () => getChatPageData(friend.id),
+    });
+  };
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -47,14 +61,10 @@ function FriendItem({ friend }: { friend: Friend }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
-  const handleMouseLeave = () => {
-    setMenuOpen(false);
-  };
-
   return (
     <>
-      <div className="group relative" onMouseLeave={handleMouseLeave}>
-        <HomeNavLink chatView={{ type: "dm", friendId: friend.id }}>
+      <div className="group relative">
+        <HomeNavLink href={`/home/${friend.id}`} prefetch={prefetch}>
           <UserAvatar
             userName={displayUserName}
             id={friend.id}
@@ -141,22 +151,4 @@ function FriendItem({ friend }: { friend: Friend }) {
   );
 }
 
-function FriendsListClient({ friends }: { friends: Friend[] }) {
-  if (friends.length === 0) {
-    return (
-      <p className="py-3 text-center text-xs text-gray-500">
-        No conversations yet
-      </p>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-0.5">
-      {friends.map((friend) => (
-        <FriendItem key={friend.id} friend={friend} />
-      ))}
-    </div>
-  );
-}
-
-export default FriendsListClient;
+export default FriendItem;

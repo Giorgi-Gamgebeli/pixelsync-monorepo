@@ -1,14 +1,23 @@
 "use client";
 
-import GroupChatHeader from "./GroupChatHeader";
-import GroupCallBanner from "./GroupCallBanner";
-import Messages from "../../[friendID]/Messages";
-import ChatSkeleton from "../../[friendID]/ChatSkeleton";
 import ClientIcon from "@/app/_components/ClientIcon";
-import { useGroupChatQuery } from "@/app/_lib/chatQueries";
+import { getGroupChatPageData } from "@/app/_dataAccessLayer/groupActions";
+import { useQuery } from "@/app/_hooks/useQuery";
+import { groupChatKey } from "@/app/_lib/chatQueryKeys";
+import ChatSkeleton from "../../[friendID]/ChatSkeleton";
+import Messages from "../../[friendID]/Messages";
+import GroupCallBanner from "./GroupCallBanner";
+import GroupChatHeader from "./GroupChatHeader";
 
-function GroupChatView({ groupId }: { groupId: number }) {
-  const { data, error, isPending } = useGroupChatQuery(groupId);
+type GroupChatView = Readonly<{
+  groupId: number;
+}>;
+
+function GroupChatView({ groupId }: GroupChatView) {
+  const { data, error, isPending } = useQuery({
+    queryKey: groupChatKey(groupId),
+    queryFn: () => getGroupChatPageData(groupId),
+  });
 
   if (isPending && !data) return <ChatSkeleton />;
 

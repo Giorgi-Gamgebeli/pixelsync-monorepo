@@ -8,7 +8,7 @@ import PendingFriends from "./PendingFriends";
 import AllFriends from "./AllFriends";
 import OnlineFriends from "./OnlineFriends";
 
-type FriendsPageProps = {
+type FriendsPageProps = Readonly<{
   friends: {
     id: string;
     userName: string | null;
@@ -28,7 +28,7 @@ type FriendsPageProps = {
         }[];
       }
     | undefined;
-};
+}>;
 
 function FriendsPage({ friends, pendingFriendRequests }: FriendsPageProps) {
   const [activeFilter, setActiveFilter] = useState("online");

@@ -1,12 +1,12 @@
-import { Suspense } from "react";
-import FriendsList from "./FriendsList";
-import GroupList from "./GroupList";
-import FriendsListSkeleton from "@/app/_components/skeletons/FriendsListSkeleton";
-import HomeNavLink from "./HomeNavLink";
 import ClientIcon from "@/app/_components/ClientIcon";
+import FriendsListSkeleton from "@/app/_components/skeletons/FriendsListSkeleton";
+import { Suspense } from "react";
 import CreateGroupButton from "./CreateGroupButton";
+import FriendsList from "./FriendsList";
+import FriendsNavLink from "./FriendsNavLink";
+import GroupList from "./GroupList";
 
-function Layout({ children }: { children: React.ReactNode }) {
+function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
       {/* Sidebar */}
@@ -21,10 +21,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Nav */}
         <div className="flex flex-col gap-0.5 px-3">
-          <HomeNavLink href="/home/friends">
-            <ClientIcon icon="mdi:account-group" className="text-lg" />
-            <span>Friends</span>
-          </HomeNavLink>
+          <FriendsNavLink />
         </div>
 
         <div className="border-border/60 mx-3 my-2 border-t" />
