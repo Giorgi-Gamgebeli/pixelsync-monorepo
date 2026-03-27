@@ -57,7 +57,7 @@ vi.mock("@/app/_lib/chatQueries", () => ({
   prefetchGroupChat: vi.fn(),
 }));
 
-import HomeNavLink from "@/app/(protectedRoutes)/home/HomeNavLink";
+import HomeNavLink from "@/app/(privateRoutes)/home/HomeNavLink";
 
 describe("chat routing", () => {
   afterEach(cleanup);
