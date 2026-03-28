@@ -4,16 +4,16 @@ import ClientIcon from "@/app/_components/ClientIcon";
 import { getGroupChatPageData } from "@/app/_dataAccessLayer/groupActions";
 import { useQuery } from "@/app/_hooks/useQuery";
 import { groupChatKey } from "@/app/_lib/chatQueryKeys";
-import ChatSkeleton from "../../[friendID]/ChatSkeleton";
-import Messages from "../../[friendID]/Messages";
+import ChatSkeleton from "../../../_components/skeletons/ChatSkeleton";
+import Messages from "../../../_components/Messages";
 import GroupCallBanner from "./GroupCallBanner";
 import GroupChatHeader from "./GroupChatHeader";
+import { useParams } from "next/navigation";
 
-type GroupChatView = Readonly<{
-  groupId: number;
-}>;
+function GroupChatView() {
+  const params = useParams<{ groupId: string }>();
+  const groupId = Number(params.groupId);
 
-function GroupChatView({ groupId }: GroupChatView) {
   const { data, error, isPending } = useQuery({
     queryKey: groupChatKey(groupId),
     queryFn: () => getGroupChatPageData(groupId),

@@ -12,6 +12,8 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
+  type RefObject,
   useRef,
   useState,
 } from "react";
@@ -23,6 +25,37 @@ import { dmChatKey } from "../_lib/chatQueryKeys";
 import type { DMChatPageData } from "../_lib/chatQueryTypes";
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
+
+type StatusUpdate = Parameters<ServerToClientEvents["user:status"]>[0];
+
+type ProfileUpdateEvent = Parameters<
+  ServerToClientEvents["user:profile-update"]
+>[0];
+
+type DmReceiveEvent = Parameters<ServerToClientEvents["dm:receive"]>[0];
+
+function mergeStatusMap(
+  prev: Record<string, UserStatus>,
+  update: StatusUpdate,
+) {
+  return { ...prev, [update.userId]: update.status };
+}
+
+function mergeProfileMap(
+  prev: Record<string, Partial<ProfileUpdate>>,
+  data: ProfileUpdateEvent,
+) {
+  return {
+    ...prev,
+    [data.userId]: { ...prev[data.userId], ...data },
+  };
+}
+
+function playNotificationSound(
+  notificationSound: RefObject<HTMLAudioElement | null>,
+) {
+  notificationSound.current?.play().catch(() => {});
+}
 
 type SocketContextValue = {
   socket: TypedSocket | null;
@@ -68,6 +101,31 @@ function SocketProvider({
   >({});
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
+  const handleUserStatus = useCallback((update: StatusUpdate) => {
+    setStatusMap((prev) => mergeStatusMap(prev, update));
+  }, []);
+
+  const handleDmReceive = useCallback(
+    (message: DmReceiveEvent) => {
+      const otherUserId =
+        message.senderId === userId ? message.receiverId : message.senderId;
+      setChatMessage<DMChatPageData>(
+        queryClient,
+        dmChatKey(otherUserId),
+        message,
+      );
+
+      if (message.senderId !== userId) {
+        playNotificationSound(notificationSound);
+      }
+    },
+    [notificationSound, queryClient, userId],
+  );
+
+  const handleProfileUpdate = useCallback((data: ProfileUpdateEvent) => {
+    setProfileMap((prev) => mergeProfileMap(prev, data));
+  }, []);
+
   useEffect(() => {
     notificationSound.current = new Audio("/sounds/notification.mp3");
     notificationSound.current.volume = 0.5;
@@ -111,30 +169,11 @@ function SocketProvider({
           setIsReconnecting(false);
         });
 
-        socket.on("user:status", (update) => {
-          setStatusMap((prev) => ({ ...prev, [update.userId]: update.status }));
-        });
+        socket.on("user:status", handleUserStatus);
 
-        socket.on("dm:receive", (message) => {
-          const otherUserId =
-            message.senderId === userId ? message.receiverId : message.senderId;
-          setChatMessage<DMChatPageData>(
-            queryClient,
-            dmChatKey(otherUserId),
-            message,
-          );
+        socket.on("dm:receive", handleDmReceive);
 
-          if (message.senderId !== userId) {
-            notificationSound.current?.play().catch(() => {});
-          }
-        });
-
-        socket.on("user:profile-update", (data) => {
-          setProfileMap((prev) => ({
-            ...prev,
-            [data.userId]: { ...prev[data.userId], ...data },
-          }));
-        });
+        socket.on("user:profile-update", handleProfileUpdate);
 
         socketRef.current = socket;
         setIsConnected(socket.connected);
@@ -152,7 +191,13 @@ function SocketProvider({
       socketRef.current = null;
       setIsConnected(false);
     };
-  }, [userId, queryClient]);
+  }, [
+    userId,
+    queryClient,
+    handleUserStatus,
+    handleDmReceive,
+    handleProfileUpdate,
+  ]);
 
   const sendMessage = useCallback(
     (receiverId: string, content: string, id: string) => {
@@ -196,25 +241,38 @@ function SocketProvider({
     socketRef.current?.emit("user:set-status", { status });
   }, []);
 
+  const value = useMemo(
+    () => ({
+      socket: socketRef.current,
+      isConnected,
+      isReconnecting,
+      statusMap,
+      profileMap,
+      sendMessage,
+      setTyping,
+      broadcastProfileUpdate,
+      sendGroupMessage,
+      setGroupTyping,
+      joinGroup,
+      setStatus,
+    }),
+    [
+      isConnected,
+      isReconnecting,
+      statusMap,
+      profileMap,
+      sendMessage,
+      setTyping,
+      broadcastProfileUpdate,
+      sendGroupMessage,
+      setGroupTyping,
+      joinGroup,
+      setStatus,
+    ],
+  );
+
   return (
-    <SocketContext.Provider
-      value={{
-        socket: socketRef.current,
-        isConnected,
-        isReconnecting,
-        statusMap,
-        profileMap,
-        sendMessage,
-        setTyping,
-        broadcastProfileUpdate,
-        sendGroupMessage,
-        setGroupTyping,
-        joinGroup,
-        setStatus,
-      }}
-    >
-      {children}
-    </SocketContext.Provider>
+    <SocketContext.Provider value={value}>{children}</SocketContext.Provider>
   );
 }
 

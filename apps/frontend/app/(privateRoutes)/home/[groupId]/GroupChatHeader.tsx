@@ -4,7 +4,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { UserStatus } from "@repo/types";
 import { useCallContext } from "@/app/_context/CallContext";
 
-type GroupChatHeaderProps = {
+type GroupChatHeaderProps = Readonly<{
   group: {
     id: number;
     name: string;
@@ -15,7 +15,7 @@ type GroupChatHeaderProps = {
       status: UserStatus;
     }[];
   };
-};
+}>;
 
 function GroupChatHeader({ group }: GroupChatHeaderProps) {
   const {
@@ -40,7 +40,7 @@ function GroupChatHeader({ group }: GroupChatHeaderProps) {
         <div>
           <p className="text-sm font-medium text-white">{group.name}</p>
           <p className="text-xs text-gray-500">
-            {group.members.length} member{group.members.length !== 1 ? "s" : ""}
+            {group.members.length} member{group.members.length === 1 ? "" : "s"}
             {onlineCount > 0 && ` \u00b7 ${onlineCount} online`}
             {thisGroupHasLiveCall && (
               <>
@@ -69,7 +69,7 @@ function GroupChatHeader({ group }: GroupChatHeaderProps) {
           callState === "idle" && (
             <button
               onClick={() => joinGroupCall(group.id, "audio")}
-              className="hover:bg-surface/60 mr-2 flex items-center gap-1.5 rounded-full bg-green-500/20 px-3 py-1.5 text-xs text-green-400 transition-colors hover:bg-green-500/30"
+              className="mr-2 flex items-center gap-1.5 rounded-full bg-green-500/20 px-3 py-1.5 text-xs text-green-400 transition-colors hover:bg-green-500/30"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
               <span>

@@ -7,8 +7,8 @@ import { dmChatKey } from "@/app/_lib/chatQueryKeys";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import ChatHeader from "./ChatHeader";
-import ChatSkeleton from "./ChatSkeleton";
-import Messages from "./Messages";
+import ChatSkeleton from "../../../_components/skeletons/ChatSkeleton";
+import Messages from "../../../_components/Messages";
 
 function Page() {
   const params = useParams<{ friendID: string }>();

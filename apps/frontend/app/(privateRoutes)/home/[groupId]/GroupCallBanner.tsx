@@ -2,10 +2,10 @@
 
 import { useCallContext } from "@/app/_context/CallContext";
 
-type GroupCallBannerProps = {
+type GroupCallBannerProps = Readonly<{
   groupId: number;
   groupName: string;
-};
+}>;
 
 function GroupCallBanner({ groupId, groupName }: GroupCallBannerProps) {
   const { activeGroupCalls, activeGroupId, joinGroupCall } = useCallContext();

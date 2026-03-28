@@ -6,31 +6,17 @@ import type { DirectMessage, GroupMessage, UserStatus } from "@repo/types";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Session } from "next-auth";
 import { useEffect, useRef, useState } from "react";
-import { v7 as uuidv7 } from "uuid";
 import Message from "./Message";
-import { setChatMessage } from "@/app/_lib/chatQueryCache";
-import { dmChatKey, groupChatKey } from "@/app/_lib/chatQueryKeys";
-import type {
-  DMChatPageData,
-  GroupChatPageData,
-} from "@/app/_lib/chatQueryTypes";
-
-const GROUPING_WINDOW_MS = 5 * 60 * 1000;
-
-type ChatMessage = DirectMessage | GroupMessage;
-
-function shouldGroupMessage(
-  current: ChatMessage,
-  previous: ChatMessage | undefined,
-): boolean {
-  if (!previous) return false;
-  if (current.senderId !== previous.senderId) return false;
-  return (
-    new Date(current.createdAt).getTime() -
-      new Date(previous.createdAt).getTime() <
-    GROUPING_WINDOW_MS
-  );
-}
+import {
+  getEmptyLabel,
+  getPlaceholder,
+  handleGroupReceive,
+  getSenderAvatar,
+  getSenderName,
+  getTypingText,
+  shouldGroupMessage,
+  submitMessage,
+} from "@/app/_lib/chatMessageHelpers";
 
 type Member = {
   id: string;
@@ -114,15 +100,6 @@ function Messages(props: MessagesProps) {
     }
 
     if (groupId) {
-      const onReceive = (message: GroupMessage) => {
-        if (message.groupId !== groupId) return;
-        setChatMessage<GroupChatPageData>(
-          queryClient,
-          groupChatKey(groupId),
-          message,
-        );
-      };
-
       const onTyping = (data: {
         groupId: number;
         userId: string;
@@ -133,132 +110,56 @@ function Messages(props: MessagesProps) {
         setTypingUsers((prev) => ({ ...prev, [data.userId]: data.isTyping }));
       };
 
-      socket.on("group:receive", onReceive);
+      socket.on("group:receive", (message) =>
+        handleGroupReceive({
+          message,
+          groupId,
+          queryClient,
+        }),
+      );
       socket.on("group:typing", onTyping);
       return () => {
-        socket.off("group:receive", onReceive);
+        socket.off("group:receive");
         socket.off("group:typing", onTyping);
       };
     }
   }, [isConnected, socket, session.user.id, friendId, groupId, queryClient]);
-
-  const handleSend = () => {
-    const text = inputValue.trim();
-    if (!text) return;
-
-    const messageId = uuidv7();
-
-    if (friend) {
-      const optimisticMessage: DirectMessage = {
-        id: messageId,
-        content: text,
-        senderId: session.user.id,
-        receiverId: friend.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        pending: true,
-      };
-      setChatMessage<DMChatPageData>(
-        queryClient,
-        dmChatKey(friend.id),
-        optimisticMessage,
-      );
-      sendMessage(friend.id, text, messageId);
-      setTyping(friend.id, false);
-    }
-
-    if (group) {
-      const optimisticMessage: GroupMessage = {
-        id: messageId,
-        content: text,
-        senderId: session.user.id,
-        groupId: group.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isEdited: false,
-        pending: true,
-        sender: {
-          userName: session.user.userName ?? null,
-          avatarConfig: currentUserAvatarConfig,
-        },
-      };
-      setChatMessage<GroupChatPageData>(
-        queryClient,
-        groupChatKey(group.id),
-        optimisticMessage,
-      );
-      sendGroupMessage(group.id, text, messageId);
-      setGroupTyping(group.id, false);
-    }
-
-    setInputValue("");
-  };
-
-  // Resolve sender info
-  const getSenderName = (senderId: string): string => {
-    if (senderId === session.user.id) return "You";
-    if (friend) return friend.userName || "Friend";
-    if (group) {
-      const member = group.members.find((m) => m.id === senderId);
-      return (
-        member?.userName ??
-        messages.find((m) => m.senderId === senderId && "sender" in m)?.sender
-          ?.userName ??
-        "Unknown"
-      );
-    }
-    return "Unknown";
-  };
-
-  const getSenderAvatar = (msg: ChatMessage): string | null | undefined => {
-    if (msg.senderId === session.user.id) return currentUserAvatarConfig;
-    if (friend) return friend.avatarConfig;
-    if (group) {
-      const member = group.members.find((m) => m.id === msg.senderId);
-      return (
-        member?.avatarConfig ??
-        ("sender" in msg
-          ? (msg as GroupMessage).sender?.avatarConfig
-          : undefined)
-      );
-    }
-    return undefined;
-  };
-
-  // Typing text
-  let typingText = "";
-  if (friend && isFriendTyping) {
-    typingText = `${friend.userName} is typing...`;
-  }
-  if (group) {
-    const typingNames = Object.entries(typingUsers)
-      .filter(([, t]) => t)
-      .map(([userId]) => {
-        const member = group.members.find((m) => m.id === userId);
-        return member?.userName || "Someone";
-      });
-    if (typingNames.length === 1) {
-      typingText = `${typingNames[0]} is typing...`;
-    } else if (typingNames.length === 2) {
-      typingText = `${typingNames[0]} and ${typingNames[1]} are typing...`;
-    } else if (typingNames.length > 2) {
-      typingText = `${typingNames[0]} and ${typingNames.length - 1} others are typing...`;
-    }
-  }
-
-  const placeholder = friend
-    ? `Message @${friend.userName || "friend"}`
-    : `Message ${group?.name}`;
-
-  const emptyLabel = friend
-    ? friend.userName || "your friend"
-    : group?.name || "the group";
 
   const handleInputChange = (value: string) => {
     setInputValue(value);
     if (friend) setTyping(friend.id, value.length > 0);
     if (group) setGroupTyping(group.id, value.length > 0);
   };
+
+  const handleSend = () => {
+    const text = inputValue.trim();
+    if (!text) return;
+
+    submitMessage({
+      text,
+      friend,
+      group,
+      sessionUserId: session.user.id,
+      sessionUserName: session.user.userName,
+      currentUserAvatarConfig,
+      queryClient,
+      sendMessage,
+      setTyping,
+      sendGroupMessage,
+      setGroupTyping,
+    });
+
+    setInputValue("");
+  };
+
+  const typingText = getTypingText({
+    friend,
+    isFriendTyping,
+    group,
+    typingUsers,
+  });
+  const placeholder = getPlaceholder(friend, group);
+  const emptyLabel = getEmptyLabel(friend, group);
 
   return (
     <div className="flex h-full flex-col">
@@ -274,12 +175,25 @@ function Messages(props: MessagesProps) {
               key={`${m.id}-${i}`}
               text={m.content}
               isOwn={m.senderId === session.user.id}
-              senderName={getSenderName(m.senderId)}
+              senderName={getSenderName({
+                senderId: m.senderId,
+                sessionUserId: session.user.id,
+                friend,
+                group,
+                messages,
+              })}
               createdAt={m.createdAt}
               pending={Boolean(m.pending)}
               grouped={shouldGroupMessage(m, messages[i - 1])}
               senderId={m.senderId}
-              avatarConfig={getSenderAvatar(m)}
+              avatarConfig={getSenderAvatar({
+                senderId: m.senderId,
+                sessionUserId: session.user.id,
+                friend,
+                group,
+                currentUserAvatarConfig,
+                message: m,
+              })}
             />
           ))
         ) : (
