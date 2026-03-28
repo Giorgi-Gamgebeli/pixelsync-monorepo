@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import UserAvatar from "@/app/_components/UserAvatar";
 import LinkPreview, { URL_REGEX } from "./LinkPreview";
 
-type MessageProps = {
+type MessageProps = Readonly<{
   text: string;
   isOwn: boolean;
   senderName: string;
@@ -11,8 +11,7 @@ type MessageProps = {
   grouped?: boolean;
   senderId: string;
   avatarConfig?: string | null;
-  isRead?: boolean;
-};
+}>;
 
 const formatTime = (date: Date) =>
   date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -60,16 +59,6 @@ function renderTextWithLinks(text: string) {
   }, []);
 }
 
-function ReadReceipt({ isRead }: { isRead?: boolean }) {
-  return (
-    <span
-      className={`ml-1.5 inline-flex shrink-0 align-middle text-[10px] leading-none ${isRead ? "text-white" : "text-white/40"}`}
-    >
-      {isRead ? "✓✓" : "✓"}
-    </span>
-  );
-}
-
 function Message({
   text,
   isOwn,
@@ -79,7 +68,6 @@ function Message({
   grouped,
   senderId,
   avatarConfig,
-  isRead,
 }: MessageProps) {
   const [formattedDate, setFormattedDate] = useState("");
   const [formattedTime, setFormattedTime] = useState("");
@@ -110,7 +98,6 @@ function Message({
             <span className="text-[13.5px] leading-relaxed">
               {renderTextWithLinks(text)}
             </span>
-            {isOwn && <ReadReceipt isRead={isRead} />}
           </div>
           <LinkPreview text={text} />
         </div>
@@ -157,7 +144,6 @@ function Message({
             <span className="text-[13.5px] leading-relaxed">
               {renderTextWithLinks(text)}
             </span>
-            {isOwn && <ReadReceipt isRead={isRead} />}
           </div>
           <LinkPreview text={text} />
         </div>

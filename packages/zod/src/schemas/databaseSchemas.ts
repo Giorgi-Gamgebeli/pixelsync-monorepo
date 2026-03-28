@@ -91,12 +91,6 @@ export const DirectMessageSchemaDatabase = z.object({
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date(),
 
-  isRead: z
-    .boolean({
-      message: "Must be a boolean value",
-    })
-    .default(false),
-
   senderId: z.string(),
   receiverId: z.string(),
 });
@@ -204,7 +198,6 @@ export const CreateDirectMessageInputSchema = DirectMessageSchemaDatabase.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-  isRead: true,
 });
 
 export const CreateChannelInputSchema = ChannelSchemaDatabase.omit({

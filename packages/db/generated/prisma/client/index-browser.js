@@ -185,7 +185,6 @@ exports.Prisma.DirectMessageScalarFieldEnum = {
   content: 'content',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  isRead: 'isRead',
   senderId: 'senderId',
   receiverId: 'receiverId'
 };

@@ -1,10 +1,6 @@
 "use client";
 
 import { useSocketContext } from "@/app/_context/SocketContext";
-import {
-  upsertDMChatMessage,
-  upsertGroupChatMessage,
-} from "@/app/_lib/chatQueries";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import type { DirectMessage, GroupMessage, UserStatus } from "@repo/types";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,6 +8,12 @@ import type { Session } from "next-auth";
 import { useEffect, useRef, useState } from "react";
 import { v7 as uuidv7 } from "uuid";
 import Message from "./Message";
+import { setChatMessage } from "@/app/_lib/chatQueryCache";
+import { dmChatKey, groupChatKey } from "@/app/_lib/chatQueryKeys";
+import type {
+  DMChatPageData,
+  GroupChatPageData,
+} from "@/app/_lib/chatQueryTypes";
 
 const GROUPING_WINDOW_MS = 5 * 60 * 1000;
 
@@ -77,8 +79,6 @@ function Messages(props: MessagesProps) {
     isConnected,
     sendMessage,
     setTyping,
-    markAsRead,
-    readAckSet,
     sendGroupMessage,
     setGroupTyping,
   } = useSocketContext();
@@ -88,10 +88,6 @@ function Messages(props: MessagesProps) {
   const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
 
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (friendId) markAsRead(friendId);
-  }, [friendId, markAsRead]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -120,7 +116,11 @@ function Messages(props: MessagesProps) {
     if (groupId) {
       const onReceive = (message: GroupMessage) => {
         if (message.groupId !== groupId) return;
-        upsertGroupChatMessage(queryClient, groupId, message);
+        setChatMessage<GroupChatPageData>(
+          queryClient,
+          groupChatKey(groupId),
+          message,
+        );
       };
 
       const onTyping = (data: {
@@ -156,10 +156,13 @@ function Messages(props: MessagesProps) {
         receiverId: friend.id,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        isRead: false,
         pending: true,
       };
-      upsertDMChatMessage(queryClient, friend.id, optimisticMessage);
+      setChatMessage<DMChatPageData>(
+        queryClient,
+        dmChatKey(friend.id),
+        optimisticMessage,
+      );
       sendMessage(friend.id, text, messageId);
       setTyping(friend.id, false);
     }
@@ -179,7 +182,11 @@ function Messages(props: MessagesProps) {
           avatarConfig: currentUserAvatarConfig,
         },
       };
-      upsertGroupChatMessage(queryClient, group.id, optimisticMessage);
+      setChatMessage<GroupChatPageData>(
+        queryClient,
+        groupChatKey(group.id),
+        optimisticMessage,
+      );
       sendGroupMessage(group.id, text, messageId);
       setGroupTyping(group.id, false);
     }
@@ -195,11 +202,8 @@ function Messages(props: MessagesProps) {
       const member = group.members.find((m) => m.id === senderId);
       return (
         member?.userName ??
-        (
-          messages.find((m) => m.senderId === senderId && "sender" in m) as
-            | GroupMessage
-            | undefined
-        )?.sender?.userName ??
+        messages.find((m) => m.senderId === senderId && "sender" in m)?.sender
+          ?.userName ??
         "Unknown"
       );
     }
@@ -219,11 +223,6 @@ function Messages(props: MessagesProps) {
       );
     }
     return undefined;
-  };
-
-  const getIsRead = (msg: ChatMessage): boolean | undefined => {
-    if (!friend) return undefined;
-    return ("isRead" in msg && msg.isRead) || readAckSet.has(friend.id);
   };
 
   // Typing text
@@ -281,7 +280,6 @@ function Messages(props: MessagesProps) {
               grouped={shouldGroupMessage(m, messages[i - 1])}
               senderId={m.senderId}
               avatarConfig={getSenderAvatar(m)}
-              isRead={getIsRead(m)}
             />
           ))
         ) : (

@@ -10,8 +10,6 @@ export interface ServerToClientEvents extends ServerToCallEvents {
   "user:status": (update: { userId: string; status: UserStatus }) => void;
   "user:profile-update": (data: ProfileUpdate) => void;
   "dm:typing": (data: { userId: string; isTyping: boolean }) => void;
-  "dm:unread": (counts: Record<string, number>) => void;
-  "dm:read-ack": (data: { readBy: string }) => void;
   "group:receive": (message: GroupMessage) => void;
   "group:typing": (data: {
     groupId: number;
@@ -28,7 +26,6 @@ export interface ClientToServerEvents extends ClientToCallEvents {
     senderId: string;
   }) => void;
   "dm:typing": (data: { receiverId: string; isTyping: boolean }) => void;
-  "dm:read": (data: { senderId: string }) => void;
   "user:profile-update": (data: Omit<ProfileUpdate, "userId">) => void;
   "user:set-status": (data: { status: UserStatus }) => void;
   "group:send": (data: {
@@ -45,7 +42,6 @@ export interface DirectMessage {
   content: string;
   createdAt: string;
   updatedAt: string;
-  isRead: boolean;
   senderId: string;
   receiverId: string;
   pending?: boolean;

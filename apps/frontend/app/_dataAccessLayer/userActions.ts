@@ -18,9 +18,8 @@ import { z } from "zod";
 import { handleErrorsOnServer, OperationalError } from "../_utils/helpers";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { cache } from "react";
 
-export const getFriends = cache(async function getFriends() {
+export async function getFriends() {
   try {
     const session = await auth();
     // ... [Original getFriends body omitted as it will be preserved by StartLine trick]
@@ -59,7 +58,7 @@ export const getFriends = cache(async function getFriends() {
   } catch (error) {
     return handleErrorsOnServer(error);
   }
-});
+}
 
 export async function getFriend(values: z.infer<typeof GetFriendSchema>) {
   try {

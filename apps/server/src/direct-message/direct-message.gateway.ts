@@ -22,7 +22,6 @@ import {
   callIceCandidateSchema,
   callMediaStateSchema,
   callGroupJoinSchema,
-  dmReadSchema,
   dmTypingSchema,
   profileUpdateSchema,
 } from '@repo/zod';
@@ -164,11 +163,6 @@ export class DirectMessageGateway
         status: 'ONLINE',
       });
 
-      this.directMessageService
-        .getUnreadCounts(user.sub)
-        .then((counts) => client.emit('dm:unread', counts))
-        .catch(() => {});
-
       // Join all group chat rooms
       this.userService
         .getGroupIds(user.sub)
@@ -288,7 +282,6 @@ export class DirectMessageGateway
       senderId: user.sub,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      isRead: false,
     } satisfies DirectMessage;
 
     this.server.to(body.receiverId).emit('dm:receive', payload);
@@ -303,25 +296,6 @@ export class DirectMessageGateway
       })
       .catch((err: unknown) => {
         this.logger.error(err, 'Failed to persist DM');
-      });
-  }
-
-  @SubscribeMessage('dm:read')
-  handleRead(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() raw: unknown,
-  ) {
-    const result = dmReadSchema.safeParse(raw);
-    if (!result.success) return;
-    const body = result.data;
-    const user = client.data.user;
-
-    this.server.to(body.senderId).emit('dm:read-ack', { readBy: user.sub });
-
-    this.directMessageService
-      .markAsRead(body.senderId, user.sub)
-      .catch((err: unknown) => {
-        this.logger.error(err, 'Failed to mark as read');
       });
   }
 

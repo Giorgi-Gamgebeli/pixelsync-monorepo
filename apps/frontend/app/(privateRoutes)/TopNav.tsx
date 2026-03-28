@@ -14,35 +14,14 @@ import { updateAvatarConfig } from "@/app/_dataAccessLayer/userActions";
 import { useSocketContext } from "@/app/_context/SocketContext";
 import { useCallContext } from "@/app/_context/CallContext";
 
-function NotificationBell() {
-  const { unreadMap } = useSocketContext();
-  const totalUnread = Object.values(unreadMap).reduce((a, b) => a + b, 0);
-  const hasUnread = totalUnread > 0;
-
-  if (!hasUnread) return null;
-
-  return (
-    <div className="hover:bg-surface relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition-colors hover:text-gray-200">
-      <Icon icon="mdi:bell" className="text-brand-400 text-lg" />
-      {totalUnread > 0 && (
-        <div className="bg-brand-500 absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1">
-          <span className="text-[10px] font-bold text-white">
-            {totalUnread > 99 ? "99+" : totalUnread}
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-type TopNavProps = {
+type TopNavProps = Readonly<{
   projects:
     | {
         id: number;
         name: string;
       }[]
     | undefined;
-};
+}>;
 
 function TopNav({ projects }: TopNavProps) {
   const pathname = usePathname();
@@ -172,8 +151,6 @@ function TopNav({ projects }: TopNavProps) {
         >
           <Icon icon="mdi:account-group" className="text-lg" />
         </Link>
-
-        <NotificationBell />
 
         {callState !== "idle" && (
           <button

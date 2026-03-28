@@ -67,10 +67,6 @@ export const callGroupJoinSchema = z.object({
   callType: z.enum(["audio", "video"]),
 });
 
-export const dmReadSchema = z.object({
-  senderId: z.string().min(1),
-});
-
 export const dmTypingSchema = z.object({
   receiverId: z.string().min(1),
   isTyping: z.boolean(),

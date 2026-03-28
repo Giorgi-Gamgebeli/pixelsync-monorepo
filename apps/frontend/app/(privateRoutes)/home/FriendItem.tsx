@@ -29,7 +29,7 @@ type FriendItemProps = Readonly<{
 }>;
 
 function FriendItem({ friend }: FriendItemProps) {
-  const { statusMap, unreadMap, profileMap, markAsRead } = useSocketContext();
+  const { statusMap, profileMap } = useSocketContext();
   const router = useRouter();
   const { prefetchQuery } = usePrefetchQuery();
 
@@ -42,7 +42,6 @@ function FriendItem({ friend }: FriendItemProps) {
   const displayUserName = profile?.userName ?? friend.userName;
   const displayAvatarConfig = profile?.avatarConfig ?? friend.avatarConfig;
   const status = statusMap[friend.id] ?? friend.status;
-  const unread = unreadMap[friend.id] ?? 0;
 
   const prefetch = () => {
     prefetchQuery({
@@ -80,11 +79,6 @@ function FriendItem({ friend }: FriendItemProps) {
               {STATUS_LABELS[status]}
             </p>
           </div>
-          {unread > 0 && (
-            <span className="bg-brand-500 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold text-white">
-              {unread > 99 ? "99+" : unread}
-            </span>
-          )}
         </HomeNavLink>
 
         {/* Three-dot menu */}
@@ -105,19 +99,6 @@ function FriendItem({ friend }: FriendItemProps) {
 
           {menuOpen && (
             <div className="border-border bg-secondary absolute top-full right-0 z-50 mt-1 w-44 rounded-xl border p-1.5 shadow-xl">
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setMenuOpen(false);
-                  markAsRead(friend.id);
-                }}
-                className="hover:bg-surface flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:text-white"
-              >
-                <Icon icon="mdi:email-check" className="text-base" />
-                Mark as Read
-              </button>
-              <div className="border-border my-1 border-t" />
               <button
                 onClick={(e) => {
                   e.preventDefault();

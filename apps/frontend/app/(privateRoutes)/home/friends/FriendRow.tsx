@@ -34,7 +34,7 @@ function FriendRow({
   avatarConfig,
   actions,
 }: FriendRowProps) {
-  const { statusMap, profileMap, markAsRead } = useSocketContext();
+  const { statusMap, profileMap } = useSocketContext();
   const router = useRouter();
   const { prefetchQuery } = usePrefetchQuery();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -108,17 +108,6 @@ function FriendRow({
 
                 {menuOpen && (
                   <div className="border-border bg-secondary absolute top-full right-0 z-50 mt-1 w-44 rounded-xl border p-1.5 shadow-xl">
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        markAsRead(id);
-                      }}
-                      className="hover:bg-surface flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:text-white"
-                    >
-                      <Icon icon="mdi:email-check" className="text-base" />
-                      Mark as Read
-                    </button>
-                    <div className="border-border my-1 border-t" />
                     <button
                       onClick={() => {
                         setMenuOpen(false);

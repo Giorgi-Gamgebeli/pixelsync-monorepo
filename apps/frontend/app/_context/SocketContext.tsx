@@ -18,7 +18,9 @@ import {
 import { io, Socket } from "socket.io-client";
 import { getWsToken } from "../_dataAccessLayer/userActions";
 import { useQueryClient } from "@tanstack/react-query";
-import { upsertDMChatMessage } from "../_lib/chatQueries";
+import { setChatMessage } from "../_lib/chatQueryCache";
+import { dmChatKey } from "../_lib/chatQueryKeys";
+import type { DMChatPageData } from "../_lib/chatQueryTypes";
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -27,12 +29,9 @@ type SocketContextValue = {
   isConnected: boolean;
   isReconnecting: boolean;
   statusMap: Record<string, UserStatus>;
-  unreadMap: Record<string, number>;
-  readAckSet: Set<string>;
   profileMap: Record<string, Partial<ProfileUpdate>>;
   sendMessage: (receiverId: string, content: string, id: string) => void;
   setTyping: (receiverId: string, isTyping: boolean) => void;
-  markAsRead: (friendId: string) => void;
   broadcastProfileUpdate: (data: Omit<ProfileUpdate, "userId">) => void;
   sendGroupMessage: (groupId: number, content: string, id: string) => void;
   setGroupTyping: (groupId: number, isTyping: boolean) => void;
@@ -45,12 +44,9 @@ const SocketContext = createContext<SocketContextValue>({
   isConnected: false,
   isReconnecting: false,
   statusMap: {},
-  unreadMap: {},
-  readAckSet: new Set(),
   profileMap: {},
   sendMessage: () => {},
   setTyping: () => {},
-  markAsRead: () => {},
   broadcastProfileUpdate: () => {},
   sendGroupMessage: () => {},
   setGroupTyping: () => {},
@@ -67,8 +63,6 @@ function SocketProvider({
   const [isConnected, setIsConnected] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [statusMap, setStatusMap] = useState<Record<string, UserStatus>>({});
-  const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
-  const [readAckSet, setReadAckSet] = useState<Set<string>>(new Set());
   const [profileMap, setProfileMap] = useState<
     Record<string, Partial<ProfileUpdate>>
   >({});
@@ -121,26 +115,18 @@ function SocketProvider({
           setStatusMap((prev) => ({ ...prev, [update.userId]: update.status }));
         });
 
-        socket.on("dm:unread", (counts) => {
-          setUnreadMap(counts);
-        });
-
         socket.on("dm:receive", (message) => {
           const otherUserId =
             message.senderId === userId ? message.receiverId : message.senderId;
-          upsertDMChatMessage(queryClient, otherUserId, message);
+          setChatMessage<DMChatPageData>(
+            queryClient,
+            dmChatKey(otherUserId),
+            message,
+          );
 
           if (message.senderId !== userId) {
-            setUnreadMap((prev) => ({
-              ...prev,
-              [message.senderId]: (prev[message.senderId] ?? 0) + 1,
-            }));
             notificationSound.current?.play().catch(() => {});
           }
-        });
-
-        socket.on("dm:read-ack", ({ readBy }) => {
-          setReadAckSet((prev) => new Set(prev).add(readBy));
         });
 
         socket.on("user:profile-update", (data) => {
@@ -184,16 +170,6 @@ function SocketProvider({
     socketRef.current?.emit("dm:typing", { receiverId, isTyping });
   }, []);
 
-  const markAsRead = useCallback((friendId: string) => {
-    setUnreadMap((prev) => {
-      if (!prev[friendId]) return prev;
-      const next = { ...prev };
-      delete next[friendId];
-      return next;
-    });
-    socketRef.current?.emit("dm:read", { senderId: friendId });
-  }, []);
-
   const broadcastProfileUpdate = useCallback(
     (data: Omit<ProfileUpdate, "userId">) => {
       socketRef.current?.emit("user:profile-update", data);
@@ -227,12 +203,9 @@ function SocketProvider({
         isConnected,
         isReconnecting,
         statusMap,
-        unreadMap,
-        readAckSet,
         profileMap,
         sendMessage,
         setTyping,
-        markAsRead,
         broadcastProfileUpdate,
         sendGroupMessage,
         setGroupTyping,

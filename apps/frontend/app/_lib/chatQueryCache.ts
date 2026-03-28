@@ -1,14 +1,12 @@
 import { QueryClient } from "@tanstack/react-query";
-import type { DirectMessage, GroupMessage } from "@repo/types";
-import { dmChatKey, groupChatKey } from "./chatQueryKeys";
-import type { DMChatPageData, GroupChatPageData } from "./chatQueryTypes";
+import type { QueryKey } from "@tanstack/react-query";
 
-function upsertDMChatMessage(
+function setChatMessage<TPage extends { messages: Array<{ id: string }> }>(
   queryClient: QueryClient,
-  friendId: string,
-  message: DirectMessage,
+  queryKey: QueryKey,
+  message: TPage["messages"][number],
 ) {
-  queryClient.setQueryData<DMChatPageData>(dmChatKey(friendId), (prev) => {
+  queryClient.setQueryData<TPage>(queryKey, (prev) => {
     if (!prev) return prev;
 
     const messages = [...prev.messages];
@@ -23,24 +21,4 @@ function upsertDMChatMessage(
   });
 }
 
-function upsertGroupChatMessage(
-  queryClient: QueryClient,
-  groupId: number,
-  message: GroupMessage,
-) {
-  queryClient.setQueryData<GroupChatPageData>(groupChatKey(groupId), (prev) => {
-    if (!prev) return prev;
-
-    const messages = [...prev.messages];
-    const byIdIndex = messages.findIndex((m) => m.id === message.id);
-    if (byIdIndex !== -1) {
-      messages[byIdIndex] = message;
-      return { ...prev, messages };
-    }
-
-    messages.push(message);
-    return { ...prev, messages };
-  });
-}
-
-export { upsertDMChatMessage, upsertGroupChatMessage };
+export { setChatMessage };
