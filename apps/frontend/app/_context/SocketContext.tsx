@@ -87,11 +87,9 @@ const SocketContext = createContext<SocketContextValue>({
   setStatus: () => {},
 });
 
-function SocketProvider({
-  userId,
-  children,
-}: PropsWithChildren<{ userId: string }>) {
+function SocketProvider({ children }: PropsWithChildren) {
   const socketRef = useRef<TypedSocket | null>(null);
+  const currentUserIdRef = useRef<string | null>(null);
   const queryClient = useQueryClient();
   const [isConnected, setIsConnected] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
@@ -107,19 +105,22 @@ function SocketProvider({
 
   const handleDmReceive = useCallback(
     (message: DmReceiveEvent) => {
+      const currentUserId = currentUserIdRef.current;
       const otherUserId =
-        message.senderId === userId ? message.receiverId : message.senderId;
+        message.senderId === currentUserId
+          ? message.receiverId
+          : message.senderId;
       setChatMessage<DMChatPageData>(
         queryClient,
         dmChatKey(otherUserId),
         message,
       );
 
-      if (message.senderId !== userId) {
+      if (message.senderId !== currentUserId) {
         playNotificationSound(notificationSound);
       }
     },
-    [notificationSound, queryClient, userId],
+    [notificationSound, queryClient],
   );
 
   const handleProfileUpdate = useCallback((data: ProfileUpdateEvent) => {
@@ -132,17 +133,16 @@ function SocketProvider({
   }, []);
 
   useEffect(() => {
-    if (!userId) return;
-
     let cancelled = false;
 
     async function connect() {
       try {
         const res = await getWsToken();
         if ("error" in res) return;
-        const { token, salt } = res;
+        const { token, salt, userId } = res;
 
         if (cancelled) return;
+        currentUserIdRef.current = userId;
 
         const socket = io(
           process.env.NEXT_PUBLIC_SERVER_BASE_URL || "http://localhost:3000",
@@ -186,29 +186,27 @@ function SocketProvider({
 
     return () => {
       cancelled = true;
+      currentUserIdRef.current = null;
       socketRef.current?.off();
       socketRef.current?.disconnect();
       socketRef.current = null;
       setIsConnected(false);
     };
-  }, [
-    userId,
-    queryClient,
-    handleUserStatus,
-    handleDmReceive,
-    handleProfileUpdate,
-  ]);
+  }, [queryClient, handleUserStatus, handleDmReceive, handleProfileUpdate]);
 
   const sendMessage = useCallback(
     (receiverId: string, content: string, id: string) => {
+      const currentUserId = currentUserIdRef.current;
+      if (!currentUserId) return;
+
       socketRef.current?.emit("dm:send", {
         id,
         receiverId,
         content,
-        senderId: userId,
+        senderId: currentUserId,
       });
     },
-    [userId],
+    [],
   );
 
   const setTyping = useCallback((receiverId: string, isTyping: boolean) => {

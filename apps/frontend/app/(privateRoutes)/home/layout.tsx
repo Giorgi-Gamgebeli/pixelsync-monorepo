@@ -21,9 +21,9 @@ function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
 
         {/* Nav */}
         <div className="flex flex-col gap-0.5 px-3">
-          {/* <Suspense fallback={<div className="h-10" />}> */}
-          <FriendsNavLink />
-          {/* </Suspense> */}
+          <Suspense fallback={<div className="h-10" />}>
+            <FriendsNavLink />
+          </Suspense>
         </div>
 
         <div className="border-border/60 mx-3 my-2 border-t" />

@@ -640,6 +640,7 @@ export async function getWsToken() {
     return {
       token: cookie.value,
       salt: cookie.name,
+      userId: session.user.id,
     };
   } catch (error) {
     return handleErrorsOnServer(error);

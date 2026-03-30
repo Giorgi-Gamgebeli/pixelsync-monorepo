@@ -31,10 +31,15 @@ function CallMiniBar() {
     setCallUiMode,
   } = useCallContext();
 
-  const [now, setNow] = useState<number>(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!callStartedAt || callState !== "active") return;
+    if (!callStartedAt || callState !== "active") {
+      setNow(null);
+      return;
+    }
+
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [callStartedAt, callState]);
@@ -54,7 +59,7 @@ function CallMiniBar() {
           : "In call";
 
   const duration =
-    callStartedAt && callState === "active"
+    callStartedAt && now !== null && callState === "active"
       ? formatDuration(now - callStartedAt)
       : null;
 
@@ -71,20 +76,20 @@ function CallMiniBar() {
   };
 
   return (
-    <div className="pointer-events-auto fixed left-0 right-0 top-14 z-40 flex justify-center">
+    <div className="pointer-events-auto fixed top-14 right-0 left-0 z-40 flex justify-center">
       <div className="bg-surface/95 border-border flex max-w-xl flex-1 items-center gap-3 rounded-full border px-4 py-2 shadow-lg backdrop-blur">
         <button
           onClick={handleExpand}
           className="flex items-center gap-2 text-xs text-gray-200"
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500/20 text-brand-400">
+          <div className="bg-brand-500/20 text-brand-400 flex h-7 w-7 items-center justify-center rounded-full">
             <Icon
               icon={isVideo ? "mdi:video" : "mdi:phone"}
               className="text-base"
             />
           </div>
           <div className="flex flex-col items-start leading-tight">
-            <span className="text-[11px] uppercase tracking-wide text-gray-400">
+            <span className="text-[11px] tracking-wide text-gray-400 uppercase">
               {callState === "ringing-outgoing"
                 ? "Calling"
                 : callState === "ringing-incoming"
@@ -97,7 +102,7 @@ function CallMiniBar() {
 
         <div className="ml-auto flex items-center gap-2">
           {duration && (
-            <span className="text-[11px] tabular-nums text-gray-300">
+            <span className="text-[11px] text-gray-300 tabular-nums">
               {duration}
             </span>
           )}
@@ -152,4 +157,3 @@ function CallMiniBar() {
 }
 
 export default CallMiniBar;
-

@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { getProject } from "@/app/_dataAccessLayer/actions";
 import { notFound } from "next/navigation";
 import ProjectLayoutClient from "./ProjectLayoutClient";
+import Loading from "./loading";
 
 type Params = {
   params: Promise<{
@@ -9,7 +11,7 @@ type Params = {
   children: React.ReactNode;
 };
 
-async function Layout({ params, children }: Params) {
+async function ProjectLayoutContent({ params, children }: Params) {
   const { projectId } = await params;
 
   const project = await getProject(Number(projectId));
@@ -47,6 +49,14 @@ async function Layout({ params, children }: Params) {
     >
       {children}
     </ProjectLayoutClient>
+  );
+}
+
+function Layout({ params, children }: Params) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <ProjectLayoutContent params={params}>{children}</ProjectLayoutContent>
+    </Suspense>
   );
 }
 
