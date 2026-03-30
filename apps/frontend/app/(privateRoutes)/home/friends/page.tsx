@@ -1,27 +1,11 @@
-// import {
-//   getFriends,
-//   getPendingFriendRequests,
-// } from "@/app/_dataAccessLayer/userActions";
-// import FriendsPage from "./FriendsPage";
-
-async function Page() {
-  // const [friendsResult, pendingResult] = await Promise.all([
-  //   getFriends(),
-  //   getPendingFriendRequests(),
-  // ]);
-
-  // const friends = Array.isArray(friendsResult) ? friendsResult : [];
-  // const pendingFriendRequests =
-  //   pendingResult && "friendRequestsToThem" in pendingResult
-  //     ? pendingResult
-  //     : undefined;
-
+import FriendsContent from "./FriendsContent";
+import FriendsHeader from "./FriendsHeader";
+function Page() {
   return (
-    // <FriendsPage
-    //   friends={friends}
-    //   pendingFriendRequests={pendingFriendRequests}
-    // />
-    <>friends</>
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <FriendsHeader />
+      <FriendsContent />
+    </div>
   );
 }
 

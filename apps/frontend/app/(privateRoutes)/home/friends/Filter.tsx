@@ -1,46 +1,33 @@
-"use client";
+import Link from "next/link";
 
-type FilterProps = {
-  activeFilter: string;
-  onFilterChange: (value: string) => void;
-  pendingFriendRequests: boolean;
-};
-
-function Filter({
-  activeFilter,
-  onFilterChange,
-  pendingFriendRequests,
-}: FilterProps) {
+function Filter() {
   const tabs = [
     { value: "online", label: "Online" },
     { value: "all", label: "All" },
-    ...(pendingFriendRequests ? [{ value: "pending", label: "Pending" }] : []),
+    { value: "pending", label: "Pending" },
   ];
+
+  const getHref = (value: string) =>
+    value === "online" ? "/home/friends" : `/home/friends?filter=${value}`;
 
   return (
     <div className="flex items-center gap-1.5">
       {tabs.map((tab) => (
-        <button
+        <Link
           key={tab.value}
-          className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors ${
-            tab.value === activeFilter
-              ? "bg-surface text-white"
-              : "hover:bg-surface/50 text-gray-400 hover:text-gray-200"
-          }`}
-          onClick={() => onFilterChange(tab.value)}
+          href={getHref(tab.value)}
+          className="hover:bg-surface/50 rounded-lg px-3.5 py-1.5 text-sm font-medium text-gray-400 transition-colors hover:text-gray-200"
         >
           {tab.label}
-        </button>
+        </Link>
       ))}
       <div className="bg-border mx-1 h-5 w-px" />
-      <button
-        className={`bg-brand-500 hover:bg-brand-600 cursor-pointer rounded-lg px-3.5 py-1.5 text-sm font-medium text-white transition-colors ${
-          "addfriend" === activeFilter ? "bg-brand-600" : ""
-        }`}
-        onClick={() => onFilterChange("addfriend")}
+      <Link
+        href="/home/friends?filter=addfriend"
+        className="bg-brand-500 hover:bg-brand-600 rounded-lg px-3.5 py-1.5 text-sm font-medium text-white transition-colors"
       >
         Add Friend
-      </button>
+      </Link>
     </div>
   );
 }

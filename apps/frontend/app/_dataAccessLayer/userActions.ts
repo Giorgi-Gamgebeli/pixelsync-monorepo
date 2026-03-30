@@ -18,6 +18,7 @@ import { z } from "zod";
 import { handleErrorsOnServer, OperationalError } from "../_utils/helpers";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 export async function getFriends() {
   try {
@@ -281,6 +282,90 @@ export async function getPendingFriendRequests() {
     return handleErrorsOnServer(error);
   }
 }
+
+export const getFriendsPageData = cache(async function getFriendsPageData() {
+  try {
+    const session = await auth();
+    if (!session) throw new OperationalError("Not authenticated!");
+
+    const [currentUser, pendingFriendRequests] = await Promise.all([
+      db.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+          friends: {
+            select: {
+              id: true,
+              userName: true,
+              status: true,
+              avatarConfig: true,
+            },
+          },
+          friendOf: {
+            select: {
+              id: true,
+              userName: true,
+              status: true,
+              avatarConfig: true,
+            },
+          },
+        },
+      }),
+      db.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+          friends: {
+            select: {
+              id: true,
+              userName: true,
+              name: true,
+              avatarConfig: true,
+            },
+          },
+          friendOf: {
+            select: {
+              id: true,
+              userName: true,
+              name: true,
+              avatarConfig: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    const friends = currentUser?.friends || [];
+    const friendOf = currentUser?.friendOf || [];
+
+    const friendIds = new Set(friends.map((friend) => friend.id));
+    const mutualFriends = friendOf.filter((friend) => friendIds.has(friend.id));
+
+    const friendsIDs = new Set(
+      pendingFriendRequests?.friends.map((friend) => friend.id),
+    );
+    const friendOfIDs = new Set(
+      pendingFriendRequests?.friendOf.map((friend) => friend.id),
+    );
+
+    const friendRequestsToThem =
+      pendingFriendRequests?.friends.filter(
+        (friend) => !friendOfIDs.has(friend.id),
+      ) || [];
+    const friendRequestsToMe =
+      pendingFriendRequests?.friendOf.filter(
+        (friend) => !friendsIDs.has(friend.id),
+      ) || [];
+
+    return {
+      friends: mutualFriends,
+      pendingFriendRequests: {
+        friendRequestsToThem,
+        friendRequestsToMe,
+      },
+    };
+  } catch (error) {
+    return handleErrorsOnServer(error);
+  }
+});
 
 export async function addFriend(values: z.infer<typeof AddFriendSchema>) {
   try {
