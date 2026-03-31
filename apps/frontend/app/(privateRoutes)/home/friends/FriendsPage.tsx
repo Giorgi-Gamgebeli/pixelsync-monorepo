@@ -2,13 +2,12 @@
 
 import type { ReactNode } from "react";
 import { UserStatus } from "@repo/types";
-import AddFriend from "./AddFriend";
 import PendingFriends from "./PendingFriends";
 import AllFriends from "./AllFriends";
 import OnlineFriends from "./OnlineFriends";
 
 type FriendsPageProps = Readonly<{
-  activeFilter: string;
+  activeFilter: "online" | "all" | "pending";
   friends: {
     id: string;
     userName: string | null;
@@ -39,8 +38,7 @@ function FriendsPage({
   pendingFriendRequests,
 }: FriendsPageProps) {
   let content: ReactNode;
-  if (activeFilter === "addfriend") content = <AddFriend />;
-  else if (activeFilter === "pending")
+  if (activeFilter === "pending")
     content = <PendingFriends pendingFriendsRequests={pendingFriendRequests} />;
   else if (activeFilter === "all") content = <AllFriends friends={friends} />;
   else content = <OnlineFriends friends={friends} />;

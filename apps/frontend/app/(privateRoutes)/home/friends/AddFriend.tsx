@@ -3,18 +3,20 @@
 import { addFriend } from "@/app/_dataAccessLayer/userActions";
 import { AddFriendSchema } from "@repo/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
 function AddFriend() {
-  const [isPending, startTransition] = useTransition();
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const {
     handleSubmit,
     register,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     watch,
+    reset,
+    clearErrors,
     setError,
   } = useForm<z.infer<typeof AddFriendSchema>>({
     resolver: zodResolver(AddFriendSchema),
@@ -26,11 +28,17 @@ function AddFriend() {
   const userNameValue = watch("userName");
 
   async function onSubmit(values: z.infer<typeof AddFriendSchema>) {
-    startTransition(async () => {
-      const actionError = await addFriend(values);
-      if (actionError?.error)
-        setError("userName", { message: actionError.error });
-    });
+    setSuccessMessage(null);
+
+    const actionError = await addFriend(values);
+    if (actionError?.error) {
+      setError("userName", { message: actionError.error });
+      return;
+    }
+
+    clearErrors("userName");
+    reset({ userName: "" });
+    setSuccessMessage("Friend request sent.");
   }
 
   return (
@@ -44,12 +52,14 @@ function AddFriend() {
           <input
             placeholder="Enter a username"
             className="border-border bg-surface focus:border-brand-500 w-full rounded-lg border py-3 pr-40 pl-4 text-sm text-white transition-colors outline-none placeholder:text-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={isPending}
-            {...register("userName")}
+            disabled={isSubmitting}
+            {...register("userName", {
+              onChange: () => setSuccessMessage(null),
+            })}
           />
           <button
             type="submit"
-            disabled={!userNameValue || isPending}
+            disabled={!userNameValue || isSubmitting}
             className="bg-brand-500 hover:bg-brand-600 disabled:bg-brand-500/30 absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer rounded-md px-4 py-1.5 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed"
           >
             Send Request
@@ -59,6 +69,12 @@ function AddFriend() {
           <p className="mt-2 flex items-center gap-1 text-sm text-red-400">
             <Icon icon="mdi:alert-circle" className="text-base" />
             {errors.userName.message}
+          </p>
+        )}
+        {successMessage && (
+          <p className="mt-2 flex items-center gap-1 text-sm text-green-400">
+            <Icon icon="mdi:check-circle" className="text-base" />
+            {successMessage}
           </p>
         )}
       </form>

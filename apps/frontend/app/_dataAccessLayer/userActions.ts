@@ -402,7 +402,9 @@ export async function addFriend(values: z.infer<typeof AddFriendSchema>) {
     });
 
     if (alreadyFriend)
-      throw new OperationalError("This person is already your friend!");
+      throw new OperationalError(
+        "Friend request already sent or you're already friends.",
+      );
 
     await db.user.update({
       where: {

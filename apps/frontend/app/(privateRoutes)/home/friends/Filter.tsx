@@ -23,7 +23,7 @@ function Filter() {
       ))}
       <div className="bg-border mx-1 h-5 w-px" />
       <Link
-        href="/home/friends?filter=addfriend"
+        href="/home/friends/addfriend"
         className="bg-brand-500 hover:bg-brand-600 rounded-lg px-3.5 py-1.5 text-sm font-medium text-white transition-colors"
       >
         Add Friend

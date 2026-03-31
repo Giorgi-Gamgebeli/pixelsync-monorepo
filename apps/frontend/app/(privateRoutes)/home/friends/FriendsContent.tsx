@@ -10,7 +10,9 @@ import FriendsPage from "./FriendsPage";
 
 function FriendsContent() {
   const searchParams = useSearchParams();
-  const activeFilter = searchParams.get("filter") || "online";
+  const filter = searchParams.get("filter");
+  const activeFilter =
+    filter === "all" || filter === "pending" ? filter : "online";
 
   const { data, error, isPending } = useQuery({
     queryKey: friendsPageKey,
