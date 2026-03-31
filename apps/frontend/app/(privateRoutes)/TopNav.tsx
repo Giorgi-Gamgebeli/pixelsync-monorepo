@@ -1,18 +1,19 @@
 "use client";
 
+import AvatarBuilderModal from "@/app/_components/avatar/AvatarBuilderModal";
+import ProfileSettingsPanel from "@/app/_components/ProfileSettingsPanel";
+import UserAvatar from "@/app/_components/UserAvatar";
+import { useCallContext } from "@/app/_context/CallContext";
+import { useSocketContext } from "@/app/_context/SocketContext";
+import { updateAvatarConfig } from "@/app/_dataAccessLayer/userActions";
+import logo from "@/public/noBGLogo.png";
+import { Icon } from "@iconify/react/dist/iconify.js";
+import { Session } from "next-auth";
+import { signOut } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import logo from "@/public/noBGLogo.png";
-import { Icon } from "@iconify/react/dist/iconify.js";
-import { useState, useRef, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
-import UserAvatar from "@/app/_components/UserAvatar";
-import AvatarBuilderModal from "@/app/_components/avatar/AvatarBuilderModal";
-import ProfileSettingsPanel from "@/app/_components/ProfileSettingsPanel";
-import { updateAvatarConfig } from "@/app/_dataAccessLayer/userActions";
-import { useSocketContext } from "@/app/_context/SocketContext";
-import { useCallContext } from "@/app/_context/CallContext";
+import { useEffect, useRef, useState } from "react";
 
 type TopNavProps = Readonly<{
   projects:
@@ -21,9 +22,11 @@ type TopNavProps = Readonly<{
         name: string;
       }[]
     | undefined;
+
+  session: Session;
 }>;
 
-function TopNav({ projects }: TopNavProps) {
+function TopNav({ projects, session }: TopNavProps) {
   const pathname = usePathname();
   const [projectsOpen, setProjectsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -31,7 +34,6 @@ function TopNav({ projects }: TopNavProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
-  const { data: session } = useSession();
   const { broadcastProfileUpdate } = useSocketContext();
   const { callState, setCallUiMode } = useCallContext();
 
@@ -171,7 +173,7 @@ function TopNav({ projects }: TopNavProps) {
             className="flex items-center justify-center rounded-full transition-transform hover:scale-105"
           >
             <UserAvatar
-              userName={session?.user?.userName ?? null}
+              userName={session.user.userName ?? null}
               id={session?.user?.id}
               avatarConfig={session?.user?.avatarConfig}
               size={32}
@@ -182,9 +184,9 @@ function TopNav({ projects }: TopNavProps) {
             <div className="border-border bg-secondary absolute top-full right-0 z-50 mt-2 w-52 rounded-xl border p-1.5 shadow-xl">
               <div className="flex items-center gap-2.5 px-3 py-2">
                 <UserAvatar
-                  userName={session?.user?.userName ?? null}
-                  id={session?.user?.id}
-                  avatarConfig={session?.user?.avatarConfig}
+                  userName={session.user.userName ?? null}
+                  id={session.user.id}
+                  avatarConfig={session.user.avatarConfig}
                   size={28}
                 />
                 <div className="min-w-0">

@@ -87,7 +87,7 @@ const SocketContext = createContext<SocketContextValue>({
   setStatus: () => {},
 });
 
-function SocketProvider({ children }: PropsWithChildren) {
+function SocketProvider({ children }: Readonly<PropsWithChildren>) {
   const socketRef = useRef<TypedSocket | null>(null);
   const currentUserIdRef = useRef<string | null>(null);
   const queryClient = useQueryClient();
@@ -154,7 +154,7 @@ function SocketProvider({ children }: PropsWithChildren) {
             reconnectionDelayMax: 5000,
             reconnectionAttempts: 10,
           },
-        ) as TypedSocket;
+        );
 
         socket.on("connect", () => {
           setIsConnected(true);

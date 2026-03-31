@@ -12,11 +12,11 @@ import {
 } from "../_dataAccessLayer/userActions";
 import { useSocketContext } from "../_context/SocketContext";
 
-type ProfileSettingsPanelProps = {
+type ProfileSettingsPanelProps = Readonly<{
   isOpen: boolean;
   onClose: () => void;
   onOpenAvatarBuilder: () => void;
-};
+}>;
 
 function ProfileSettingsPanel({
   isOpen,
@@ -25,11 +25,20 @@ function ProfileSettingsPanel({
 }: ProfileSettingsPanelProps) {
   const { data: session, update } = useSession();
   const { broadcastProfileUpdate } = useSocketContext();
+
   const [userName, setUserName] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    update();
+
+    // to update client side session on first login
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -56,7 +65,7 @@ function ProfileSettingsPanel({
       if (userNameChanged) {
         const result = await updateUserName({ userName: trimmedUserName });
         if (result && "error" in result) {
-          setError(result.error as string);
+          setError(result.error);
           return;
         }
       }
@@ -64,12 +73,11 @@ function ProfileSettingsPanel({
       if (displayNameChanged) {
         const result = await updateDisplayName(trimmedDisplayName);
         if (result && "error" in result) {
-          setError(result.error as string);
+          setError(result.error);
           return;
         }
       }
 
-      await update();
       broadcastProfileUpdate({
         ...(userNameChanged ? { userName: trimmedUserName } : {}),
         ...(displayNameChanged ? { name: trimmedDisplayName } : {}),
@@ -87,7 +95,12 @@ function ProfileSettingsPanel({
 
   return (
     <div className="fixed inset-0 z-90 flex justify-end">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <button
+        type="button"
+        aria-label="Close profile settings"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/40"
+      />
       <div className="border-border bg-secondary animate-in slide-in-from-right relative h-full w-80 border-l shadow-2xl duration-200">
         <div className="flex h-full flex-col">
           {/* Header */}
@@ -128,7 +141,9 @@ function ProfileSettingsPanel({
             {session?.user?.id && (
               <div className="mt-4 flex justify-center">
                 <StatusSelector
-                  currentStatus={(session?.user?.status as UserStatus) || "ONLINE"}
+                  currentStatus={
+                    (session?.user?.status as UserStatus) || "ONLINE"
+                  }
                   userId={session?.user?.id}
                 />
               </div>
@@ -136,10 +151,14 @@ function ProfileSettingsPanel({
 
             {/* Display Name */}
             <div className="mt-8">
-              <label className="mb-2 block text-xs font-semibold tracking-wider text-gray-500 uppercase">
+              <label
+                htmlFor="profile-display-name"
+                className="mb-2 block text-xs font-semibold tracking-wider text-gray-500 uppercase"
+              >
                 Display Name
               </label>
               <input
+                id="profile-display-name"
                 type="text"
                 value={displayName}
                 onChange={(e) => {
@@ -155,10 +174,14 @@ function ProfileSettingsPanel({
 
             {/* Username */}
             <div className="mt-4">
-              <label className="mb-2 block text-xs font-semibold tracking-wider text-gray-500 uppercase">
+              <label
+                htmlFor="profile-username"
+                className="mb-2 block text-xs font-semibold tracking-wider text-gray-500 uppercase"
+              >
                 Username
               </label>
               <input
+                id="profile-username"
                 type="text"
                 value={userName}
                 onChange={(e) => {
@@ -191,9 +214,9 @@ function ProfileSettingsPanel({
 
             {/* Email (read-only) */}
             <div className="mt-6">
-              <label className="mb-2 block text-xs font-semibold tracking-wider text-gray-500 uppercase">
+              <p className="mb-2 block text-xs font-semibold tracking-wider text-gray-500 uppercase">
                 Email
-              </label>
+              </p>
               <p className="border-border bg-surface/50 rounded-lg border px-3 py-2 text-sm text-gray-400">
                 {session?.user?.email}
               </p>
