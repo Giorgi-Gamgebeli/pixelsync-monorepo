@@ -6,6 +6,8 @@ import { useSocketContext } from "@/app/_context/SocketContext";
 import { getChatPageData, unfriend } from "@/app/_dataAccessLayer/userActions";
 import { usePrefetchQuery } from "@/app/_hooks/usePrefetchQuery";
 import { dmChatKey } from "@/app/_lib/chatQueryKeys";
+import { friendsPageKey } from "@/app/_lib/friendsQueryKeys";
+import { useQueryClient } from "@tanstack/react-query";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { UserStatus } from "@repo/types";
 import { useRouter } from "next/navigation";
@@ -31,6 +33,7 @@ type FriendItemProps = Readonly<{
 function FriendItem({ friend }: FriendItemProps) {
   const { statusMap, profileMap } = useSocketContext();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { prefetchQuery } = usePrefetchQuery();
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -121,6 +124,7 @@ function FriendItem({ friend }: FriendItemProps) {
         onClose={() => setConfirmOpen(false)}
         onConfirm={async () => {
           await unfriend({ id: friend.id });
+          queryClient.invalidateQueries({ queryKey: friendsPageKey });
           router.refresh();
         }}
         title="Remove Friend"

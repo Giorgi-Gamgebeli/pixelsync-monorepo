@@ -2,6 +2,7 @@
 
 import {
   ClientToServerEvents,
+  FriendRequestActionResult,
   ProfileUpdate,
   ServerToClientEvents,
   UserStatus,
@@ -21,8 +22,9 @@ import { io, Socket } from "socket.io-client";
 import { getWsToken } from "../_dataAccessLayer/userActions";
 import { useQueryClient } from "@tanstack/react-query";
 import { setChatMessage } from "../_lib/chatQueryCache";
-import { dmChatKey } from "../_lib/chatQueryKeys";
-import type { DMChatPageData } from "../_lib/chatQueryTypes";
+import { upsertPendingFriendRequest } from "../_lib/friendsQueryCache";
+import { dmChatKey, groupChatKey } from "../_lib/chatQueryKeys";
+import type { DMChatPageData, GroupChatPageData } from "../_lib/chatQueryTypes";
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -33,6 +35,8 @@ type ProfileUpdateEvent = Parameters<
 >[0];
 
 type DmReceiveEvent = Parameters<ServerToClientEvents["dm:receive"]>[0];
+type GroupReceiveEvent = Parameters<ServerToClientEvents["group:receive"]>[0];
+type FriendRequestEvent = Parameters<ServerToClientEvents["friend:request"]>[0];
 
 function mergeStatusMap(
   prev: Record<string, UserStatus>,
@@ -66,6 +70,7 @@ type SocketContextValue = {
   sendMessage: (receiverId: string, content: string, id: string) => void;
   setTyping: (receiverId: string, isTyping: boolean) => void;
   broadcastProfileUpdate: (data: Omit<ProfileUpdate, "userId">) => void;
+  sendFriendRequest: (userName: string) => Promise<FriendRequestActionResult>;
   sendGroupMessage: (groupId: number, content: string, id: string) => void;
   setGroupTyping: (groupId: number, isTyping: boolean) => void;
   joinGroup: (groupId: number) => void;
@@ -81,6 +86,7 @@ const SocketContext = createContext<SocketContextValue>({
   sendMessage: () => {},
   setTyping: () => {},
   broadcastProfileUpdate: () => {},
+  sendFriendRequest: async () => ({ success: false, error: "Socket missing" }),
   sendGroupMessage: () => {},
   setGroupTyping: () => {},
   joinGroup: () => {},
@@ -121,6 +127,24 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
       }
     },
     [notificationSound, queryClient],
+  );
+
+  const handleGroupReceive = useCallback(
+    (message: GroupReceiveEvent) => {
+      setChatMessage<GroupChatPageData>(
+        queryClient,
+        groupChatKey(message.groupId),
+        message,
+      );
+    },
+    [queryClient],
+  );
+
+  const handleFriendRequest = useCallback(
+    (data: FriendRequestEvent) => {
+      upsertPendingFriendRequest(queryClient, data.direction, data.friend);
+    },
+    [queryClient],
   );
 
   const handleProfileUpdate = useCallback((data: ProfileUpdateEvent) => {
@@ -173,6 +197,10 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
 
         socket.on("dm:receive", handleDmReceive);
 
+        socket.on("group:receive", handleGroupReceive);
+
+        socket.on("friend:request", handleFriendRequest);
+
         socket.on("user:profile-update", handleProfileUpdate);
 
         socketRef.current = socket;
@@ -192,7 +220,14 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
       socketRef.current = null;
       setIsConnected(false);
     };
-  }, [queryClient, handleUserStatus, handleDmReceive, handleProfileUpdate]);
+  }, [
+    queryClient,
+    handleUserStatus,
+    handleDmReceive,
+    handleGroupReceive,
+    handleFriendRequest,
+    handleProfileUpdate,
+  ]);
 
   const sendMessage = useCallback(
     (receiverId: string, content: string, id: string) => {
@@ -219,6 +254,19 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
     },
     [],
   );
+
+  const sendFriendRequest = useCallback((userName: string) => {
+    return new Promise<FriendRequestActionResult>((resolve) => {
+      if (!socketRef.current) {
+        resolve({ success: false, error: "Socket unavailable" });
+        return;
+      }
+
+      socketRef.current.emit("friend:request", { userName }, (response) => {
+        resolve(response);
+      });
+    });
+  }, []);
 
   const sendGroupMessage = useCallback(
     (groupId: number, content: string, id: string) => {
@@ -249,6 +297,7 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
       sendMessage,
       setTyping,
       broadcastProfileUpdate,
+      sendFriendRequest,
       sendGroupMessage,
       setGroupTyping,
       joinGroup,
@@ -262,6 +311,7 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
       sendMessage,
       setTyping,
       broadcastProfileUpdate,
+      sendFriendRequest,
       sendGroupMessage,
       setGroupTyping,
       joinGroup,

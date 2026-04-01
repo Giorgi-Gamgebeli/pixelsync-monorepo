@@ -5,10 +5,27 @@ export type ProfileUpdate = {
   avatarConfig?: string | null;
 };
 
+export type FriendRequestProfile = {
+  id: string;
+  userName: string | null;
+  name: string | null;
+  avatarConfig?: string | null;
+};
+
+export type FriendRequestUpdate = {
+  direction: "incoming" | "outgoing";
+  friend: FriendRequestProfile;
+};
+
+export type FriendRequestActionResult =
+  | { success: true }
+  | { success: false; error: string };
+
 export interface ServerToClientEvents extends ServerToCallEvents {
   "dm:receive": (message: DirectMessage) => void;
   "user:status": (update: { userId: string; status: UserStatus }) => void;
   "user:profile-update": (data: ProfileUpdate) => void;
+  "friend:request": (data: FriendRequestUpdate) => void;
   "dm:typing": (data: { userId: string; isTyping: boolean }) => void;
   "group:receive": (message: GroupMessage) => void;
   "group:typing": (data: {
@@ -28,6 +45,10 @@ export interface ClientToServerEvents extends ClientToCallEvents {
   "dm:typing": (data: { receiverId: string; isTyping: boolean }) => void;
   "user:profile-update": (data: Omit<ProfileUpdate, "userId">) => void;
   "user:set-status": (data: { status: UserStatus }) => void;
+  "friend:request": (
+    data: { userName: string },
+    ack: (result: FriendRequestActionResult) => void,
+  ) => void;
   "group:send": (data: {
     id: string;
     groupId: number;

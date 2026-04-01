@@ -217,30 +217,12 @@ function submitMessage({
   }
 }
 
-function handleGroupReceive({
-  message,
-  groupId,
-  queryClient,
-}: {
-  message: GroupMessage;
-  groupId: number;
-  queryClient: QueryClient;
-}) {
-  if (message.groupId !== groupId) return;
-  setChatMessage<GroupChatPageData>(
-    queryClient,
-    groupChatKey(groupId),
-    message,
-  );
-}
-
 export {
   getEmptyLabel,
   getPlaceholder,
   getSenderAvatar,
   getSenderName,
   getTypingText,
-  handleGroupReceive,
   shouldGroupMessage,
   submitMessage,
 };

@@ -8,6 +8,7 @@ import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { UsersModule } from './users/users.module';
 import { GroupChatModule } from './group-chat/group-chat.module';
+import { FriendRequestsModule } from './friend-requests/friend-requests.module';
 import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { LoggerModule } from 'nestjs-pino';
 
@@ -15,6 +16,7 @@ import { LoggerModule } from 'nestjs-pino';
   imports: [
     DirectMessageModule,
     GroupChatModule,
+    FriendRequestsModule,
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -23,10 +25,10 @@ import { LoggerModule } from 'nestjs-pino';
     LoggerModule.forRoot({
       pinoHttp: {
         transport:
-          process.env.NODE_ENV !== 'production'
-            ? { target: 'pino-pretty', options: { colorize: true } }
-            : undefined,
-        level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+          process.env.NODE_ENV === 'production'
+            ? undefined
+            : { target: 'pino-pretty', options: { colorize: true } },
+        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
         // Don't log health check noise
         autoLogging: {
           ignore: (req: any) => req.url === '/health',

@@ -1,6 +1,7 @@
 "use client";
 
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
 import UserAvatar from "@/app/_components/UserAvatar";
 import {
@@ -8,6 +9,7 @@ import {
   cancelFriendRequest,
   declineFriendRequest,
 } from "@/app/_dataAccessLayer/userActions";
+import { friendsPageKey } from "@/app/_lib/friendsQueryKeys";
 
 type PendingFriendsProps = {
   pendingFriendsRequests:
@@ -30,6 +32,7 @@ type PendingFriendsProps = {
 
 function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
   const [isPending, startTransition] = useTransition();
+  const queryClient = useQueryClient();
 
   if (
     !pendingFriendsRequests?.friendRequestsToThem.length &&
@@ -88,7 +91,11 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
                     disabled={isPending}
                     onClick={() =>
                       startTransition(async () => {
-                        await acceptFriendRequest({ id });
+                        const result = await acceptFriendRequest({ id });
+                        if (result?.error) return;
+                        queryClient.invalidateQueries({
+                          queryKey: friendsPageKey,
+                        });
                       })
                     }
                   >
@@ -99,7 +106,11 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
                     disabled={isPending}
                     onClick={() =>
                       startTransition(async () => {
-                        await declineFriendRequest({ id });
+                        const result = await declineFriendRequest({ id });
+                        if (result?.error) return;
+                        queryClient.invalidateQueries({
+                          queryKey: friendsPageKey,
+                        });
                       })
                     }
                   >
@@ -145,7 +156,11 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
                   disabled={isPending}
                   onClick={() =>
                     startTransition(async () => {
-                      await cancelFriendRequest({ id });
+                      const result = await cancelFriendRequest({ id });
+                      if (result?.error) return;
+                      queryClient.invalidateQueries({
+                        queryKey: friendsPageKey,
+                      });
                     })
                   }
                 >

@@ -10,7 +10,6 @@ import Message from "./Message";
 import {
   getEmptyLabel,
   getPlaceholder,
-  handleGroupReceive,
   getSenderAvatar,
   getSenderName,
   getTypingText,
@@ -110,16 +109,8 @@ function Messages(props: MessagesProps) {
         setTypingUsers((prev) => ({ ...prev, [data.userId]: data.isTyping }));
       };
 
-      socket.on("group:receive", (message) =>
-        handleGroupReceive({
-          message,
-          groupId,
-          queryClient,
-        }),
-      );
       socket.on("group:typing", onTyping);
       return () => {
-        socket.off("group:receive");
         socket.off("group:typing", onTyping);
       };
     }
@@ -169,7 +160,7 @@ function Messages(props: MessagesProps) {
         className="scrollbar-custom flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-6 py-4"
       >
         <div className="flex-1" />
-        {messages && messages.length > 0 ? (
+        {messages.length > 0 ? (
           messages.map((m, i) => (
             <Message
               key={`${m.id}-${i}`}

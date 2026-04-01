@@ -1,3 +1,4 @@
+import { Logger, OnModuleDestroy } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -7,31 +8,26 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger, OnModuleDestroy } from '@nestjs/common';
+import type { CallType, DirectMessage } from '@repo/types';
 import {
-  createDirectMessageSchema,
-  TokenPayloadSchema,
-  z,
-  groupSendSchema,
-  groupTypingSchema,
-  groupJoinSchema,
-  callInitiateSchema,
-  callIdSchema,
-  callOfferSchema,
   callAnswerSchema,
   callIceCandidateSchema,
+  callIdSchema,
+  callInitiateSchema,
   callMediaStateSchema,
-  callGroupJoinSchema,
+  callOfferSchema,
+  createDirectMessageSchema,
   dmTypingSchema,
   profileUpdateSchema,
+  TokenPayloadSchema,
+  z,
 } from '@repo/zod';
 import { Server, Socket } from 'socket.io';
+import { TokenService } from 'src/auth/token.service';
+import { CallStateService } from 'src/call-state/call-state.service';
+import { corsConfig } from 'src/config/cors';
 import { UsersService } from 'src/users/users.service';
 import { DirectMessageService } from './direct-message.service';
-import { GroupChatService } from 'src/group-chat/group-chat.service';
-import { TokenService } from 'src/auth/token.service';
-import { corsConfig } from 'src/config/cors';
-import type { CallType, DirectMessage, GroupMessage } from '@repo/types';
 
 interface AuthenticatedSocket extends Socket {
   data: {
@@ -49,13 +45,6 @@ interface DmCall {
   timeout: ReturnType<typeof setTimeout>;
 }
 
-interface GroupCall {
-  id: string;
-  groupId: number;
-  callType: CallType;
-  participants: Map<string, { userName: string }>;
-}
-
 @WebSocketGateway({ cors: corsConfig })
 export class DirectMessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnModuleDestroy
@@ -65,23 +54,36 @@ export class DirectMessageGateway
   @WebSocketServer()
   declare server: Server;
 
-  private dmCalls = new Map<string, DmCall>();
-  private groupCalls = new Map<string, GroupCall>();
-  private userActiveCalls = new Map<string, string>(); // userId -> callId
-
-  // Multi-tab: track how many connections each user has
-  private userConnections = new Map<string, number>();
-
-  // Rate limiting: userId -> { count, resetTime }
-  private messageLimits = new Map<
+  private readonly dmCalls = new Map<string, DmCall>();
+  private readonly dmCallByUser = new Map<string, string>();
+  private readonly userConnections = new Map<string, number>();
+  private readonly messageLimits = new Map<
     string,
     { count: number; resetTime: number }
   >();
-  private readonly MESSAGE_RATE_LIMIT = 9999; // max messages per window
-  private readonly MESSAGE_RATE_WINDOW = 5_000; // 5 seconds
+  private readonly MESSAGE_RATE_LIMIT = 9999;
+  private readonly MESSAGE_RATE_WINDOW = 5_000;
+  private readonly rateLimitCleanupTimer: ReturnType<typeof setInterval>;
 
-  // Periodic cleanup for stale rate limit entries
-  private rateLimitCleanupTimer: ReturnType<typeof setInterval>;
+  constructor(
+    private readonly directMessageService: DirectMessageService,
+    private readonly userService: UsersService,
+    private readonly tokenService: TokenService,
+    private readonly callState: CallStateService,
+  ) {
+    this.rateLimitCleanupTimer = setInterval(() => {
+      const now = Date.now();
+      for (const [userId, limit] of this.messageLimits) {
+        if (now > limit.resetTime) {
+          this.messageLimits.delete(userId);
+        }
+      }
+    }, 60_000);
+  }
+
+  onModuleDestroy() {
+    clearInterval(this.rateLimitCleanupTimer);
+  }
 
   private isRateLimited(userId: string): boolean {
     const now = Date.now();
@@ -97,27 +99,6 @@ export class DirectMessageGateway
 
     limit.count++;
     return limit.count > this.MESSAGE_RATE_LIMIT;
-  }
-
-  constructor(
-    private readonly directMessageService: DirectMessageService,
-    private readonly userService: UsersService,
-    private readonly groupChatService: GroupChatService,
-    private readonly tokenService: TokenService,
-  ) {
-    // Clean up expired rate limit entries every 60 seconds
-    this.rateLimitCleanupTimer = setInterval(() => {
-      const now = Date.now();
-      for (const [userId, limit] of this.messageLimits) {
-        if (now > limit.resetTime) {
-          this.messageLimits.delete(userId);
-        }
-      }
-    }, 60_000);
-  }
-
-  onModuleDestroy() {
-    clearInterval(this.rateLimitCleanupTimer);
   }
 
   async handleConnection(client: AuthenticatedSocket) {
@@ -137,11 +118,9 @@ export class DirectMessageGateway
 
       void client.join(user.sub);
 
-      // Track connection count for multi-tab support
       const prevCount = this.userConnections.get(user.sub) ?? 0;
       this.userConnections.set(user.sub, prevCount + 1);
 
-      // Only go ONLINE on first connection (not additional tabs)
       if (prevCount === 0) {
         await this.userService.updateStatus({
           userId: user.sub,
@@ -157,21 +136,10 @@ export class DirectMessageGateway
         }
       }
 
-      // Always tell the connecting client about their own status
       client.emit('user:status', {
         userId: user.sub,
         status: 'ONLINE',
       });
-
-      // Join all group chat rooms
-      this.userService
-        .getGroupIds(user.sub)
-        .then((groupIds) => {
-          for (const gid of groupIds) {
-            void client.join(`group:${gid}`);
-          }
-        })
-        .catch(() => {});
     } catch {
       client.disconnect();
     }
@@ -181,15 +149,13 @@ export class DirectMessageGateway
     const user = client.data.user;
     if (!user) return;
 
-    this.cleanupUserCalls(user.sub);
+    this.cleanupDmCalls(user.sub);
 
-    // Decrement connection count
     const count = (this.userConnections.get(user.sub) ?? 1) - 1;
     if (count <= 0) {
       this.userConnections.delete(user.sub);
       this.messageLimits.delete(user.sub);
 
-      // Last tab closed — go OFFLINE
       try {
         await this.userService.updateStatus({
           userId: user.sub,
@@ -211,46 +177,30 @@ export class DirectMessageGateway
     }
   }
 
-  private cleanupUserCalls(userId: string) {
-    const callId = this.userActiveCalls.get(userId);
+  private cleanupDmCalls(userId: string) {
+    const callId = this.dmCallByUser.get(userId);
     if (!callId) return;
 
     const dmCall = this.dmCalls.get(callId);
-    if (dmCall) {
-      clearTimeout(dmCall.timeout);
-      const otherUserId =
-        dmCall.callerId === userId ? dmCall.receiverId : dmCall.callerId;
-      this.server.to(otherUserId).emit('call:ended', {
-        callId,
-        reason: 'disconnect',
-      });
-      this.dmCalls.delete(callId);
-      this.userActiveCalls.delete(otherUserId);
-    }
+    this.dmCallByUser.delete(userId);
+    this.callState.clearCall(userId, callId);
 
-    const groupCall = this.groupCalls.get(callId);
-    if (groupCall) {
-      const groupId = groupCall.groupId;
-      groupCall.participants.delete(userId);
-      const participantCount = groupCall.participants.size;
-      this.server.to(`group:${groupId}`).emit('call:group-left', {
-        callId,
-        groupId,
-        userId,
-        participantCount,
-      });
-      if (participantCount === 0) {
-        this.groupCalls.delete(callId);
-        this.server.to(`group:${groupId}`).emit('call:group-call-ended', {
-          groupId,
-        });
-      }
-    }
+    if (!dmCall) return;
 
-    this.userActiveCalls.delete(userId);
+    clearTimeout(dmCall.timeout);
+    const otherUserId =
+      dmCall.callerId === userId ? dmCall.receiverId : dmCall.callerId;
+    this.server.to(otherUserId).emit('call:ended', {
+      callId,
+      reason: 'disconnect',
+    });
+
+    this.dmCalls.delete(callId);
+    this.dmCallByUser.delete(dmCall.callerId);
+    this.dmCallByUser.delete(dmCall.receiverId);
+    this.callState.clearCall(dmCall.callerId, callId);
+    this.callState.clearCall(dmCall.receiverId, callId);
   }
-
-  // ── Direct Messages ──
 
   @SubscribeMessage('dm:send')
   async sendMessage(
@@ -275,14 +225,14 @@ export class DirectMessageGateway
       return;
     }
 
-    const payload = {
+    const payload: DirectMessage = {
       id: body.id,
       content: body.content,
       receiverId: body.receiverId,
       senderId: user.sub,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    } satisfies DirectMessage;
+    };
 
     this.server.to(body.receiverId).emit('dm:receive', payload);
     client.emit('dm:receive', payload);
@@ -335,108 +285,6 @@ export class DirectMessageGateway
     }
   }
 
-  // ── Group Chat ──
-
-  @SubscribeMessage('group:send')
-  async handleGroupSend(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() raw: unknown,
-  ) {
-    const result = groupSendSchema.safeParse(raw);
-    if (!result.success) return;
-    const body = result.data;
-    const user = client.data.user;
-
-    if (this.isRateLimited(user.sub)) return;
-
-    try {
-      const isMember = await this.groupChatService.isMember(
-        body.groupId,
-        user.sub,
-      );
-      if (!isMember) return;
-    } catch (error) {
-      this.logger.error(error, 'Failed to check group membership');
-      return;
-    }
-
-    const payload = {
-      id: body.id,
-      content: body.content,
-      groupId: body.groupId,
-      senderId: user.sub,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      isEdited: false,
-      sender: {
-        userName: user.userName ?? null,
-        avatarConfig: user.avatarConfig ?? null,
-      },
-    } satisfies GroupMessage;
-
-    this.server.to(`group:${body.groupId}`).emit('group:receive', payload);
-
-    this.groupChatService
-      .createMessage(body.id, body.groupId, user.sub, body.content)
-      .catch((err: unknown) => {
-        this.logger.error(err, 'Failed to persist group message');
-      });
-  }
-
-  @SubscribeMessage('group:typing')
-  async handleGroupTyping(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() raw: unknown,
-  ) {
-    const result = groupTypingSchema.safeParse(raw);
-    if (!result.success) return;
-    const body = result.data;
-    const user = client.data.user;
-
-    try {
-      const isMember = await this.groupChatService.isMember(
-        body.groupId,
-        user.sub,
-      );
-      if (!isMember) return;
-    } catch (error) {
-      this.logger.error(error, 'Failed to check group membership for typing');
-      return;
-    }
-
-    client.to(`group:${body.groupId}`).emit('group:typing', {
-      groupId: body.groupId,
-      userId: user.sub,
-      isTyping: body.isTyping,
-    });
-  }
-
-  @SubscribeMessage('group:join')
-  async handleGroupJoin(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() raw: unknown,
-  ) {
-    const result = groupJoinSchema.safeParse(raw);
-    if (!result.success) return;
-    const body = result.data;
-    const user = client.data.user;
-
-    try {
-      const isMember = await this.groupChatService.isMember(
-        body.groupId,
-        user.sub,
-      );
-      if (!isMember) return;
-    } catch (error) {
-      this.logger.error(error, 'Failed to check group membership for join');
-      return;
-    }
-
-    void client.join(`group:${body.groupId}`);
-  }
-
-  // ── Call Signaling (1-on-1) ──
-
   @SubscribeMessage('call:initiate')
   async handleCallInitiate(
     @ConnectedSocket() client: AuthenticatedSocket,
@@ -447,12 +295,12 @@ export class DirectMessageGateway
     const body = result.data;
     const user = client.data.user;
 
-    if (this.userActiveCalls.has(user.sub)) {
+    if (this.callState.isActive(user.sub)) {
       client.emit('call:error', { message: 'Already in a call' });
       return;
     }
 
-    if (this.userActiveCalls.has(body.receiverId)) {
+    if (this.callState.isActive(body.receiverId)) {
       client.emit('call:error', { message: 'User is already in a call' });
       return;
     }
@@ -476,7 +324,7 @@ export class DirectMessageGateway
 
     const timeout = setTimeout(() => {
       const call = this.dmCalls.get(callId);
-      if (call && call.status === 'ringing') {
+      if (call?.status === 'ringing') {
         this.server
           .to(call.callerId)
           .emit('call:ended', { callId, reason: 'no-answer' });
@@ -484,8 +332,10 @@ export class DirectMessageGateway
           .to(call.receiverId)
           .emit('call:ended', { callId, reason: 'no-answer' });
         this.dmCalls.delete(callId);
-        this.userActiveCalls.delete(call.callerId);
-        this.userActiveCalls.delete(call.receiverId);
+        this.dmCallByUser.delete(call.callerId);
+        this.dmCallByUser.delete(call.receiverId);
+        this.callState.clearCall(call.callerId, callId);
+        this.callState.clearCall(call.receiverId, callId);
       }
     }, 30_000);
 
@@ -500,10 +350,11 @@ export class DirectMessageGateway
     };
 
     this.dmCalls.set(callId, call);
-    this.userActiveCalls.set(user.sub, callId);
-    this.userActiveCalls.set(body.receiverId, callId);
+    this.dmCallByUser.set(user.sub, callId);
+    this.dmCallByUser.set(body.receiverId, callId);
+    this.callState.setCall(user.sub, callId);
+    this.callState.setCall(body.receiverId, callId);
 
-    // Tell the caller their callId
     client.emit('call:ringing', { callId });
 
     this.server.to(body.receiverId).emit('call:incoming', {
@@ -524,8 +375,7 @@ export class DirectMessageGateway
     const body = result.data;
     const user = client.data.user;
     const call = this.dmCalls.get(body.callId);
-    if (!call || call.receiverId !== user.sub || call.status !== 'ringing')
-      return;
+    if (call?.receiverId !== user.sub || call.status !== 'ringing') return;
 
     clearTimeout(call.timeout);
     call.status = 'active';
@@ -546,8 +396,7 @@ export class DirectMessageGateway
     const body = result.data;
     const user = client.data.user;
     const call = this.dmCalls.get(body.callId);
-    if (!call || call.receiverId !== user.sub || call.status !== 'ringing')
-      return;
+    if (call?.receiverId !== user.sub || call.status !== 'ringing') return;
 
     clearTimeout(call.timeout);
     this.server.to(call.callerId).emit('call:declined', {
@@ -555,8 +404,10 @@ export class DirectMessageGateway
       userId: user.sub,
     });
     this.dmCalls.delete(body.callId);
-    this.userActiveCalls.delete(call.callerId);
-    this.userActiveCalls.delete(call.receiverId);
+    this.dmCallByUser.delete(call.callerId);
+    this.dmCallByUser.delete(call.receiverId);
+    this.callState.clearCall(call.callerId, body.callId);
+    this.callState.clearCall(call.receiverId, body.callId);
   }
 
   @SubscribeMessage('call:hangup')
@@ -570,31 +421,19 @@ export class DirectMessageGateway
     const user = client.data.user;
 
     const dmCall = this.dmCalls.get(body.callId);
-    if (dmCall) {
-      clearTimeout(dmCall.timeout);
-      const otherUserId =
-        dmCall.callerId === user.sub ? dmCall.receiverId : dmCall.callerId;
-      this.server
-        .to(otherUserId)
-        .emit('call:ended', { callId: body.callId, reason: 'hangup' });
-      this.dmCalls.delete(body.callId);
-      this.userActiveCalls.delete(dmCall.callerId);
-      this.userActiveCalls.delete(dmCall.receiverId);
-      return;
-    }
+    if (!dmCall) return;
 
-    // Could be a group call hangup via call:hangup
-    const groupCall = this.groupCalls.get(body.callId);
-    if (groupCall) {
-      groupCall.participants.delete(user.sub);
-      this.userActiveCalls.delete(user.sub);
-      this.server
-        .to(`group:${groupCall.groupId}`)
-        .emit('call:group-left', { callId: body.callId, userId: user.sub });
-      if (groupCall.participants.size === 0) {
-        this.groupCalls.delete(body.callId);
-      }
-    }
+    clearTimeout(dmCall.timeout);
+    const otherUserId =
+      dmCall.callerId === user.sub ? dmCall.receiverId : dmCall.callerId;
+    this.server
+      .to(otherUserId)
+      .emit('call:ended', { callId: body.callId, reason: 'hangup' });
+    this.dmCalls.delete(body.callId);
+    this.dmCallByUser.delete(dmCall.callerId);
+    this.dmCallByUser.delete(dmCall.receiverId);
+    this.callState.clearCall(dmCall.callerId, body.callId);
+    this.callState.clearCall(dmCall.receiverId, body.callId);
   }
 
   @SubscribeMessage('call:offer')
@@ -656,147 +495,14 @@ export class DirectMessageGateway
     const user = client.data.user;
 
     const dmCall = this.dmCalls.get(body.callId);
-    if (dmCall) {
-      const otherUserId =
-        dmCall.callerId === user.sub ? dmCall.receiverId : dmCall.callerId;
-      this.server.to(otherUserId).emit('call:media-state', {
-        userId: user.sub,
-        audioEnabled: body.audioEnabled,
-        videoEnabled: body.videoEnabled,
-      });
-      return;
-    }
+    if (!dmCall) return;
 
-    const groupCall = this.groupCalls.get(body.callId);
-    if (groupCall) {
-      for (const [participantId] of groupCall.participants) {
-        if (participantId !== user.sub) {
-          this.server.to(participantId).emit('call:media-state', {
-            userId: user.sub,
-            audioEnabled: body.audioEnabled,
-            videoEnabled: body.videoEnabled,
-          });
-        }
-      }
-    }
-  }
-
-  // ── Call Signaling (Group) ──
-
-  @SubscribeMessage('call:group-join')
-  async handleGroupCallJoin(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() raw: unknown,
-  ) {
-    const result = callGroupJoinSchema.safeParse(raw);
-    if (!result.success) return;
-    const body = result.data;
-    const user = client.data.user;
-
-    if (this.userActiveCalls.has(user.sub)) {
-      client.emit('call:error', { message: 'Already in a call' });
-      return;
-    }
-
-    try {
-      const isMember = await this.groupChatService.isMember(
-        body.groupId,
-        user.sub,
-      );
-      if (!isMember) {
-        client.emit('call:error', { message: 'Not a group member' });
-        return;
-      }
-    } catch (error) {
-      this.logger.error(error, 'Failed to check group membership for call');
-      client.emit('call:error', { message: 'Server error' });
-      return;
-    }
-
-    // Find or create the group call
-    let groupCall: GroupCall | undefined;
-    for (const gc of this.groupCalls.values()) {
-      if (gc.groupId === body.groupId) {
-        groupCall = gc;
-        break;
-      }
-    }
-
-    if (!groupCall) {
-      const callId = crypto.randomUUID();
-      groupCall = {
-        id: callId,
-        groupId: body.groupId,
-        callType: body.callType,
-        participants: new Map(),
-      };
-      this.groupCalls.set(callId, groupCall);
-    }
-
-    // Tell the joiner who's already in the call
-    const existingParticipants = Array.from(
-      groupCall.participants.entries(),
-    ).map(([userId, info]) => ({ userId, userName: info.userName }));
-
-    client.emit('call:group-active', {
-      callId: groupCall.id,
-      participants: existingParticipants,
-    });
-
-    const userName = user.userName ?? 'Unknown';
-    groupCall.participants.set(user.sub, { userName });
-    this.userActiveCalls.set(user.sub, groupCall.id);
-
-    const participantCount = groupCall.participants.size;
-
-    // First joiner: notify whole group that a call started
-    if (participantCount === 1) {
-      this.server.to(`group:${body.groupId}`).emit('call:group-call-started', {
-        groupId: body.groupId,
-        callId: groupCall.id,
-        participantCount: 1,
-      });
-    } else {
-      // Notify existing participants (excludes sender)
-      this.server.to(`group:${body.groupId}`).emit('call:group-joined', {
-        callId: groupCall.id,
-        groupId: body.groupId,
-        userId: user.sub,
-        userName,
-        participantCount,
-      });
-    }
-  }
-
-  @SubscribeMessage('call:group-leave')
-  handleGroupCallLeave(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() raw: unknown,
-  ) {
-    const result = callIdSchema.safeParse(raw);
-    if (!result.success) return;
-    const body = result.data;
-    const user = client.data.user;
-    const groupCall = this.groupCalls.get(body.callId);
-    if (!groupCall || !groupCall.participants.has(user.sub)) return;
-
-    const groupId = groupCall.groupId;
-    groupCall.participants.delete(user.sub);
-    this.userActiveCalls.delete(user.sub);
-    const participantCount = groupCall.participants.size;
-
-    this.server.to(`group:${groupId}`).emit('call:group-left', {
-      callId: body.callId,
-      groupId,
+    const otherUserId =
+      dmCall.callerId === user.sub ? dmCall.receiverId : dmCall.callerId;
+    this.server.to(otherUserId).emit('call:media-state', {
       userId: user.sub,
-      participantCount,
+      audioEnabled: body.audioEnabled,
+      videoEnabled: body.videoEnabled,
     });
-
-    if (participantCount === 0) {
-      this.groupCalls.delete(body.callId);
-      this.server.to(`group:${groupId}`).emit('call:group-call-ended', {
-        groupId,
-      });
-    }
   }
 }

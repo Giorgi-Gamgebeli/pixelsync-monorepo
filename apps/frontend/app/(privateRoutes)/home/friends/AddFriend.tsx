@@ -1,14 +1,15 @@
 "use client";
 
-import { addFriend } from "@/app/_dataAccessLayer/userActions";
 import { AddFriendSchema } from "@repo/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { useSocketContext } from "@/app/_context/SocketContext";
 
 function AddFriend() {
+  const { sendFriendRequest } = useSocketContext();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const {
     handleSubmit,
@@ -30,9 +31,9 @@ function AddFriend() {
   async function onSubmit(values: z.infer<typeof AddFriendSchema>) {
     setSuccessMessage(null);
 
-    const actionError = await addFriend(values);
-    if (actionError?.error) {
-      setError("userName", { message: actionError.error });
+    const result = await sendFriendRequest(values.userName);
+    if (!result.success) {
+      setError("userName", { message: result.error });
       return;
     }
 
