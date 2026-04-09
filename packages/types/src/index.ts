@@ -17,6 +17,15 @@ export type FriendRequestUpdate = {
   friend: FriendRequestProfile;
 };
 
+export type FriendAcceptedUpdate = {
+  direction: "incoming" | "outgoing";
+  friend: FriendRequestProfile & { status?: UserStatus };
+};
+
+export type FriendRemovedUpdate = {
+  friendId: string;
+};
+
 export type FriendRequestActionResult =
   | { success: true }
   | { success: false; error: string };
@@ -26,6 +35,8 @@ export interface ServerToClientEvents extends ServerToCallEvents {
   "user:status": (update: { userId: string; status: UserStatus }) => void;
   "user:profile-update": (data: ProfileUpdate) => void;
   "friend:request": (data: FriendRequestUpdate) => void;
+  "friend:accepted": (data: FriendAcceptedUpdate) => void;
+  "friend:removed": (data: FriendRemovedUpdate) => void;
   "dm:typing": (data: { userId: string; isTyping: boolean }) => void;
   "group:receive": (message: GroupMessage) => void;
   "group:typing": (data: {
@@ -36,17 +47,28 @@ export interface ServerToClientEvents extends ServerToCallEvents {
 }
 
 export interface ClientToServerEvents extends ClientToCallEvents {
-  "dm:send": (data: {
-    id: string;
-    receiverId: string;
-    content: string;
-    senderId: string;
-  }) => void;
+  "dm:send": (
+    data: {
+      id: string;
+      receiverId: string;
+      content: string;
+      senderId: string;
+    },
+    ack: (response: { success: boolean; error: string }) => void,
+  ) => void;
   "dm:typing": (data: { receiverId: string; isTyping: boolean }) => void;
   "user:profile-update": (data: Omit<ProfileUpdate, "userId">) => void;
   "user:set-status": (data: { status: UserStatus }) => void;
   "friend:request": (
     data: { userName: string },
+    ack: (result: FriendRequestActionResult) => void,
+  ) => void;
+  "friend:accept": (
+    data: { id: string },
+    ack: (result: FriendRequestActionResult) => void,
+  ) => void;
+  "friend:unfriend": (
+    data: { id: string },
     ack: (result: FriendRequestActionResult) => void,
   ) => void;
   "group:send": (data: {
@@ -58,7 +80,7 @@ export interface ClientToServerEvents extends ClientToCallEvents {
   "group:join": (data: { groupId: number }) => void;
 }
 
-export interface DirectMessage {
+export type DirectMessage = {
   id: string;
   content: string;
   createdAt: string;
@@ -70,7 +92,7 @@ export interface DirectMessage {
     userName: string;
     avatar?: string;
   };
-}
+};
 
 export interface GroupMessage {
   id: string;

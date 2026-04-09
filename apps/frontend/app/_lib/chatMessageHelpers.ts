@@ -162,7 +162,7 @@ function submitMessage({
   sessionUserName: string | null | undefined;
   currentUserAvatarConfig?: string | null;
   queryClient: QueryClient;
-  sendMessage: (receiverId: string, content: string, id: string) => void;
+  sendMessage: (optimisticMessage: DirectMessage) => void;
   setTyping: (receiverId: string, isTyping: boolean) => void;
   sendGroupMessage: (groupId: number, content: string, id: string) => void;
   setGroupTyping: (groupId: number, isTyping: boolean) => void;
@@ -179,13 +179,8 @@ function submitMessage({
       updatedAt: new Date().toISOString(),
       pending: true,
     };
-    setChatMessage<DMChatPageData>(
-      queryClient,
-      dmChatKey(friend.id),
-      optimisticMessage,
-    );
-    sendMessage(friend.id, text, messageId);
-    setTyping(friend.id, false);
+
+    sendMessage(optimisticMessage);
   }
 
   if (group) {

@@ -11,5 +11,6 @@ import { DirectMessageGateway } from './direct-message.gateway';
   imports: [AuthModule, UsersModule, CallStateModule],
   controllers: [DirectMessageController],
   providers: [DirectMessageService, DirectMessageGateway],
+  exports: [DirectMessageGateway],
 })
 export class DirectMessageModule {}

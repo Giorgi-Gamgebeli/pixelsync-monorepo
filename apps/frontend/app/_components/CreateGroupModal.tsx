@@ -84,7 +84,7 @@ function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-secondary p-6 shadow-2xl">
+      <div className="border-border bg-secondary w-full max-w-md rounded-2xl border p-6 shadow-2xl">
         <h3 className="text-lg font-bold text-white">Create Group</h3>
 
         <div className="mt-4">
@@ -96,12 +96,12 @@ function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
               setName(e.target.value);
               setError("");
             }}
-            className="w-full rounded-lg border border-border bg-surface px-4 py-2 text-sm text-white outline-none placeholder:text-gray-500 focus:border-brand-500"
+            className="border-border bg-surface focus:border-brand-500 w-full rounded-lg border px-4 py-2 text-sm text-white outline-none placeholder:text-gray-500"
           />
         </div>
 
         <p className="mt-4 text-xs font-medium text-gray-500">Add Members</p>
-        <div className="mt-2 max-h-48 overflow-y-auto scrollbar-thin">
+        <div className="scrollbar-thin mt-2 max-h-48 overflow-y-auto">
           {friends.length === 0 ? (
             <p className="py-3 text-center text-xs text-gray-500">
               No friends to add
@@ -115,7 +115,7 @@ function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
                   className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
                     selected.has(friend.id)
                       ? "bg-brand-500/10 text-brand-400"
-                      : "text-gray-300 hover:bg-surface"
+                      : "hover:bg-surface text-gray-300"
                   }`}
                 >
                   <UserAvatar
@@ -139,22 +139,20 @@ function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
           )}
         </div>
 
-        {error && (
-          <p className="mt-2 text-xs text-red-400">{error}</p>
-        )}
+        {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
 
         <div className="mt-6 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
             disabled={isPending}
-            className="rounded-xl px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-surface hover:text-white"
+            className="hover:bg-surface rounded-xl px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:text-white"
           >
             Cancel
           </button>
           <button
             onClick={handleCreate}
             disabled={isPending || !name.trim() || selected.size === 0}
-            className="flex items-center gap-2 rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-brand-600 disabled:opacity-50"
+            className="bg-brand-500 hover:bg-brand-600 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all disabled:opacity-50"
           >
             {isPending && (
               <Icon icon="mdi:loading" className="animate-spin text-lg" />

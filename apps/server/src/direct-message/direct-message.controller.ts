@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import type { TokenPayloadSchema, z } from '@repo/zod';
+import { TokenPayloadSchema, z } from '@repo/zod';
 import { AuthenticatedUser } from 'src/auth/authenticated-user.decorator';
 import { NextAuthGuard } from 'src/auth/nextauth.guard';
 import { DirectMessageService } from './direct-message.service';
