@@ -3,6 +3,7 @@
 import FriendItem from "./FriendItem";
 import FriendsListSkeleton from "@/app/_components/skeletons/FriendsListSkeleton";
 import { getFriendsPageData } from "@/app/_dataAccessLayer/userActions";
+import { sortFriendsByLastMessageAt } from "@/app/_lib/friendsSorting";
 import { useQuery } from "@/app/_hooks/useQuery";
 import { friendsPageKey } from "@/app/_lib/friendsQueryKeys";
 
@@ -24,7 +25,7 @@ function FriendsList() {
     );
   }
 
-  const friends = data.friends;
+  const friends = sortFriendsByLastMessageAt(data.friends);
 
   if (friends.length === 0) {
     return (

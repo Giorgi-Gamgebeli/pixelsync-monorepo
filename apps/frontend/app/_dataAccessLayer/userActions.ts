@@ -11,14 +11,17 @@ import {
   GetFriendSchema,
   UnfriendSchema,
   UpdateAvatarConfigSchema,
-  UpdateUserNameSchema,
   updateStatusSchema,
+  UpdateUserNameSchema,
 } from "@repo/zod";
-import { z } from "zod";
-import { handleErrorsOnServer, OperationalError } from "../_utils/helpers";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { cache } from "react";
+import { z } from "zod";
+import {
+  sortFriendsByLastMessageAt,
+  toTimestamp,
+} from "../_lib/friendsSorting";
+import { handleErrorsOnServer, OperationalError } from "../_utils/helpers";
 
 export async function getFriends() {
   try {
@@ -187,49 +190,18 @@ export async function getChatPageData(friendId: string) {
       throw new OperationalError("You cannot perform this action on yourself.");
     }
 
-    const [friend, currentUser, messages] = await Promise.all([
-      db.user.findUnique({
-        where: { id: friendId },
-        select: {
-          id: true,
-          userName: true,
-          status: true,
-          avatarConfig: true,
-          friends: { where: { id: session.user.id } },
-          friendOf: { where: { id: session.user.id } },
-        },
-      }),
-      db.user.findUnique({
-        where: { id: session.user.id },
-        select: { avatarConfig: true },
-      }),
-      db.directMessage.findMany({
-        where: {
-          OR: [
-            { receiverId: friendId, senderId: session.user.id },
-            { receiverId: session.user.id, senderId: friendId },
-          ],
-        },
-        orderBy: { createdAt: "desc" },
-        take: 50,
-      }),
-    ]);
-
-    if (!friend) throw new OperationalError("Friend was not found!");
-
-    const isFriend = friend.friends.length > 0 && friend.friendOf.length > 0;
-    if (!isFriend)
-      throw new OperationalError("You are not friends with this user!");
+    const messages = await db.directMessage.findMany({
+      where: {
+        OR: [
+          { receiverId: friendId, senderId: session.user.id },
+          { receiverId: session.user.id, senderId: friendId },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
 
     return {
-      session,
-      friend: {
-        id: friend.id,
-        userName: friend.userName,
-        status: friend.status,
-        avatarConfig: friend.avatarConfig,
-      },
-      currentUserAvatarConfig: currentUser?.avatarConfig ?? null,
       messages: messages.toReversed().map((m) => ({
         ...m,
         createdAt: m.createdAt.toISOString(),
@@ -283,55 +255,32 @@ export async function getPendingFriendRequests() {
   }
 }
 
-export const getFriendsPageData = cache(async function getFriendsPageData() {
+export const getFriendsPageData = async function getFriendsPageData() {
   try {
     const session = await auth();
     if (!session) throw new OperationalError("Not authenticated!");
 
-    const [currentUser, pendingFriendRequests] = await Promise.all([
-      db.user.findUnique({
-        where: { id: session.user.id },
-        select: {
-          friends: {
-            select: {
-              id: true,
-              userName: true,
-              status: true,
-              avatarConfig: true,
-            },
-          },
-          friendOf: {
-            select: {
-              id: true,
-              userName: true,
-              status: true,
-              avatarConfig: true,
-            },
+    const currentUser = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        friends: {
+          select: {
+            id: true,
+            userName: true,
+            status: true,
+            avatarConfig: true,
           },
         },
-      }),
-      db.user.findUnique({
-        where: { id: session.user.id },
-        select: {
-          friends: {
-            select: {
-              id: true,
-              userName: true,
-              name: true,
-              avatarConfig: true,
-            },
-          },
-          friendOf: {
-            select: {
-              id: true,
-              userName: true,
-              name: true,
-              avatarConfig: true,
-            },
+        friendOf: {
+          select: {
+            id: true,
+            userName: true,
+            status: true,
+            avatarConfig: true,
           },
         },
-      }),
-    ]);
+      },
+    });
 
     const friends = currentUser?.friends || [];
     const friendOf = currentUser?.friendOf || [];
@@ -339,33 +288,65 @@ export const getFriendsPageData = cache(async function getFriendsPageData() {
     const friendIds = new Set(friends.map((friend) => friend.id));
     const mutualFriends = friendOf.filter((friend) => friendIds.has(friend.id));
 
-    const friendsIDs = new Set(
-      pendingFriendRequests?.friends.map((friend) => friend.id),
-    );
-    const friendOfIDs = new Set(
-      pendingFriendRequests?.friendOf.map((friend) => friend.id),
-    );
+    if (mutualFriends.length === 0) {
+      return { friends: [] };
+    }
 
-    const friendRequestsToThem =
-      pendingFriendRequests?.friends.filter(
-        (friend) => !friendOfIDs.has(friend.id),
-      ) || [];
-    const friendRequestsToMe =
-      pendingFriendRequests?.friendOf.filter(
-        (friend) => !friendsIDs.has(friend.id),
-      ) || [];
+    const mutualFriendIds = mutualFriends.map((friend) => friend.id);
+    const groupedMessages = await db.directMessage.groupBy({
+      by: ["senderId", "receiverId"],
+      where: {
+        OR: [
+          {
+            senderId: session.user.id,
+            receiverId: { in: mutualFriendIds },
+          },
+          {
+            receiverId: session.user.id,
+            senderId: { in: mutualFriendIds },
+          },
+        ],
+      },
+      _max: {
+        createdAt: true,
+      },
+    });
+
+    const latestMessageByFriendId = new Map<string, string>();
+
+    for (const messageGroup of groupedMessages) {
+      const friendId =
+        messageGroup.senderId === session.user.id
+          ? messageGroup.receiverId
+          : messageGroup.senderId;
+      const createdAt = messageGroup._max.createdAt?.toISOString();
+      if (!createdAt) continue;
+
+      const previous = latestMessageByFriendId.get(friendId);
+      if (!previous) {
+        latestMessageByFriendId.set(friendId, createdAt);
+        continue;
+      }
+
+      if (toTimestamp(createdAt) > toTimestamp(previous)) {
+        latestMessageByFriendId.set(friendId, createdAt);
+      }
+    }
+
+    const mutualFriendsWithLastMessage = sortFriendsByLastMessageAt(
+      mutualFriends.map((friend) => ({
+        ...friend,
+        lastMessageAt: latestMessageByFriendId.get(friend.id) ?? null,
+      })),
+    );
 
     return {
-      friends: mutualFriends,
-      pendingFriendRequests: {
-        friendRequestsToThem,
-        friendRequestsToMe,
-      },
+      friends: mutualFriendsWithLastMessage,
     };
   } catch (error) {
     return handleErrorsOnServer(error);
   }
-});
+};
 
 export async function addFriend(values: z.infer<typeof AddFriendSchema>) {
   try {

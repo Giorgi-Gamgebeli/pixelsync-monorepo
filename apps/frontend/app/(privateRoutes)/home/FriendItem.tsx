@@ -3,14 +3,11 @@
 import ConfirmDialog from "@/app/_components/ConfirmDialog";
 import UserAvatar from "@/app/_components/UserAvatar";
 import { useSocketContext } from "@/app/_context/SocketContext";
-import { getChatPageData, unfriend } from "@/app/_dataAccessLayer/userActions";
+import { getChatPageData } from "@/app/_dataAccessLayer/userActions";
 import { usePrefetchQuery } from "@/app/_hooks/usePrefetchQuery";
 import { dmChatKey } from "@/app/_lib/chatQueryKeys";
-import { friendsPageKey } from "@/app/_lib/friendsQueryKeys";
-import { useQueryClient } from "@tanstack/react-query";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { UserStatus } from "@repo/types";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import HomeNavLink from "./HomeNavLink";
 
@@ -31,20 +28,15 @@ type FriendItemProps = Readonly<{
 }>;
 
 function FriendItem({ friend }: FriendItemProps) {
-  const { statusMap, profileMap } = useSocketContext();
-  const router = useRouter();
-  const queryClient = useQueryClient();
+  const { unfriend } = useSocketContext();
   const { prefetchQuery } = usePrefetchQuery();
+
+  console.log("socket rerender useSocketContext");
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
-
-  const profile = profileMap[friend.id];
-  const displayUserName = profile?.userName ?? friend.userName;
-  const displayAvatarConfig = profile?.avatarConfig ?? friend.avatarConfig;
-  const status = statusMap[friend.id] ?? friend.status;
 
   const prefetch = () => {
     prefetchQuery({
@@ -68,18 +60,18 @@ function FriendItem({ friend }: FriendItemProps) {
       <div className="group relative">
         <HomeNavLink href={`/home/${friend.id}`} prefetch={prefetch}>
           <UserAvatar
-            userName={displayUserName}
+            userName={friend.userName}
             id={friend.id}
             size={32}
             showStatus
-            status={status}
+            status={friend.status}
             statusBorderColor="border-secondary"
-            avatarConfig={displayAvatarConfig}
+            avatarConfig={friend.avatarConfig}
           />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm text-gray-300">{displayUserName}</p>
+            <p className="truncate text-sm text-gray-300">{friend.userName}</p>
             <p className="truncate text-xs text-gray-500">
-              {STATUS_LABELS[status]}
+              {STATUS_LABELS[friend.status]}
             </p>
           </div>
         </HomeNavLink>
@@ -122,13 +114,11 @@ function FriendItem({ friend }: FriendItemProps) {
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        onConfirm={async () => {
-          await unfriend({ id: friend.id });
-          queryClient.invalidateQueries({ queryKey: friendsPageKey });
-          router.refresh();
+        onConfirm={() => {
+          unfriend(friend.id);
         }}
         title="Remove Friend"
-        message={`Are you sure you want to remove ${displayUserName || "this user"}?`}
+        message={`Are you sure you want to remove ${friend.userName || "this user"}?`}
         confirmLabel="Remove"
         danger
       />

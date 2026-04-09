@@ -1,28 +1,15 @@
 "use client";
 
-import { UserStatus } from "@repo/types";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import FriendRow from "./FriendRow";
-import { useSocketContext } from "@/app/_context/SocketContext";
+import type { FriendsPageFriend } from "@/app/_lib/friendsQueryCache";
 
-type AllFriendsProps = {
-  friends:
-    | {
-        id: string;
-        userName: string | null;
-        status: UserStatus;
-        avatarConfig?: string | null;
-      }[]
-    | undefined;
-};
+type AllFriendsProps = Readonly<{
+  friends: FriendsPageFriend[];
+}>;
 
-function AllFriends({ friends: rawFriends }: AllFriendsProps) {
-  const { statusMap } = useSocketContext();
-  const friends = rawFriends?.map((f) => ({
-    ...f,
-    status: (statusMap[f.id] ?? f.status) as UserStatus,
-  }));
-  if (!friends?.length) {
+function AllFriends({ friends }: AllFriendsProps) {
+  if (!friends.length) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="bg-surface mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">

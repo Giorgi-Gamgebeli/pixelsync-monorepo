@@ -1,45 +1,19 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { UserStatus } from "@repo/types";
 import PendingFriends from "./PendingFriends";
 import AllFriends from "./AllFriends";
 import OnlineFriends from "./OnlineFriends";
+import type { FriendsPageFriend } from "@/app/_lib/friendsQueryCache";
 
 type FriendsPageProps = Readonly<{
   activeFilter: "online" | "all" | "pending";
-  friends: {
-    id: string;
-    userName: string | null;
-    status: UserStatus;
-    avatarConfig?: string | null;
-  }[];
-  pendingFriendRequests:
-    | {
-        friendRequestsToThem: {
-          userName: string | null;
-          name: string | null;
-          id: string;
-          avatarConfig?: string | null;
-        }[];
-        friendRequestsToMe: {
-          userName: string | null;
-          name: string | null;
-          id: string;
-          avatarConfig?: string | null;
-        }[];
-      }
-    | undefined;
+  friends: FriendsPageFriend[];
 }>;
 
-function FriendsPage({
-  activeFilter,
-  friends,
-  pendingFriendRequests,
-}: FriendsPageProps) {
+function FriendsPage({ activeFilter, friends }: FriendsPageProps) {
   let content: ReactNode;
-  if (activeFilter === "pending")
-    content = <PendingFriends pendingFriendsRequests={pendingFriendRequests} />;
+  if (activeFilter === "pending") content = <PendingFriends />;
   else if (activeFilter === "all") content = <AllFriends friends={friends} />;
   else content = <OnlineFriends friends={friends} />;
 

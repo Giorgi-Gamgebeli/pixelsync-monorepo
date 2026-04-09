@@ -3,9 +3,8 @@
 import { UserStatus } from "@repo/types";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import FriendRow from "./FriendRow";
-import { useSocketContext } from "@/app/_context/SocketContext";
 
-type OnlineFriendsProps = {
+type OnlineFriendsProps = Readonly<{
   friends:
     | {
         id: string;
@@ -14,13 +13,11 @@ type OnlineFriendsProps = {
         avatarConfig?: string | null;
       }[]
     | undefined;
-};
+}>;
 
 function OnlineFriends({ friends: unsortedFriends }: OnlineFriendsProps) {
-  const { statusMap } = useSocketContext();
   const friends = unsortedFriends?.filter((f) => {
-    const liveStatus = statusMap[f.id] ?? f.status;
-    return liveStatus === "ONLINE";
+    return f.status === "ONLINE";
   });
 
   if (!friends?.length) {

@@ -5,11 +5,10 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { useRouter } from "next/navigation";
 import { UserStatus } from "@repo/types";
 import { useSocketContext } from "../_context/SocketContext";
-import { unfriend } from "../_dataAccessLayer/userActions";
 import UserAvatar from "./UserAvatar";
 import ConfirmDialog from "./ConfirmDialog";
 
-type FriendProfilePanelProps = {
+type FriendProfilePanelProps = Readonly<{
   isOpen: boolean;
   onClose: () => void;
   friend: {
@@ -18,19 +17,20 @@ type FriendProfilePanelProps = {
     status: UserStatus;
     avatarConfig?: string | null;
   };
-};
+}>;
 
 function FriendProfilePanel({
   isOpen,
   onClose,
   friend,
 }: FriendProfilePanelProps) {
-  const { statusMap } = useSocketContext();
   const router = useRouter();
+  const { unfriend } = useSocketContext();
+
+  console.log("socket rerender useSocketContext");
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const status = statusMap[friend.id] ?? friend.status;
-  const isOnline = status === "ONLINE";
+  const isOnline = friend.status === "ONLINE";
 
   if (!isOpen) return null;
 
@@ -38,14 +38,14 @@ function FriendProfilePanel({
     <>
       <div className="fixed inset-0 z-[80] flex justify-end">
         <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-        <div className="relative h-full w-80 border-l border-border bg-secondary shadow-2xl animate-in slide-in-from-right duration-200">
+        <div className="border-border bg-secondary animate-in slide-in-from-right relative h-full w-80 border-l shadow-2xl duration-200">
           <div className="flex h-full flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <div className="border-border flex items-center justify-between border-b px-5 py-4">
               <h2 className="text-base font-bold text-white">Profile</h2>
               <button
                 onClick={onClose}
-                className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-surface hover:text-white"
+                className="hover:bg-surface flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:text-white"
               >
                 <Icon icon="mdi:close" className="text-lg" />
               </button>
@@ -76,7 +76,7 @@ function FriendProfilePanel({
                 </div>
               </div>
 
-              <div className="my-6 border-t border-border" />
+              <div className="border-border my-6 border-t" />
 
               {/* Actions */}
               <div className="space-y-2">
@@ -97,7 +97,8 @@ function FriendProfilePanel({
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={async () => {
-          await unfriend({ id: friend.id });
+          const result = await unfriend(friend.id);
+          if (!result.success) return;
           onClose();
           router.push("/home/friends");
         }}

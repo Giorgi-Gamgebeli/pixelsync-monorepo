@@ -3,7 +3,6 @@
 import FriendProfilePanel from "@/app/_components/FriendProfilePanel";
 import UserAvatar from "@/app/_components/UserAvatar";
 import { useCallContext } from "@/app/_context/CallContext";
-import { useSocketContext } from "@/app/_context/SocketContext";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { UserStatus } from "@repo/types";
 import { useEffect, useRef, useState } from "react";
@@ -26,24 +25,12 @@ type ChatHeaderProps = Readonly<{
 }>;
 
 function ChatHeader({ friend }: ChatHeaderProps) {
-  const { statusMap, profileMap } = useSocketContext();
   const { initiateCall } = useCallContext();
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
 
   const moreMenuRef = useRef<HTMLDivElement>(null);
-
-  const status = statusMap[friend.id] ?? friend.status;
-  const profile = profileMap[friend.id];
-  const displayUserName = profile?.userName ?? friend.userName;
-  const displayAvatarConfig = profile?.avatarConfig ?? friend.avatarConfig;
-
-  const liveFriend = {
-    ...friend,
-    userName: displayUserName,
-    avatarConfig: displayAvatarConfig,
-  };
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -85,17 +72,19 @@ function ChatHeader({ friend }: ChatHeaderProps) {
             className="cursor-pointer transition-transform hover:scale-105"
           >
             <UserAvatar
-              userName={displayUserName}
+              userName={friend.userName}
               id={friend.id}
-              avatarConfig={displayAvatarConfig}
+              avatarConfig={friend.avatarConfig}
               size={32}
               showStatus
-              status={status}
+              status={friend.status}
             />
           </button>
           <div>
-            <p className="text-sm font-medium text-white">{displayUserName}</p>
-            <p className="text-xs text-gray-500">{STATUS_LABELS[status]}</p>
+            <p className="text-sm font-medium text-white">{friend.userName}</p>
+            <p className="text-xs text-gray-500">
+              {STATUS_LABELS[friend.status]}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -146,7 +135,7 @@ function ChatHeader({ friend }: ChatHeaderProps) {
       <FriendProfilePanel
         isOpen={profileOpen}
         onClose={() => setProfileOpen(false)}
-        friend={liveFriend}
+        friend={friend}
       />
     </>
   );

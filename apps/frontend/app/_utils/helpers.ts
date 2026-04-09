@@ -6,12 +6,7 @@ import { isRedirectError } from "next/dist/client/components/redirect-error";
  * Marks an error as intentional / user-facing.
  * Its message is safe to show in the UI.
  */
-export class OperationalError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "OperationalError";
-  }
-}
+export class OperationalError extends Error {}
 
 /**
  * Central error handler for server actions.
@@ -25,12 +20,12 @@ export function handleErrorsOnServer(error: unknown) {
     throw error;
   }
 
-  if (error instanceof OperationalError) {
-    return { error: error.message };
-  }
-
   if (error instanceof AuthError && error.type === "CredentialsSignin") {
     return { error: "Invalid credentials" };
+  }
+
+  if (error instanceof OperationalError) {
+    return { error: error.message };
   }
 
   // Unexpected error — hide details from user

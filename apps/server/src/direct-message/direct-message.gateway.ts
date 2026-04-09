@@ -1,5 +1,6 @@
 import { Logger, OnModuleDestroy } from '@nestjs/common';
 import {
+  Ack,
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
@@ -8,7 +9,12 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import type { CallType, DirectMessage } from '@repo/types';
+import type {
+  CallType,
+  DirectMessage,
+  ProfileUpdate,
+  UserStatus,
+} from '@repo/types';
 import {
   callAnswerSchema,
   callIceCandidateSchema,
@@ -28,6 +34,7 @@ import { CallStateService } from 'src/call-state/call-state.service';
 import { corsConfig } from 'src/config/cors';
 import { UsersService } from 'src/users/users.service';
 import { DirectMessageService } from './direct-message.service';
+import { handleSocketError } from 'src/utils/handleErrors';
 
 interface AuthenticatedSocket extends Socket {
   data: {
@@ -45,6 +52,17 @@ interface DmCall {
   timeout: ReturnType<typeof setTimeout>;
 }
 
+const userStatusValues = [
+  'ONLINE',
+  'OFFLINE',
+  'IDLE',
+  'DO_NOT_DISTURB',
+] as const;
+
+const setStatusSchema = z.object({
+  status: z.enum(userStatusValues),
+});
+
 @WebSocketGateway({ cors: corsConfig })
 export class DirectMessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnModuleDestroy
@@ -57,6 +75,11 @@ export class DirectMessageGateway
   private readonly dmCalls = new Map<string, DmCall>();
   private readonly dmCallByUser = new Map<string, string>();
   private readonly userConnections = new Map<string, number>();
+  private readonly socketIdsByUser = new Map<string, Set<string>>();
+  private readonly presenceSubscriptionsBySocket = new Map<
+    string,
+    Set<string>
+  >();
   private readonly messageLimits = new Map<
     string,
     { count: number; resetTime: number }
@@ -101,6 +124,58 @@ export class DirectMessageGateway
     return limit.count > this.MESSAGE_RATE_LIMIT;
   }
 
+  private async syncPresenceSubscriptionsForSocket(
+    client: AuthenticatedSocket,
+    userId: string,
+  ) {
+    const desiredPresenceTargets = new Set<string>();
+    const friendIds = await this.userService.getFriendIds(userId);
+
+    for (const friendId of friendIds) {
+      if (friendId === userId) continue;
+      desiredPresenceTargets.add(friendId);
+    }
+
+    const previousTargets =
+      this.presenceSubscriptionsBySocket.get(client.id) ?? new Set<string>();
+
+    for (const targetUserId of previousTargets) {
+      if (desiredPresenceTargets.has(targetUserId)) continue;
+      void client.leave(`presence:${targetUserId}`);
+    }
+
+    for (const targetUserId of desiredPresenceTargets) {
+      if (previousTargets.has(targetUserId)) continue;
+      void client.join(`presence:${targetUserId}`);
+    }
+
+    this.presenceSubscriptionsBySocket.set(client.id, desiredPresenceTargets);
+  }
+
+  async resyncPresenceForUsers(userIds: string[]) {
+    const uniqueUserIds = Array.from(
+      new Set(userIds.filter((userId) => userId.length > 0)),
+    );
+
+    for (const userId of uniqueUserIds) {
+      const socketIds = this.socketIdsByUser.get(userId);
+      if (!socketIds?.size) continue;
+
+      for (const socketId of socketIds) {
+        const socket = this.server.sockets.sockets.get(socketId) as
+          | AuthenticatedSocket
+          | undefined;
+        if (!socket) continue;
+
+        try {
+          await this.syncPresenceSubscriptionsForSocket(socket, userId);
+        } catch (error) {
+          this.logger.error(error, 'Failed to resync presence for socket');
+        }
+      }
+    }
+  }
+
   async handleConnection(client: AuthenticatedSocket) {
     try {
       const { token, salt } = client.handshake.auth ?? {};
@@ -117,6 +192,15 @@ export class DirectMessageGateway
       client.data.user = user;
 
       void client.join(user.sub);
+      const socketIdsForUser = this.socketIdsByUser.get(user.sub) ?? new Set();
+      socketIdsForUser.add(client.id);
+      this.socketIdsByUser.set(user.sub, socketIdsForUser);
+
+      try {
+        await this.syncPresenceSubscriptionsForSocket(client, user.sub);
+      } catch (error) {
+        this.logger.error(error, 'Failed to sync presence subscriptions');
+      }
 
       const prevCount = this.userConnections.get(user.sub) ?? 0;
       this.userConnections.set(user.sub, prevCount + 1);
@@ -126,20 +210,8 @@ export class DirectMessageGateway
           userId: user.sub,
           status: 'ONLINE',
         });
-
-        const friendIds = await this.userService.getFriendIds(user.sub);
-        for (const friendId of friendIds) {
-          this.server.to(friendId).emit('user:status', {
-            userId: user.sub,
-            status: 'ONLINE',
-          });
-        }
+        this.broadcastStatus(user.sub, 'ONLINE');
       }
-
-      client.emit('user:status', {
-        userId: user.sub,
-        status: 'ONLINE',
-      });
     } catch {
       client.disconnect();
     }
@@ -149,6 +221,14 @@ export class DirectMessageGateway
     const user = client.data.user;
     if (!user) return;
 
+    this.presenceSubscriptionsBySocket.delete(client.id);
+    const socketIdsForUser = this.socketIdsByUser.get(user.sub);
+    if (socketIdsForUser) {
+      socketIdsForUser.delete(client.id);
+      if (socketIdsForUser.size === 0) {
+        this.socketIdsByUser.delete(user.sub);
+      }
+    }
     this.cleanupDmCalls(user.sub);
 
     const count = (this.userConnections.get(user.sub) ?? 1) - 1;
@@ -161,20 +241,28 @@ export class DirectMessageGateway
           userId: user.sub,
           status: 'OFFLINE',
         });
-
-        const friendIds = await this.userService.getFriendIds(user.sub);
-        for (const friendId of friendIds) {
-          this.server.to(friendId).emit('user:status', {
-            userId: user.sub,
-            status: 'OFFLINE',
-          });
-        }
+        this.broadcastStatus(user.sub, 'OFFLINE');
       } catch (error) {
         this.logger.error(error, 'Failed to update status on disconnect');
       }
     } else {
       this.userConnections.set(user.sub, count);
     }
+  }
+
+  private broadcastStatus(userId: string, status: UserStatus) {
+    const payload = { userId, status };
+    this.server.to(userId).emit('user:status', payload);
+    this.server.to(`presence:${userId}`).emit('user:status', payload);
+  }
+
+  private broadcastProfileUpdate(
+    userId: string,
+    data: Omit<ProfileUpdate, 'userId'>,
+  ) {
+    const payload: ProfileUpdate = { userId, ...data };
+    this.server.to(userId).emit('user:profile-update', payload);
+    this.server.to(`presence:${userId}`).emit('user:profile-update', payload);
   }
 
   private cleanupDmCalls(userId: string) {
@@ -206,6 +294,7 @@ export class DirectMessageGateway
   async sendMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() raw: unknown,
+    @Ack() ack: (result: { success: boolean; error: string }) => void,
   ) {
     const result = createDirectMessageSchema.safeParse(raw);
     if (!result.success) return;
@@ -219,34 +308,29 @@ export class DirectMessageGateway
         user.sub,
         body.receiverId,
       );
-      if (!friends) return;
-    } catch (error) {
-      this.logger.error(error, 'Failed to check friendship for DM');
-      return;
-    }
+      if (!friends) throw new Error('Failed to check friendship for DM');
 
-    const payload: DirectMessage = {
-      id: body.id,
-      content: body.content,
-      receiverId: body.receiverId,
-      senderId: user.sub,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+      const payload: DirectMessage = {
+        id: body.id,
+        content: body.content,
+        receiverId: body.receiverId,
+        senderId: user.sub,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-    this.server.to(body.receiverId).emit('dm:receive', payload);
-    client.emit('dm:receive', payload);
+      this.server.to(body.receiverId).emit('dm:receive', payload);
+      this.server.to(user.sub).emit('dm:receive', payload);
 
-    this.directMessageService
-      .create({
+      await this.directMessageService.create({
         id: body.id,
         receiverId: body.receiverId,
         content: body.content,
         senderId: user.sub,
-      })
-      .catch((err: unknown) => {
-        this.logger.error(err, 'Failed to persist DM');
       });
+    } catch (error) {
+      handleSocketError({ error, ack, logger: this.logger });
+    }
   }
 
   @SubscribeMessage('dm:typing')
@@ -257,6 +341,7 @@ export class DirectMessageGateway
     const result = dmTypingSchema.safeParse(raw);
     if (!result.success) return;
     const body = result.data;
+
     const user = client.data.user;
     this.server.to(body.receiverId).emit('dm:typing', {
       userId: user.sub,
@@ -265,7 +350,7 @@ export class DirectMessageGateway
   }
 
   @SubscribeMessage('user:profile-update')
-  async handleProfileUpdate(
+  handleProfileUpdate(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() raw: unknown,
   ) {
@@ -274,14 +359,28 @@ export class DirectMessageGateway
     const body = result.data;
     const user = client.data.user;
 
+    this.broadcastProfileUpdate(user.sub, body);
+  }
+
+  @SubscribeMessage('user:set-status')
+  async handleSetStatus(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() raw: unknown,
+  ) {
+    const result = setStatusSchema.safeParse(raw);
+    if (!result.success) return;
+
+    const body = result.data;
+    const user = client.data.user;
+
     try {
-      const friendIds = await this.userService.getFriendIds(user.sub);
-      const payload = { userId: user.sub, ...body };
-      for (const friendId of friendIds) {
-        this.server.to(friendId).emit('user:profile-update', payload);
-      }
+      await this.userService.updateStatus({
+        userId: user.sub,
+        status: body.status,
+      });
+      this.broadcastStatus(user.sub, body.status);
     } catch (error) {
-      this.logger.error(error, 'Failed to broadcast profile update');
+      this.logger.error(error, 'Failed to update status');
     }
   }
 

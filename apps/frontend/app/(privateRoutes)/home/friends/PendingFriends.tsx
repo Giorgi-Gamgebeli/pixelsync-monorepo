@@ -3,41 +3,73 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
+import { useSocketContext } from "@/app/_context/SocketContext";
 import UserAvatar from "@/app/_components/UserAvatar";
 import {
-  acceptFriendRequest,
   cancelFriendRequest,
   declineFriendRequest,
+  getPendingFriendRequests,
 } from "@/app/_dataAccessLayer/userActions";
-import { friendsPageKey } from "@/app/_lib/friendsQueryKeys";
+import { useQuery } from "@/app/_hooks/useQuery";
+import {
+  friendsPageKey,
+  pendingFriendRequestsKey,
+} from "@/app/_lib/friendsQueryKeys";
 
-type PendingFriendsProps = {
-  pendingFriendsRequests:
-    | {
-        friendRequestsToThem: {
-          userName: string | null;
-          name: string | null;
-          id: string;
-          avatarConfig?: string | null;
-        }[];
-        friendRequestsToMe: {
-          userName: string | null;
-          name: string | null;
-          id: string;
-          avatarConfig?: string | null;
-        }[];
-      }
-    | undefined;
-};
-
-function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
+function PendingFriends() {
+  const { acceptFriendRequest: acceptFriendRequestSocket } = useSocketContext();
   const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
+  const {
+    data,
+    error,
+    isPending: isRequestsPending,
+  } = useQuery({
+    queryKey: pendingFriendRequestsKey,
+    queryFn: getPendingFriendRequests,
+  });
+
+  if (isRequestsPending && !data) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="bg-surface mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
+          <Icon icon="mdi:inbox" className="text-3xl text-gray-500" />
+        </div>
+        <p className="text-sm font-medium text-white">
+          Loading pending requests
+        </p>
+        <p className="mt-1 text-sm text-gray-500">
+          Give us a second while we fetch them.
+        </p>
+      </div>
+    );
+  }
 
   if (
-    !pendingFriendsRequests?.friendRequestsToThem.length &&
-    !pendingFriendsRequests?.friendRequestsToMe.length
+    error ||
+    !data ||
+    "error" in data ||
+    (!data.friendRequestsToThem.length && !data.friendRequestsToMe.length)
   ) {
+    if (error || !data || "error" in data) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="bg-surface mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
+            <Icon
+              icon="mdi:alert-circle-outline"
+              className="text-3xl text-gray-500"
+            />
+          </div>
+          <p className="text-sm font-medium text-white">
+            Pending requests unavailable
+          </p>
+          <p className="mt-1 text-sm text-gray-500">
+            We couldn&apos;t load pending requests right now.
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="bg-surface mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
@@ -53,7 +85,7 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
     );
   }
 
-  const { friendRequestsToThem, friendRequestsToMe } = pendingFriendsRequests;
+  const { friendRequestsToThem, friendRequestsToMe } = data;
 
   return (
     <div>
@@ -91,11 +123,8 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
                     disabled={isPending}
                     onClick={() =>
                       startTransition(async () => {
-                        const result = await acceptFriendRequest({ id });
-                        if (result?.error) return;
-                        queryClient.invalidateQueries({
-                          queryKey: friendsPageKey,
-                        });
+                        const result = await acceptFriendRequestSocket(id);
+                        if (!result.success) return;
                       })
                     }
                   >
@@ -110,6 +139,9 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
                         if (result?.error) return;
                         queryClient.invalidateQueries({
                           queryKey: friendsPageKey,
+                        });
+                        queryClient.invalidateQueries({
+                          queryKey: pendingFriendRequestsKey,
                         });
                       })
                     }
@@ -159,7 +191,7 @@ function PendingFriends({ pendingFriendsRequests }: PendingFriendsProps) {
                       const result = await cancelFriendRequest({ id });
                       if (result?.error) return;
                       queryClient.invalidateQueries({
-                        queryKey: friendsPageKey,
+                        queryKey: pendingFriendRequestsKey,
                       });
                     })
                   }

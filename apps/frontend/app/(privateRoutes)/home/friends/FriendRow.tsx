@@ -2,13 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { UserStatus } from "@repo/types";
 import UserAvatar from "@/app/_components/UserAvatar";
 import ConfirmDialog from "@/app/_components/ConfirmDialog";
 import { useSocketContext } from "@/app/_context/SocketContext";
-import { getChatPageData, unfriend } from "@/app/_dataAccessLayer/userActions";
+import { getChatPageData } from "@/app/_dataAccessLayer/userActions";
 import { usePrefetchQuery } from "@/app/_hooks/usePrefetchQuery";
 import { dmChatKey } from "@/app/_lib/chatQueryKeys";
 
@@ -34,17 +33,11 @@ function FriendRow({
   avatarConfig,
   actions,
 }: FriendRowProps) {
-  const { statusMap, profileMap } = useSocketContext();
-  const router = useRouter();
+  const { unfriend } = useSocketContext();
   const { prefetchQuery } = usePrefetchQuery();
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  const profile = profileMap[id];
-  const displayUserName = profile?.userName ?? userName;
-  const displayAvatarConfig = profile?.avatarConfig ?? avatarConfig;
-  const status = statusMap[id] ?? serverStatus;
   const prefetch = () => {
     prefetchQuery({
       queryKey: dmChatKey(id),
@@ -72,18 +65,18 @@ function FriendRow({
           onFocus={prefetch}
         >
           <UserAvatar
-            userName={displayUserName}
+            userName={userName}
             id={id}
-            avatarConfig={displayAvatarConfig}
+            avatarConfig={avatarConfig}
             size={40}
             showStatus
-            status={status}
+            status={serverStatus}
           />
           <div>
-            <p className="text-sm font-medium text-gray-200">
-              {displayUserName}
+            <p className="text-sm font-medium text-gray-200">{userName}</p>
+            <p className="text-xs text-gray-500">
+              {STATUS_LABELS[serverStatus]}
             </p>
-            <p className="text-xs text-gray-500">{STATUS_LABELS[status]}</p>
           </div>
         </Link>
 
@@ -130,11 +123,11 @@ function FriendRow({
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={async () => {
-          await unfriend({ id });
-          router.refresh();
+          const result = await unfriend(id);
+          if (!result.success) return;
         }}
         title="Remove Friend"
-        message={`Are you sure you want to remove ${displayUserName || "this user"}? You won't be able to message them anymore.`}
+        message={`Are you sure you want to remove ${userName || "this user"}? You won't be able to message them anymore.`}
         confirmLabel="Remove"
         danger
       />

@@ -123,15 +123,6 @@ export const BoardType: {
 
 export type BoardType = (typeof BoardType)[keyof typeof BoardType]
 
-
-export const RequestStatus: {
-  PENDING: 'PENDING',
-  ACCEPTED: 'ACCEPTED',
-  REJECTED: 'REJECTED'
-};
-
-export type RequestStatus = (typeof RequestStatus)[keyof typeof RequestStatus]
-
 }
 
 export type UserStatus = $Enums.UserStatus
@@ -149,10 +140,6 @@ export const ChannelType: typeof $Enums.ChannelType
 export type BoardType = $Enums.BoardType
 
 export const BoardType: typeof $Enums.BoardType
-
-export type RequestStatus = $Enums.RequestStatus
-
-export const RequestStatus: typeof $Enums.RequestStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -2437,7 +2424,6 @@ export namespace Prisma {
     password: string | null
     emailVerified: Date | null
     status: $Enums.UserStatus | null
-    statusMessage: string | null
     lastSeen: Date | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2453,7 +2439,6 @@ export namespace Prisma {
     password: string | null
     emailVerified: Date | null
     status: $Enums.UserStatus | null
-    statusMessage: string | null
     lastSeen: Date | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2469,7 +2454,6 @@ export namespace Prisma {
     password: number
     emailVerified: number
     status: number
-    statusMessage: number
     lastSeen: number
     createdAt: number
     updatedAt: number
@@ -2487,7 +2471,6 @@ export namespace Prisma {
     password?: true
     emailVerified?: true
     status?: true
-    statusMessage?: true
     lastSeen?: true
     createdAt?: true
     updatedAt?: true
@@ -2503,7 +2486,6 @@ export namespace Prisma {
     password?: true
     emailVerified?: true
     status?: true
-    statusMessage?: true
     lastSeen?: true
     createdAt?: true
     updatedAt?: true
@@ -2519,7 +2501,6 @@ export namespace Prisma {
     password?: true
     emailVerified?: true
     status?: true
-    statusMessage?: true
     lastSeen?: true
     createdAt?: true
     updatedAt?: true
@@ -2608,7 +2589,6 @@ export namespace Prisma {
     password: string | null
     emailVerified: Date | null
     status: $Enums.UserStatus
-    statusMessage: string | null
     lastSeen: Date
     createdAt: Date
     updatedAt: Date
@@ -2641,7 +2621,6 @@ export namespace Prisma {
     password?: boolean
     emailVerified?: boolean
     status?: boolean
-    statusMessage?: boolean
     lastSeen?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2672,7 +2651,6 @@ export namespace Prisma {
     password?: boolean
     emailVerified?: boolean
     status?: boolean
-    statusMessage?: boolean
     lastSeen?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2688,7 +2666,6 @@ export namespace Prisma {
     password?: boolean
     emailVerified?: boolean
     status?: boolean
-    statusMessage?: boolean
     lastSeen?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2704,13 +2681,12 @@ export namespace Prisma {
     password?: boolean
     emailVerified?: boolean
     status?: boolean
-    statusMessage?: boolean
     lastSeen?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "userName" | "image" | "avatarConfig" | "password" | "emailVerified" | "status" | "statusMessage" | "lastSeen" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "userName" | "image" | "avatarConfig" | "password" | "emailVerified" | "status" | "lastSeen" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     Account?: boolean | User$AccountArgs<ExtArgs>
     channelMessages?: boolean | User$channelMessagesArgs<ExtArgs>
@@ -2759,7 +2735,6 @@ export namespace Prisma {
       password: string | null
       emailVerified: Date | null
       status: $Enums.UserStatus
-      statusMessage: string | null
       lastSeen: Date
       createdAt: Date
       updatedAt: Date
@@ -3209,7 +3184,6 @@ export namespace Prisma {
     readonly password: FieldRef<"User", 'String'>
     readonly emailVerified: FieldRef<"User", 'DateTime'>
     readonly status: FieldRef<"User", 'UserStatus'>
-    readonly statusMessage: FieldRef<"User", 'String'>
     readonly lastSeen: FieldRef<"User", 'DateTime'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
@@ -12694,7 +12668,6 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     ownerId: string | null
-    userId: string | null
   }
 
   export type ProjectsMaxAggregateOutputType = {
@@ -12703,7 +12676,6 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     ownerId: string | null
-    userId: string | null
   }
 
   export type ProjectsCountAggregateOutputType = {
@@ -12712,7 +12684,6 @@ export namespace Prisma {
     createdAt: number
     updatedAt: number
     ownerId: number
-    userId: number
     _all: number
   }
 
@@ -12731,7 +12702,6 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     ownerId?: true
-    userId?: true
   }
 
   export type ProjectsMaxAggregateInputType = {
@@ -12740,7 +12710,6 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     ownerId?: true
-    userId?: true
   }
 
   export type ProjectsCountAggregateInputType = {
@@ -12749,7 +12718,6 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     ownerId?: true
-    userId?: true
     _all?: true
   }
 
@@ -12845,7 +12813,6 @@ export namespace Prisma {
     createdAt: Date
     updatedAt: Date
     ownerId: string
-    userId: string | null
     _count: ProjectsCountAggregateOutputType | null
     _avg: ProjectsAvgAggregateOutputType | null
     _sum: ProjectsSumAggregateOutputType | null
@@ -12873,7 +12840,6 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     ownerId?: boolean
-    userId?: boolean
     Channels?: boolean | Projects$ChannelsArgs<ExtArgs>
     owner?: boolean | UserDefaultArgs<ExtArgs>
     whiteboards?: boolean | Projects$whiteboardsArgs<ExtArgs>
@@ -12887,7 +12853,6 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     ownerId?: boolean
-    userId?: boolean
     owner?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["projects"]>
 
@@ -12897,7 +12862,6 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     ownerId?: boolean
-    userId?: boolean
     owner?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["projects"]>
 
@@ -12907,10 +12871,9 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     ownerId?: boolean
-    userId?: boolean
   }
 
-  export type ProjectsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "createdAt" | "updatedAt" | "ownerId" | "userId", ExtArgs["result"]["projects"]>
+  export type ProjectsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "createdAt" | "updatedAt" | "ownerId", ExtArgs["result"]["projects"]>
   export type ProjectsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     Channels?: boolean | Projects$ChannelsArgs<ExtArgs>
     owner?: boolean | UserDefaultArgs<ExtArgs>
@@ -12939,7 +12902,6 @@ export namespace Prisma {
       createdAt: Date
       updatedAt: Date
       ownerId: string
-      userId: string | null
     }, ExtArgs["result"]["projects"]>
     composites: {}
   }
@@ -13372,7 +13334,6 @@ export namespace Prisma {
     readonly createdAt: FieldRef<"Projects", 'DateTime'>
     readonly updatedAt: FieldRef<"Projects", 'DateTime'>
     readonly ownerId: FieldRef<"Projects", 'String'>
-    readonly userId: FieldRef<"Projects", 'String'>
   }
     
 
@@ -18432,7 +18393,6 @@ export namespace Prisma {
     password: 'password',
     emailVerified: 'emailVerified',
     status: 'status',
-    statusMessage: 'statusMessage',
     lastSeen: 'lastSeen',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -18543,8 +18503,7 @@ export namespace Prisma {
     name: 'name',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
-    ownerId: 'ownerId',
-    userId: 'userId'
+    ownerId: 'ownerId'
   };
 
   export type ProjectsScalarFieldEnum = (typeof ProjectsScalarFieldEnum)[keyof typeof ProjectsScalarFieldEnum]
@@ -18776,7 +18735,6 @@ export namespace Prisma {
     password?: StringNullableFilter<"User"> | string | null
     emailVerified?: DateTimeNullableFilter<"User"> | Date | string | null
     status?: EnumUserStatusFilter<"User"> | $Enums.UserStatus
-    statusMessage?: StringNullableFilter<"User"> | string | null
     lastSeen?: DateTimeFilter<"User"> | Date | string
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
@@ -18806,7 +18764,6 @@ export namespace Prisma {
     password?: SortOrderInput | SortOrder
     emailVerified?: SortOrderInput | SortOrder
     status?: SortOrder
-    statusMessage?: SortOrderInput | SortOrder
     lastSeen?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -18839,7 +18796,6 @@ export namespace Prisma {
     password?: StringNullableFilter<"User"> | string | null
     emailVerified?: DateTimeNullableFilter<"User"> | Date | string | null
     status?: EnumUserStatusFilter<"User"> | $Enums.UserStatus
-    statusMessage?: StringNullableFilter<"User"> | string | null
     lastSeen?: DateTimeFilter<"User"> | Date | string
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
@@ -18869,7 +18825,6 @@ export namespace Prisma {
     password?: SortOrderInput | SortOrder
     emailVerified?: SortOrderInput | SortOrder
     status?: SortOrder
-    statusMessage?: SortOrderInput | SortOrder
     lastSeen?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -18891,7 +18846,6 @@ export namespace Prisma {
     password?: StringNullableWithAggregatesFilter<"User"> | string | null
     emailVerified?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     status?: EnumUserStatusWithAggregatesFilter<"User"> | $Enums.UserStatus
-    statusMessage?: StringNullableWithAggregatesFilter<"User"> | string | null
     lastSeen?: DateTimeWithAggregatesFilter<"User"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -19408,7 +19362,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Projects"> | Date | string
     updatedAt?: DateTimeFilter<"Projects"> | Date | string
     ownerId?: StringFilter<"Projects"> | string
-    userId?: StringNullableFilter<"Projects"> | string | null
     Channels?: ChannelListRelationFilter
     owner?: XOR<UserScalarRelationFilter, UserWhereInput>
     whiteboards?: WhiteboardListRelationFilter
@@ -19421,7 +19374,6 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     ownerId?: SortOrder
-    userId?: SortOrderInput | SortOrder
     Channels?: ChannelOrderByRelationAggregateInput
     owner?: UserOrderByWithRelationInput
     whiteboards?: WhiteboardOrderByRelationAggregateInput
@@ -19437,7 +19389,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Projects"> | Date | string
     updatedAt?: DateTimeFilter<"Projects"> | Date | string
     ownerId?: StringFilter<"Projects"> | string
-    userId?: StringNullableFilter<"Projects"> | string | null
     Channels?: ChannelListRelationFilter
     owner?: XOR<UserScalarRelationFilter, UserWhereInput>
     whiteboards?: WhiteboardListRelationFilter
@@ -19450,7 +19401,6 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     ownerId?: SortOrder
-    userId?: SortOrderInput | SortOrder
     _count?: ProjectsCountOrderByAggregateInput
     _avg?: ProjectsAvgOrderByAggregateInput
     _max?: ProjectsMaxOrderByAggregateInput
@@ -19467,7 +19417,6 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Projects"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Projects"> | Date | string
     ownerId?: StringWithAggregatesFilter<"Projects"> | string
-    userId?: StringNullableWithAggregatesFilter<"Projects"> | string | null
   }
 
   export type WhiteboardWhereInput = {
@@ -19741,7 +19690,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -19771,7 +19719,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -19801,7 +19748,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19831,7 +19777,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19861,7 +19806,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -19877,7 +19821,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -19893,7 +19836,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20405,7 +20347,6 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    userId?: string | null
     Channels?: ChannelCreateNestedManyWithoutWorkspaceInput
     owner: UserCreateNestedOneWithoutOwnedProjectsInput
     whiteboards?: WhiteboardCreateNestedManyWithoutWorkspaceInput
@@ -20418,7 +20359,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     ownerId: string
-    userId?: string | null
     Channels?: ChannelUncheckedCreateNestedManyWithoutWorkspaceInput
     whiteboards?: WhiteboardUncheckedCreateNestedManyWithoutWorkspaceInput
     users?: UserUncheckedCreateNestedManyWithoutProjectsInput
@@ -20428,7 +20368,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
     Channels?: ChannelUpdateManyWithoutWorkspaceNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedProjectsNestedInput
     whiteboards?: WhiteboardUpdateManyWithoutWorkspaceNestedInput
@@ -20441,7 +20380,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
     Channels?: ChannelUncheckedUpdateManyWithoutWorkspaceNestedInput
     whiteboards?: WhiteboardUncheckedUpdateManyWithoutWorkspaceNestedInput
     users?: UserUncheckedUpdateManyWithoutProjectsNestedInput
@@ -20453,14 +20391,12 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     ownerId: string
-    userId?: string | null
   }
 
   export type ProjectsUpdateManyMutationInput = {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ProjectsUncheckedUpdateManyInput = {
@@ -20469,7 +20405,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type WhiteboardCreateInput = {
@@ -20891,7 +20826,6 @@ export namespace Prisma {
     password?: SortOrder
     emailVerified?: SortOrder
     status?: SortOrder
-    statusMessage?: SortOrder
     lastSeen?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -20907,7 +20841,6 @@ export namespace Prisma {
     password?: SortOrder
     emailVerified?: SortOrder
     status?: SortOrder
-    statusMessage?: SortOrder
     lastSeen?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -20923,7 +20856,6 @@ export namespace Prisma {
     password?: SortOrder
     emailVerified?: SortOrder
     status?: SortOrder
-    statusMessage?: SortOrder
     lastSeen?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -21405,7 +21337,6 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     ownerId?: SortOrder
-    userId?: SortOrder
   }
 
   export type ProjectsAvgOrderByAggregateInput = {
@@ -21418,7 +21349,6 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     ownerId?: SortOrder
-    userId?: SortOrder
   }
 
   export type ProjectsMinOrderByAggregateInput = {
@@ -21427,7 +21357,6 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     ownerId?: SortOrder
-    userId?: SortOrder
   }
 
   export type ProjectsSumOrderByAggregateInput = {
@@ -23178,7 +23107,6 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    userId?: string | null
     Channels?: ChannelCreateNestedManyWithoutWorkspaceInput
     whiteboards?: WhiteboardCreateNestedManyWithoutWorkspaceInput
     users?: UserCreateNestedManyWithoutProjectsInput
@@ -23189,7 +23117,6 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    userId?: string | null
     Channels?: ChannelUncheckedCreateNestedManyWithoutWorkspaceInput
     whiteboards?: WhiteboardUncheckedCreateNestedManyWithoutWorkspaceInput
     users?: UserUncheckedCreateNestedManyWithoutProjectsInput
@@ -23281,7 +23208,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23310,7 +23236,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23344,7 +23269,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23373,7 +23297,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23401,7 +23324,6 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    userId?: string | null
     Channels?: ChannelCreateNestedManyWithoutWorkspaceInput
     owner: UserCreateNestedOneWithoutOwnedProjectsInput
     whiteboards?: WhiteboardCreateNestedManyWithoutWorkspaceInput
@@ -23413,7 +23335,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     ownerId: string
-    userId?: string | null
     Channels?: ChannelUncheckedCreateNestedManyWithoutWorkspaceInput
     whiteboards?: WhiteboardUncheckedCreateNestedManyWithoutWorkspaceInput
   }
@@ -23632,7 +23553,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Projects"> | Date | string
     updatedAt?: DateTimeFilter<"Projects"> | Date | string
     ownerId?: StringFilter<"Projects"> | string
-    userId?: StringNullableFilter<"Projects"> | string | null
   }
 
   export type SessionUpsertWithWhereUniqueWithoutUserInput = {
@@ -23743,7 +23663,6 @@ export namespace Prisma {
     password?: StringNullableFilter<"User"> | string | null
     emailVerified?: DateTimeNullableFilter<"User"> | Date | string | null
     status?: EnumUserStatusFilter<"User"> | $Enums.UserStatus
-    statusMessage?: StringNullableFilter<"User"> | string | null
     lastSeen?: DateTimeFilter<"User"> | Date | string
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
@@ -23863,7 +23782,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23892,7 +23810,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23937,7 +23854,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23966,7 +23882,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23995,7 +23910,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24024,7 +23938,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24069,7 +23982,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24098,7 +24010,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24127,7 +24038,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24156,7 +24066,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24201,7 +24110,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24230,7 +24138,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24259,7 +24166,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24288,7 +24194,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24322,7 +24227,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24351,7 +24255,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24396,7 +24299,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24425,7 +24327,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24465,7 +24366,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24494,7 +24394,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24517,7 +24416,6 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    userId?: string | null
     owner: UserCreateNestedOneWithoutOwnedProjectsInput
     whiteboards?: WhiteboardCreateNestedManyWithoutWorkspaceInput
     users?: UserCreateNestedManyWithoutProjectsInput
@@ -24529,7 +24427,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     ownerId: string
-    userId?: string | null
     whiteboards?: WhiteboardUncheckedCreateNestedManyWithoutWorkspaceInput
     users?: UserUncheckedCreateNestedManyWithoutProjectsInput
   }
@@ -24576,7 +24473,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24605,7 +24501,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24644,7 +24539,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
     owner?: UserUpdateOneRequiredWithoutOwnedProjectsNestedInput
     whiteboards?: WhiteboardUpdateManyWithoutWorkspaceNestedInput
     users?: UserUpdateManyWithoutProjectsNestedInput
@@ -24656,7 +24550,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
     whiteboards?: WhiteboardUncheckedUpdateManyWithoutWorkspaceNestedInput
     users?: UserUncheckedUpdateManyWithoutProjectsNestedInput
   }
@@ -24729,7 +24622,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24758,7 +24650,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24835,7 +24726,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24864,7 +24754,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24924,7 +24813,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24953,7 +24841,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25016,7 +24903,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25045,7 +24931,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25106,7 +24991,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25135,7 +25019,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25203,7 +25086,6 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    userId?: string | null
     Channels?: ChannelCreateNestedManyWithoutWorkspaceInput
     owner: UserCreateNestedOneWithoutOwnedProjectsInput
     users?: UserCreateNestedManyWithoutProjectsInput
@@ -25215,7 +25097,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     ownerId: string
-    userId?: string | null
     Channels?: ChannelUncheckedCreateNestedManyWithoutWorkspaceInput
     users?: UserUncheckedCreateNestedManyWithoutProjectsInput
   }
@@ -25263,7 +25144,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
     Channels?: ChannelUpdateManyWithoutWorkspaceNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedProjectsNestedInput
     users?: UserUpdateManyWithoutProjectsNestedInput
@@ -25275,7 +25155,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
     Channels?: ChannelUncheckedUpdateManyWithoutWorkspaceNestedInput
     users?: UserUncheckedUpdateManyWithoutProjectsNestedInput
   }
@@ -25371,7 +25250,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25400,7 +25278,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25434,7 +25311,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25463,7 +25339,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25536,7 +25411,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25565,7 +25439,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25648,7 +25521,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25677,7 +25549,6 @@ export namespace Prisma {
     password?: string | null
     emailVerified?: Date | string | null
     status?: $Enums.UserStatus
-    statusMessage?: string | null
     lastSeen?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25750,7 +25621,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25779,7 +25649,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25842,7 +25711,6 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    userId?: string | null
   }
 
   export type SessionCreateManyUserInput = {
@@ -25987,7 +25855,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
     Channels?: ChannelUpdateManyWithoutWorkspaceNestedInput
     whiteboards?: WhiteboardUpdateManyWithoutWorkspaceNestedInput
     users?: UserUpdateManyWithoutProjectsNestedInput
@@ -25998,7 +25865,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
     Channels?: ChannelUncheckedUpdateManyWithoutWorkspaceNestedInput
     whiteboards?: WhiteboardUncheckedUpdateManyWithoutWorkspaceNestedInput
     users?: UserUncheckedUpdateManyWithoutProjectsNestedInput
@@ -26009,7 +25875,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type SessionUpdateWithoutUserInput = {
@@ -26071,7 +25936,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26100,7 +25964,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26129,7 +25992,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26145,7 +26007,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26174,7 +26035,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26203,7 +26063,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26213,7 +26072,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
     Channels?: ChannelUpdateManyWithoutWorkspaceNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedProjectsNestedInput
     whiteboards?: WhiteboardUpdateManyWithoutWorkspaceNestedInput
@@ -26225,7 +26083,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
     Channels?: ChannelUncheckedUpdateManyWithoutWorkspaceNestedInput
     whiteboards?: WhiteboardUncheckedUpdateManyWithoutWorkspaceNestedInput
   }
@@ -26236,7 +26093,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type GroupChatUpdateWithoutOwnerInput = {
@@ -26360,7 +26216,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26389,7 +26244,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26418,7 +26272,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26510,7 +26363,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26539,7 +26391,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26568,7 +26419,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26620,7 +26470,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26649,7 +26498,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26678,7 +26526,6 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
-    statusMessage?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

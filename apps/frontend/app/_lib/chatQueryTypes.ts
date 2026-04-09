@@ -1,20 +1,10 @@
 import type { DirectMessage, GroupMessage, UserStatus } from "@repo/types";
-import type { Session } from "next-auth";
 
 type DMChatPageData = {
-  session: Session;
-  friend: {
-    id: string;
-    userName: string | null;
-    status: UserStatus;
-    avatarConfig: string | null;
-  };
-  currentUserAvatarConfig: string | null;
   messages: DirectMessage[];
 };
 
 type GroupChatPageData = {
-  session: Session;
   group: {
     id: number;
     name: string;

@@ -130,7 +130,6 @@ exports.Prisma.UserScalarFieldEnum = {
   password: 'password',
   emailVerified: 'emailVerified',
   status: 'status',
-  statusMessage: 'statusMessage',
   lastSeen: 'lastSeen',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -214,8 +213,7 @@ exports.Prisma.ProjectsScalarFieldEnum = {
   name: 'name',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  ownerId: 'ownerId',
-  userId: 'userId'
+  ownerId: 'ownerId'
 };
 
 exports.Prisma.WhiteboardScalarFieldEnum = {

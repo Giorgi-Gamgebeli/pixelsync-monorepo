@@ -2,10 +2,13 @@
 
 import {
   ClientToServerEvents,
+  FriendAcceptedUpdate,
   FriendRequestActionResult,
+  FriendRemovedUpdate,
   ProfileUpdate,
   ServerToClientEvents,
   UserStatus,
+  DirectMessage,
 } from "@repo/types";
 import {
   type PropsWithChildren,
@@ -22,9 +25,24 @@ import { io, Socket } from "socket.io-client";
 import { getWsToken } from "../_dataAccessLayer/userActions";
 import { useQueryClient } from "@tanstack/react-query";
 import { setChatMessage } from "../_lib/chatQueryCache";
-import { upsertPendingFriendRequest } from "../_lib/friendsQueryCache";
+import {
+  updateFriendLastMessageInCache,
+  upsertFriendInCache,
+  removeFriendFromCache,
+  removePendingFriendRequest,
+  type FriendsPageData,
+  type PendingFriendRequestsData,
+  updateFriendPresenceInCache,
+  updateFriendProfileInCache,
+  upsertPendingFriendRequest,
+} from "../_lib/friendsQueryCache";
 import { dmChatKey, groupChatKey } from "../_lib/chatQueryKeys";
+import {
+  friendsPageKey,
+  pendingFriendRequestsKey,
+} from "../_lib/friendsQueryKeys";
 import type { DMChatPageData, GroupChatPageData } from "../_lib/chatQueryTypes";
+import { sendMessageAction } from "../_dataAccessLayer/socketActions/dmSocketActions";
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -37,23 +55,8 @@ type ProfileUpdateEvent = Parameters<
 type DmReceiveEvent = Parameters<ServerToClientEvents["dm:receive"]>[0];
 type GroupReceiveEvent = Parameters<ServerToClientEvents["group:receive"]>[0];
 type FriendRequestEvent = Parameters<ServerToClientEvents["friend:request"]>[0];
-
-function mergeStatusMap(
-  prev: Record<string, UserStatus>,
-  update: StatusUpdate,
-) {
-  return { ...prev, [update.userId]: update.status };
-}
-
-function mergeProfileMap(
-  prev: Record<string, Partial<ProfileUpdate>>,
-  data: ProfileUpdateEvent,
-) {
-  return {
-    ...prev,
-    [data.userId]: { ...prev[data.userId], ...data },
-  };
-}
+type FriendAcceptedEvent = FriendAcceptedUpdate;
+type FriendRemovedEvent = FriendRemovedUpdate;
 
 function playNotificationSound(
   notificationSound: RefObject<HTMLAudioElement | null>,
@@ -65,32 +68,32 @@ type SocketContextValue = {
   socket: TypedSocket | null;
   isConnected: boolean;
   isReconnecting: boolean;
-  statusMap: Record<string, UserStatus>;
-  profileMap: Record<string, Partial<ProfileUpdate>>;
-  sendMessage: (receiverId: string, content: string, id: string) => void;
+  sendMessage: (data: DirectMessage) => void;
   setTyping: (receiverId: string, isTyping: boolean) => void;
   broadcastProfileUpdate: (data: Omit<ProfileUpdate, "userId">) => void;
-  sendFriendRequest: (userName: string) => Promise<FriendRequestActionResult>;
+  sendFriendRequest: (userName: string) => void;
   sendGroupMessage: (groupId: number, content: string, id: string) => void;
   setGroupTyping: (groupId: number, isTyping: boolean) => void;
   joinGroup: (groupId: number) => void;
   setStatus: (status: UserStatus) => void;
+  acceptFriendRequest: (id: string) => void;
+  unfriend: (id: string) => void;
 };
 
 const SocketContext = createContext<SocketContextValue>({
   socket: null,
   isConnected: false,
   isReconnecting: false,
-  statusMap: {},
-  profileMap: {},
   sendMessage: () => {},
   setTyping: () => {},
   broadcastProfileUpdate: () => {},
-  sendFriendRequest: async () => ({ success: false, error: "Socket missing" }),
+  sendFriendRequest: () => {},
   sendGroupMessage: () => {},
   setGroupTyping: () => {},
   joinGroup: () => {},
   setStatus: () => {},
+  acceptFriendRequest: () => {},
+  unfriend: () => {},
 });
 
 function SocketProvider({ children }: Readonly<PropsWithChildren>) {
@@ -99,15 +102,14 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
   const queryClient = useQueryClient();
   const [isConnected, setIsConnected] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
-  const [statusMap, setStatusMap] = useState<Record<string, UserStatus>>({});
-  const [profileMap, setProfileMap] = useState<
-    Record<string, Partial<ProfileUpdate>>
-  >({});
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
-  const handleUserStatus = useCallback((update: StatusUpdate) => {
-    setStatusMap((prev) => mergeStatusMap(prev, update));
-  }, []);
+  const handleUserStatus = useCallback(
+    (update: StatusUpdate) => {
+      updateFriendPresenceInCache(queryClient, update);
+    },
+    [queryClient],
+  );
 
   const handleDmReceive = useCallback(
     (message: DmReceiveEvent) => {
@@ -120,6 +122,11 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
         queryClient,
         dmChatKey(otherUserId),
         message,
+      );
+      updateFriendLastMessageInCache(
+        queryClient,
+        otherUserId,
+        message.createdAt,
       );
 
       if (message.senderId !== currentUserId) {
@@ -147,9 +154,29 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
     [queryClient],
   );
 
-  const handleProfileUpdate = useCallback((data: ProfileUpdateEvent) => {
-    setProfileMap((prev) => mergeProfileMap(prev, data));
-  }, []);
+  const handleFriendAccepted = useCallback(
+    (data: FriendAcceptedEvent) => {
+      removePendingFriendRequest(queryClient, data.direction, data.friend.id);
+      upsertFriendInCache(queryClient, data.friend);
+    },
+    [queryClient],
+  );
+
+  const handleFriendRemoved = useCallback(
+    (data: FriendRemovedEvent) => {
+      removeFriendFromCache(queryClient, data.friendId);
+      removePendingFriendRequest(queryClient, "incoming", data.friendId);
+      removePendingFriendRequest(queryClient, "outgoing", data.friendId);
+    },
+    [queryClient],
+  );
+
+  const handleProfileUpdate = useCallback(
+    (data: ProfileUpdateEvent) => {
+      updateFriendProfileInCache(queryClient, data);
+    },
+    [queryClient],
+  );
 
   useEffect(() => {
     notificationSound.current = new Audio("/sounds/notification.mp3");
@@ -201,6 +228,10 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
 
         socket.on("friend:request", handleFriendRequest);
 
+        socket.on("friend:accepted", handleFriendAccepted);
+
+        socket.on("friend:removed", handleFriendRemoved);
+
         socket.on("user:profile-update", handleProfileUpdate);
 
         socketRef.current = socket;
@@ -226,27 +257,26 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
     handleDmReceive,
     handleGroupReceive,
     handleFriendRequest,
+    handleFriendAccepted,
+    handleFriendRemoved,
     handleProfileUpdate,
   ]);
 
-  const sendMessage = useCallback(
-    (receiverId: string, content: string, id: string) => {
-      const currentUserId = currentUserIdRef.current;
-      if (!currentUserId) return;
-
-      socketRef.current?.emit("dm:send", {
-        id,
-        receiverId,
-        content,
-        senderId: currentUserId,
-      });
-    },
+  const setTyping = useCallback(
+    (receiverId: string, isTyping: boolean) => {},
     [],
   );
 
-  const setTyping = useCallback((receiverId: string, isTyping: boolean) => {
-    socketRef.current?.emit("dm:typing", { receiverId, isTyping });
-  }, []);
+  const sendMessage = useCallback(
+    (optimisticMessage: DirectMessage) =>
+      sendMessageAction({
+        optimisticMessage,
+        queryClient,
+        socketRef,
+        currentUserIdRef,
+      }),
+    [queryClient],
+  );
 
   const broadcastProfileUpdate = useCallback(
     (data: Omit<ProfileUpdate, "userId">) => {
@@ -256,17 +286,85 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
   );
 
   const sendFriendRequest = useCallback((userName: string) => {
-    return new Promise<FriendRequestActionResult>((resolve) => {
-      if (!socketRef.current) {
-        resolve({ success: false, error: "Socket unavailable" });
+    socketRef.current?.emit("friend:request", { userName }, (response) => {});
+  }, []);
+
+  const acceptFriendRequest = useCallback(
+    (id: string) => {
+      const socket = socketRef.current;
+
+      if (!socket) {
         return;
       }
 
-      socketRef.current.emit("friend:request", { userName }, (response) => {
-        resolve(response);
+      const previousFriends =
+        queryClient.getQueryData<FriendsPageData>(friendsPageKey);
+      const previousPending =
+        queryClient.getQueryData<PendingFriendRequestsData>(
+          pendingFriendRequestsKey,
+        );
+      const pendingIncoming = previousPending?.friendRequestsToMe.find(
+        (friend) => friend.id === id,
+      );
+
+      removePendingFriendRequest(queryClient, "incoming", id);
+      if (pendingIncoming) {
+        upsertFriendInCache(queryClient, {
+          ...pendingIncoming,
+          status: "OFFLINE",
+        });
+      }
+
+      socket.emit("friend:accept", { id }, (response) => {
+        if (!response.success) {
+          queryClient.setQueryData(friendsPageKey, previousFriends);
+          queryClient.setQueryData(pendingFriendRequestsKey, previousPending);
+          return;
+        }
+
+        queryClient.invalidateQueries({ queryKey: friendsPageKey });
+        queryClient.invalidateQueries({ queryKey: pendingFriendRequestsKey });
       });
-    });
-  }, []);
+    },
+    [queryClient],
+  );
+
+  const unfriend = useCallback(
+    (id: string) => {
+      return new Promise<FriendRequestActionResult>((resolve) => {
+        const socket = socketRef.current;
+        if (!socket) {
+          resolve({ success: false, error: "Socket unavailable" });
+          return;
+        }
+
+        const previousFriends =
+          queryClient.getQueryData<FriendsPageData>(friendsPageKey);
+        const previousPending =
+          queryClient.getQueryData<PendingFriendRequestsData>(
+            pendingFriendRequestsKey,
+          );
+
+        removeFriendFromCache(queryClient, id);
+        removePendingFriendRequest(queryClient, "incoming", id);
+        removePendingFriendRequest(queryClient, "outgoing", id);
+
+        socket.emit("friend:unfriend", { id }, (response) => {
+          if (!response.success) {
+            queryClient.setQueryData(friendsPageKey, previousFriends);
+            queryClient.setQueryData(pendingFriendRequestsKey, previousPending);
+            resolve(response);
+            return;
+          }
+
+          queryClient.invalidateQueries({ queryKey: friendsPageKey });
+          queryClient.invalidateQueries({ queryKey: pendingFriendRequestsKey });
+          resolve(response);
+        });
+      });
+    },
+    [queryClient],
+  );
 
   const sendGroupMessage = useCallback(
     (groupId: number, content: string, id: string) => {
@@ -292,8 +390,6 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
       socket: socketRef.current,
       isConnected,
       isReconnecting,
-      statusMap,
-      profileMap,
       sendMessage,
       setTyping,
       broadcastProfileUpdate,
@@ -302,12 +398,12 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
       setGroupTyping,
       joinGroup,
       setStatus,
+      acceptFriendRequest,
+      unfriend,
     }),
     [
       isConnected,
       isReconnecting,
-      statusMap,
-      profileMap,
       sendMessage,
       setTyping,
       broadcastProfileUpdate,
@@ -316,6 +412,8 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
       setGroupTyping,
       joinGroup,
       setStatus,
+      acceptFriendRequest,
+      unfriend,
     ],
   );
 

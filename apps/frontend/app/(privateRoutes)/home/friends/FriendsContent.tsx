@@ -40,13 +40,7 @@ function FriendsContent() {
     );
   }
 
-  return (
-    <FriendsPage
-      activeFilter={activeFilter}
-      friends={data.friends}
-      pendingFriendRequests={data.pendingFriendRequests}
-    />
-  );
+  return <FriendsPage activeFilter={activeFilter} friends={data.friends} />;
 }
 
 export default FriendsContent;
