@@ -97,8 +97,7 @@ function FriendProfilePanel({
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={async () => {
-          const result = await unfriend(friend.id);
-          if (!result.success) return;
+          const result = unfriend(friend.id);
           onClose();
           router.push("/home/friends");
         }}

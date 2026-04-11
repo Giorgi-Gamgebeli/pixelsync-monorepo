@@ -123,8 +123,7 @@ function FriendRow({
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={async () => {
-          const result = await unfriend(id);
-          if (!result.success) return;
+          const result = unfriend(id);
         }}
         title="Remove Friend"
         message={`Are you sure you want to remove ${userName || "this user"}? You won't be able to message them anymore.`}

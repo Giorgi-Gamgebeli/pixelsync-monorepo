@@ -123,8 +123,7 @@ function PendingFriends() {
                     disabled={isPending}
                     onClick={() =>
                       startTransition(async () => {
-                        const result = await acceptFriendRequestSocket(id);
-                        if (!result.success) return;
+                        const result = acceptFriendRequestSocket(id);
                       })
                     }
                   >
