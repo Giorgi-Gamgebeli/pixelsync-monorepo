@@ -31,11 +31,7 @@ function AddFriend() {
   async function onSubmit(values: z.infer<typeof AddFriendSchema>) {
     setSuccessMessage(null);
 
-    const result = await sendFriendRequest(values.userName);
-    if (!result.success) {
-      setError("userName", { message: result.error });
-      return;
-    }
+    const result = sendFriendRequest(values.userName);
 
     clearErrors("userName");
     reset({ userName: "" });

@@ -6,7 +6,7 @@ import { useTransition } from "react";
 type ConfirmDialogProps = {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => Promise<void>;
+  onConfirm: () => void;
   title: string;
   message: string;
   confirmLabel?: string;
@@ -28,7 +28,7 @@ function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-secondary p-6 shadow-2xl">
+      <div className="border-border bg-secondary w-full max-w-sm rounded-2xl border p-6 shadow-2xl">
         <h3 className="text-lg font-bold text-white">{title}</h3>
         <p className="mt-2 text-sm text-gray-400">{message}</p>
 
@@ -36,7 +36,7 @@ function ConfirmDialog({
           <button
             onClick={onClose}
             disabled={isPending}
-            className="rounded-xl px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-surface hover:text-white"
+            className="hover:bg-surface rounded-xl px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:text-white"
           >
             Cancel
           </button>
