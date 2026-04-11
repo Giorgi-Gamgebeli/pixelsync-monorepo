@@ -26,7 +26,6 @@ import { getWsToken } from "../_dataAccessLayer/userActions";
 import { useQueryClient } from "@tanstack/react-query";
 import { setChatMessage } from "../_lib/chatQueryCache";
 import {
-  updateFriendLastMessageInCache,
   upsertFriendInCache,
   removeFriendFromCache,
   removePendingFriendRequest,
@@ -36,13 +35,17 @@ import {
   updateFriendProfileInCache,
   upsertPendingFriendRequest,
 } from "../_lib/friendsQueryCache";
-import { dmChatKey, groupChatKey } from "../_lib/chatQueryKeys";
+import { groupChatKey } from "../_lib/chatQueryKeys";
 import {
   friendsPageKey,
   pendingFriendRequestsKey,
 } from "../_lib/friendsQueryKeys";
-import type { DMChatPageData, GroupChatPageData } from "../_lib/chatQueryTypes";
-import { sendMessageAction } from "../_dataAccessLayer/socketActions/dmSocketActions";
+import type { GroupChatPageData } from "../_lib/chatQueryTypes";
+import {
+  handleDMReceiveAction,
+  sendMessageAction,
+  setTypingAction,
+} from "../_dataAccessLayer/socketActions/dmSocketActions";
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -111,28 +114,31 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
     [queryClient],
   );
 
-  const handleDmReceive = useCallback(
-    (message: DmReceiveEvent) => {
-      const currentUserId = currentUserIdRef.current;
-      const otherUserId =
-        message.senderId === currentUserId
-          ? message.receiverId
-          : message.senderId;
-      setChatMessage<DMChatPageData>(
-        queryClient,
-        dmChatKey(otherUserId),
-        message,
-      );
-      updateFriendLastMessageInCache(
-        queryClient,
-        otherUserId,
-        message.createdAt,
-      );
+  const setTyping = useCallback(
+    (receiverId: string, isTyping: boolean) =>
+      setTypingAction({ receiverId, isTyping, socketRef }),
+    [],
+  );
 
-      if (message.senderId !== currentUserId) {
-        playNotificationSound(notificationSound);
-      }
-    },
+  const sendMessage = useCallback(
+    (optimisticMessage: DirectMessage) =>
+      sendMessageAction({
+        optimisticMessage,
+        queryClient,
+        socketRef,
+        currentUserIdRef,
+      }),
+    [queryClient],
+  );
+
+  const handleDmReceive = useCallback(
+    (message: DmReceiveEvent) =>
+      handleDMReceiveAction({
+        message,
+        notificationSound,
+        currentUserIdRef,
+        queryClient,
+      }),
     [notificationSound, queryClient],
   );
 
@@ -261,22 +267,6 @@ function SocketProvider({ children }: Readonly<PropsWithChildren>) {
     handleFriendRemoved,
     handleProfileUpdate,
   ]);
-
-  const setTyping = useCallback(
-    (receiverId: string, isTyping: boolean) => {},
-    [],
-  );
-
-  const sendMessage = useCallback(
-    (optimisticMessage: DirectMessage) =>
-      sendMessageAction({
-        optimisticMessage,
-        queryClient,
-        socketRef,
-        currentUserIdRef,
-      }),
-    [queryClient],
-  );
 
   const broadcastProfileUpdate = useCallback(
     (data: Omit<ProfileUpdate, "userId">) => {
