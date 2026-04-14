@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from 'src/auth/auth.module';
 import { UsersModule } from 'src/users/users.module';
 import { CallStateModule } from 'src/call-state/call-state.module';
 import { GroupChatService } from './group-chat.service';
 import { GroupChatGateway } from './group-chat.gateway';
+import { PresenceModule } from 'src/presence/presence.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, CallStateModule],
+  imports: [UsersModule, CallStateModule, PresenceModule],
   providers: [GroupChatService, GroupChatGateway],
   exports: [GroupChatService],
 })

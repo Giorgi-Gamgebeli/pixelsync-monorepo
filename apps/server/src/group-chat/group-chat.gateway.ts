@@ -16,21 +16,14 @@ import {
   groupJoinSchema,
   groupSendSchema,
   groupTypingSchema,
-  TokenPayloadSchema,
-  z,
 } from '@repo/zod';
 import { UsersService } from 'src/users/users.service';
 import { GroupChatService } from './group-chat.service';
-import { TokenService } from 'src/auth/token.service';
 import { corsConfig } from 'src/config/cors';
 import type { CallType, GroupMessage } from '@repo/types';
 import { CallStateService } from 'src/call-state/call-state.service';
-
-interface AuthenticatedSocket extends Socket {
-  data: {
-    user: z.infer<typeof TokenPayloadSchema>;
-  };
-}
+import { PresenceService } from 'src/presence/presence.service';
+import type { AuthenticatedSocket } from 'src/presence/presence.types';
 
 interface GroupCall {
   id: string;
@@ -50,7 +43,6 @@ export class GroupChatGateway
 
   private groupCalls = new Map<string, GroupCall>();
   private groupCallByUser = new Map<string, string>();
-  private userConnections = new Map<string, number>();
   private messageLimits = new Map<
     string,
     { count: number; resetTime: number }
@@ -62,8 +54,8 @@ export class GroupChatGateway
   constructor(
     private readonly groupChatService: GroupChatService,
     private readonly userService: UsersService,
-    private readonly tokenService: TokenService,
     private readonly callState: CallStateService,
+    private readonly presenceService: PresenceService,
   ) {
     this.rateLimitCleanupTimer = setInterval(() => {
       const now = Date.now();
@@ -135,48 +127,34 @@ export class GroupChatGateway
   }
 
   async handleConnection(client: AuthenticatedSocket) {
-    try {
-      const { token, salt } = client.handshake.auth ?? {};
+    const connection = await this.presenceService.handleConnection(
+      client,
+      this.server,
+    );
+    if (!connection) return;
 
-      if (!token || !salt) {
-        client.disconnect();
-        return;
-      }
-
-      const user = await this.tokenService.verifyToken(
-        token as string,
-        salt as string,
-      );
-      client.data.user = user;
-
-      const prevCount = this.userConnections.get(user.sub) ?? 0;
-      this.userConnections.set(user.sub, prevCount + 1);
-
-      this.userService
-        .getGroupIds(user.sub)
-        .then((groupIds) => {
-          for (const gid of groupIds) {
-            void client.join(`group:${gid}`);
-          }
-        })
-        .catch((error) => {
-          this.logger.error(error, 'Failed to join group rooms');
-        });
-    } catch {
-      client.disconnect();
-    }
+    this.userService
+      .getGroupIds(connection.user.sub)
+      .then((groupIds) => {
+        for (const gid of groupIds) {
+          void client.join(`group:${gid}`);
+        }
+      })
+      .catch((error) => {
+        this.logger.error(error, 'Failed to join group rooms');
+      });
   }
 
   async handleDisconnect(client: AuthenticatedSocket) {
+    const connection = await this.presenceService.handleDisconnect(
+      client,
+      this.server,
+    );
     const user = client.data.user;
     if (!user) return;
 
-    const count = (this.userConnections.get(user.sub) ?? 1) - 1;
-    if (count <= 0) {
-      this.userConnections.delete(user.sub);
+    if (connection?.lastConnection) {
       await this.cleanupUserGroupCalls(user.sub);
-    } else {
-      this.userConnections.set(user.sub, count);
     }
   }
 

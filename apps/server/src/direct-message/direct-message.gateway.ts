@@ -25,22 +25,16 @@ import {
   createDirectMessageSchema,
   dmTypingSchema,
   profileUpdateSchema,
-  TokenPayloadSchema,
   z,
 } from '@repo/zod';
-import { Server, Socket } from 'socket.io';
-import { TokenService } from 'src/auth/token.service';
+import { Server } from 'socket.io';
 import { CallStateService } from 'src/call-state/call-state.service';
 import { corsConfig } from 'src/config/cors';
 import { UsersService } from 'src/users/users.service';
 import { DirectMessageService } from './direct-message.service';
 import { handleSocketError } from 'src/utils/handleErrors';
-
-interface AuthenticatedSocket extends Socket {
-  data: {
-    user: z.infer<typeof TokenPayloadSchema>;
-  };
-}
+import { PresenceService } from 'src/presence/presence.service';
+import type { AuthenticatedSocket } from 'src/presence/presence.types';
 
 interface DmCall {
   id: string;
@@ -74,12 +68,6 @@ export class DirectMessageGateway
 
   private readonly dmCalls = new Map<string, DmCall>();
   private readonly dmCallByUser = new Map<string, string>();
-  private readonly userConnections = new Map<string, number>();
-  private readonly socketIdsByUser = new Map<string, Set<string>>();
-  private readonly presenceSubscriptionsBySocket = new Map<
-    string,
-    Set<string>
-  >();
   private readonly messageLimits = new Map<
     string,
     { count: number; resetTime: number }
@@ -91,8 +79,8 @@ export class DirectMessageGateway
   constructor(
     private readonly directMessageService: DirectMessageService,
     private readonly userService: UsersService,
-    private readonly tokenService: TokenService,
     private readonly callState: CallStateService,
+    private readonly presenceService: PresenceService,
   ) {
     this.rateLimitCleanupTimer = setInterval(() => {
       const now = Date.now();
@@ -124,129 +112,23 @@ export class DirectMessageGateway
     return limit.count > this.MESSAGE_RATE_LIMIT;
   }
 
-  private async syncPresenceSubscriptionsForSocket(
-    client: AuthenticatedSocket,
-    userId: string,
-  ) {
-    const desiredPresenceTargets = new Set<string>();
-    const friendIds = await this.userService.getFriendIds(userId);
-
-    for (const friendId of friendIds) {
-      if (friendId === userId) continue;
-      desiredPresenceTargets.add(friendId);
-    }
-
-    const previousTargets =
-      this.presenceSubscriptionsBySocket.get(client.id) ?? new Set<string>();
-
-    for (const targetUserId of previousTargets) {
-      if (desiredPresenceTargets.has(targetUserId)) continue;
-      void client.leave(`presence:${targetUserId}`);
-    }
-
-    for (const targetUserId of desiredPresenceTargets) {
-      if (previousTargets.has(targetUserId)) continue;
-      void client.join(`presence:${targetUserId}`);
-    }
-
-    this.presenceSubscriptionsBySocket.set(client.id, desiredPresenceTargets);
-  }
-
-  async resyncPresenceForUsers(userIds: string[]) {
-    const uniqueUserIds = Array.from(
-      new Set(userIds.filter((userId) => userId.length > 0)),
-    );
-
-    for (const userId of uniqueUserIds) {
-      const socketIds = this.socketIdsByUser.get(userId);
-      if (!socketIds?.size) continue;
-
-      for (const socketId of socketIds) {
-        const socket = this.server.sockets.sockets.get(socketId) as
-          | AuthenticatedSocket
-          | undefined;
-        if (!socket) continue;
-
-        try {
-          await this.syncPresenceSubscriptionsForSocket(socket, userId);
-        } catch (error) {
-          this.logger.error(error, 'Failed to resync presence for socket');
-        }
-      }
-    }
-  }
-
   async handleConnection(client: AuthenticatedSocket) {
-    try {
-      const { token, salt } = client.handshake.auth ?? {};
-
-      if (!token || !salt) {
-        client.disconnect();
-        return;
-      }
-
-      const user = await this.tokenService.verifyToken(
-        token as string,
-        salt as string,
-      );
-      client.data.user = user;
-
-      void client.join(user.sub);
-      const socketIdsForUser = this.socketIdsByUser.get(user.sub) ?? new Set();
-      socketIdsForUser.add(client.id);
-      this.socketIdsByUser.set(user.sub, socketIdsForUser);
-
-      try {
-        await this.syncPresenceSubscriptionsForSocket(client, user.sub);
-      } catch (error) {
-        this.logger.error(error, 'Failed to sync presence subscriptions');
-      }
-
-      const prevCount = this.userConnections.get(user.sub) ?? 0;
-      this.userConnections.set(user.sub, prevCount + 1);
-
-      if (prevCount === 0) {
-        await this.userService.updateStatus({
-          userId: user.sub,
-          status: 'ONLINE',
-        });
-        this.broadcastStatus(user.sub, 'ONLINE');
-      }
-    } catch {
-      client.disconnect();
-    }
+    await this.presenceService.handleConnection(client, this.server);
   }
 
   async handleDisconnect(client: AuthenticatedSocket) {
     const user = client.data.user;
     if (!user) return;
 
-    this.presenceSubscriptionsBySocket.delete(client.id);
-    const socketIdsForUser = this.socketIdsByUser.get(user.sub);
-    if (socketIdsForUser) {
-      socketIdsForUser.delete(client.id);
-      if (socketIdsForUser.size === 0) {
-        this.socketIdsByUser.delete(user.sub);
-      }
-    }
     this.cleanupDmCalls(user.sub);
 
-    const count = (this.userConnections.get(user.sub) ?? 1) - 1;
-    if (count <= 0) {
-      this.userConnections.delete(user.sub);
-      this.messageLimits.delete(user.sub);
+    const connection = await this.presenceService.handleDisconnect(
+      client,
+      this.server,
+    );
 
-      try {
-        await this.userService.updateStatus({
-          userId: user.sub,
-          status: 'OFFLINE',
-        });
-        this.broadcastStatus(user.sub, 'OFFLINE');
-      } catch (error) {
-        this.logger.error(error, 'Failed to update status on disconnect');
-      }
-    } else {
-      this.userConnections.set(user.sub, count);
+    if (connection?.lastConnection) {
+      this.messageLimits.delete(user.sub);
     }
   }
 

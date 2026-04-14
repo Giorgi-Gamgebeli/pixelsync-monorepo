@@ -8,7 +8,7 @@ import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { UsersModule } from './users/users.module';
 import { GroupChatModule } from './group-chat/group-chat.module';
-import { FriendRequestsModule } from './friend-requests/friend-requests.module';
+import { FriendsModule } from './friends/friends.module';
 import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { LoggerModule } from 'nestjs-pino';
 
@@ -16,7 +16,7 @@ import { LoggerModule } from 'nestjs-pino';
   imports: [
     DirectMessageModule,
     GroupChatModule,
-    FriendRequestsModule,
+    FriendsModule,
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,

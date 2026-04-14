@@ -4,6 +4,7 @@ import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -16,50 +17,30 @@ import type {
 import {
   AcceptFriendRequestSchema,
   AddFriendSchema,
-  TokenPayloadSchema,
   UnfriendSchema,
-  z,
 } from '@repo/zod';
-import { Server, Socket } from 'socket.io';
-import { TokenService } from 'src/auth/token.service';
+import { Server } from 'socket.io';
 import { corsConfig } from 'src/config/cors';
-import { DirectMessageGateway } from 'src/direct-message/direct-message.gateway';
-
-interface AuthenticatedSocket extends Socket {
-  data: {
-    user: z.infer<typeof TokenPayloadSchema>;
-  };
-}
+import { PresenceService } from 'src/presence/presence.service';
+import type { AuthenticatedSocket } from 'src/presence/presence.types';
 
 @WebSocketGateway({ cors: corsConfig })
-export class FriendRequestsGateway implements OnGatewayConnection {
-  private readonly logger = new Logger(FriendRequestsGateway.name);
+export class FriendsGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
+  private readonly logger = new Logger(FriendsGateway.name);
 
   @WebSocketServer()
   declare server: Server;
 
-  constructor(
-    private readonly tokenService: TokenService,
-    private readonly directMessageGateway: DirectMessageGateway,
-  ) {}
+  constructor(private readonly presenceService: PresenceService) {}
 
   async handleConnection(client: AuthenticatedSocket) {
-    try {
-      const { token, salt } = client.handshake.auth ?? {};
+    await this.presenceService.handleConnection(client, this.server);
+  }
 
-      if (!token || !salt) {
-        client.disconnect();
-        return;
-      }
-
-      const user = await this.tokenService.verifyToken(
-        token as string,
-        salt as string,
-      );
-      client.data.user = user;
-    } catch {
-      client.disconnect();
-    }
+  async handleDisconnect(client: AuthenticatedSocket) {
+    await this.presenceService.handleDisconnect(client, this.server);
   }
 
   @SubscribeMessage('friend:request')
@@ -262,10 +243,10 @@ export class FriendRequestsGateway implements OnGatewayConnection {
         });
       }
 
-      await this.directMessageGateway.resyncPresenceForUsers([
-        user.sub,
-        requesterId,
-      ]);
+      await this.presenceService.resyncPresenceForUsers(
+        [user.sub, requesterId],
+        this.server,
+      );
 
       this.server.to(user.sub).emit('friend:accepted', {
         direction: 'incoming',
@@ -327,10 +308,10 @@ export class FriendRequestsGateway implements OnGatewayConnection {
         }),
       ]);
 
-      await this.directMessageGateway.resyncPresenceForUsers([
-        user.sub,
-        targetUserId,
-      ]);
+      await this.presenceService.resyncPresenceForUsers(
+        [user.sub, targetUserId],
+        this.server,
+      );
 
       this.server.to(user.sub).emit('friend:removed', {
         friendId: targetUserId,
