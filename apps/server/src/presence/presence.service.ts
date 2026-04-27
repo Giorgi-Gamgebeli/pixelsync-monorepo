@@ -21,59 +21,6 @@ export class PresenceService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async handleConnection(client: AuthenticatedSocket, server: Server) {
-    try {
-      const { token, salt } = client.handshake.auth ?? {};
-
-      if (!token || !salt) {
-        client.disconnect();
-        return null;
-      }
-
-      const user = await this.tokenService.verifyToken(
-        token as string,
-        salt as string,
-      );
-      client.data.user = user;
-
-      const { firstConnection } = await this.registerSocket(client, user.sub);
-
-      if (firstConnection) {
-        await this.usersService.updateStatus({
-          userId: user.sub,
-          status: 'ONLINE',
-        });
-        this.broadcastStatus(server, user.sub, 'ONLINE');
-      }
-
-      return { user, firstConnection };
-    } catch {
-      client.disconnect();
-      return null;
-    }
-  }
-
-  async handleDisconnect(client: AuthenticatedSocket, server: Server) {
-    const user = client.data.user;
-    if (!user) return null;
-
-    const { lastConnection } = await this.unregisterSocket(client, user.sub);
-
-    if (lastConnection) {
-      try {
-        await this.usersService.updateStatus({
-          userId: user.sub,
-          status: 'OFFLINE',
-        });
-        this.broadcastStatus(server, user.sub, 'OFFLINE');
-      } catch (error) {
-        this.logger.error(error, 'Failed to update status on disconnect');
-      }
-    }
-
-    return { user, lastConnection };
-  }
-
   async registerSocket(client: AuthenticatedSocket, userId: string) {
     await client.join(userId);
 
@@ -114,10 +61,20 @@ export class PresenceService {
     return { lastConnection: false };
   }
 
-  private broadcastStatus(server: Server, userId: string, status: UserStatus) {
+  broadcastStatus(server: Server, userId: string, status: UserStatus) {
     const payload = { userId, status };
     server.to(userId).emit('user:status', payload);
     server.to(`presence:${userId}`).emit('user:status', payload);
+  }
+
+  broadcastProfileUpdate(
+    server: Server,
+    userId: string,
+    data: { userName?: string; name?: string; avatarConfig?: any },
+  ) {
+    const payload = { userId, ...data };
+    server.to(userId).emit('user:profile-update', payload);
+    server.to(`presence:${userId}`).emit('user:profile-update', payload);
   }
 
   async resyncPresenceForUsers(userIds: string[], server: Server) {

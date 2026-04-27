@@ -25,23 +25,13 @@ import { PresenceService } from 'src/presence/presence.service';
 import type { AuthenticatedSocket } from 'src/presence/presence.types';
 
 @WebSocketGateway({ cors: corsConfig })
-export class FriendsGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class FriendsGateway {
   private readonly logger = new Logger(FriendsGateway.name);
 
   @WebSocketServer()
   declare server: Server;
 
   constructor(private readonly presenceService: PresenceService) {}
-
-  async handleConnection(client: AuthenticatedSocket) {
-    await this.presenceService.handleConnection(client, this.server);
-  }
-
-  async handleDisconnect(client: AuthenticatedSocket) {
-    await this.presenceService.handleDisconnect(client, this.server);
-  }
 
   @SubscribeMessage('friend:request')
   async handleFriendRequest(

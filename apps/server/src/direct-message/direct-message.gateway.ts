@@ -34,6 +34,7 @@ import { UsersService } from 'src/users/users.service';
 import { DirectMessageService } from './direct-message.service';
 import { handleSocketError } from 'src/utils/handleErrors';
 import { PresenceService } from 'src/presence/presence.service';
+import { SocketService } from 'src/socket/socket.service';
 import type { AuthenticatedSocket } from 'src/presence/presence.types';
 
 interface DmCall {
@@ -58,9 +59,7 @@ const setStatusSchema = z.object({
 });
 
 @WebSocketGateway({ cors: corsConfig })
-export class DirectMessageGateway
-  implements OnGatewayConnection, OnGatewayDisconnect, OnModuleDestroy
-{
+export class DirectMessageGateway implements OnModuleDestroy {
   private readonly logger = new Logger(DirectMessageGateway.name);
 
   @WebSocketServer()
@@ -81,6 +80,7 @@ export class DirectMessageGateway
     private readonly userService: UsersService,
     private readonly callState: CallStateService,
     private readonly presenceService: PresenceService,
+    private readonly socketService: SocketService,
   ) {
     this.rateLimitCleanupTimer = setInterval(() => {
       const now = Date.now();
@@ -90,6 +90,13 @@ export class DirectMessageGateway
         }
       }
     }, 60_000);
+
+    this.socketService.addOnDisconnectHook(async (userId, isLastConnection) => {
+      this.cleanupDmCalls(userId);
+      if (isLastConnection) {
+        this.cleanupRateLimits(userId);
+      }
+    });
   }
 
   onModuleDestroy() {
@@ -112,42 +119,7 @@ export class DirectMessageGateway
     return limit.count > this.MESSAGE_RATE_LIMIT;
   }
 
-  async handleConnection(client: AuthenticatedSocket) {
-    await this.presenceService.handleConnection(client, this.server);
-  }
-
-  async handleDisconnect(client: AuthenticatedSocket) {
-    const user = client.data.user;
-    if (!user) return;
-
-    this.cleanupDmCalls(user.sub);
-
-    const connection = await this.presenceService.handleDisconnect(
-      client,
-      this.server,
-    );
-
-    if (connection?.lastConnection) {
-      this.messageLimits.delete(user.sub);
-    }
-  }
-
-  private broadcastStatus(userId: string, status: UserStatus) {
-    const payload = { userId, status };
-    this.server.to(userId).emit('user:status', payload);
-    this.server.to(`presence:${userId}`).emit('user:status', payload);
-  }
-
-  private broadcastProfileUpdate(
-    userId: string,
-    data: Omit<ProfileUpdate, 'userId'>,
-  ) {
-    const payload: ProfileUpdate = { userId, ...data };
-    this.server.to(userId).emit('user:profile-update', payload);
-    this.server.to(`presence:${userId}`).emit('user:profile-update', payload);
-  }
-
-  private cleanupDmCalls(userId: string) {
+  public cleanupDmCalls(userId: string) {
     const callId = this.dmCallByUser.get(userId);
     if (!callId) return;
 
@@ -170,6 +142,10 @@ export class DirectMessageGateway
     this.dmCallByUser.delete(dmCall.receiverId);
     this.callState.clearCall(dmCall.callerId, callId);
     this.callState.clearCall(dmCall.receiverId, callId);
+  }
+
+  public cleanupRateLimits(userId: string) {
+    this.messageLimits.delete(userId);
   }
 
   @SubscribeMessage('dm:send')
@@ -241,7 +217,7 @@ export class DirectMessageGateway
     const body = result.data;
     const user = client.data.user;
 
-    this.broadcastProfileUpdate(user.sub, body);
+    this.presenceService.broadcastProfileUpdate(this.server, user.sub, body);
   }
 
   @SubscribeMessage('user:set-status')
@@ -260,7 +236,7 @@ export class DirectMessageGateway
         userId: user.sub,
         status: body.status,
       });
-      this.broadcastStatus(user.sub, body.status);
+      this.presenceService.broadcastStatus(this.server, user.sub, body.status);
     } catch (error) {
       this.logger.error(error, 'Failed to update status');
     }

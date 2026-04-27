@@ -11,9 +11,11 @@ import { GroupChatModule } from './group-chat/group-chat.module';
 import { FriendsModule } from './friends/friends.module';
 import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { LoggerModule } from 'nestjs-pino';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
   imports: [
+    SocketModule,
     DirectMessageModule,
     GroupChatModule,
     FriendsModule,
