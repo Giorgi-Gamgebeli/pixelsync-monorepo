@@ -70,7 +70,11 @@ export class PresenceService {
   broadcastProfileUpdate(
     server: Server,
     userId: string,
-    data: { userName?: string; name?: string; avatarConfig?: any },
+    data: {
+      userName?: string | null;
+      name?: string | null;
+      avatarConfig?: any;
+    },
   ) {
     const payload = { userId, ...data };
     server.to(userId).emit('user:profile-update', payload);
